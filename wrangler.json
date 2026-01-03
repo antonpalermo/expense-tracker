@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "cost-tracker",
+  "main": "./workers/index.ts",
+  "compatibility_date": "2025-11-17",
+  "assets": {
+    "directory": "./dist/client",
+    "not_found_handling": "single-page-application"
+  }
+}
