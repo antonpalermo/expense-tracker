@@ -1,9 +1,9 @@
 import { Hono } from "hono"
 
+import { notFound } from "@workers/middlewares/not-found"
+
 const app = new Hono()
 
-app.get("/msg", ctx => {
-  return ctx.json({ msg: "hello from backend" })
-})
+app.notFound(notFound)
 
 export default app
