@@ -1,8 +1,13 @@
 import { Hono } from "hono"
 
-import { notFound } from "@workers/middlewares/not-found"
+import type { AppBindings } from "@workers/lib/types"
 
-const app = new Hono()
+import { notFound } from "@workers/middlewares/not-found"
+import { configureBetterAuth } from "@workers/lib/configure-better-auth"
+
+const app = new Hono<AppBindings>().basePath("/api")
+
+configureBetterAuth(app)
 
 app.notFound(notFound)
 

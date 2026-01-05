@@ -9,10 +9,12 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "db:generate": "drizzle-kit generate --config=./drizzle.config.ts",
-    "typegen": "wrangler types --env-interface CloudflareBindings"
+    "typegen": "wrangler types --env-interface CloudflareBindings",
+    "auth:schema:gen": "bun x @better-auth/cli@latest generate --config=./workers/lib/configure-better-auth.ts --output=./database/schema.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
+    "better-auth": "^1.4.10",
     "drizzle-orm": "^0.45.1",
     "hono": "^4.11.3",
     "react": "^19.2.0",
