@@ -8,6 +8,13 @@
       "when": 1767452834850,
       "tag": "0000_bitter_roxanne_simpson",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1767620127584,
+      "tag": "0001_friendly_red_ghost",
+      "breakpoints": true
     }
   ]
 }
