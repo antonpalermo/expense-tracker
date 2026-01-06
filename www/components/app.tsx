@@ -1,26 +1,25 @@
-import { useEffect, useState } from "react"
+import { createAuthClient } from "better-auth/react"
+
+const { useSession, signIn } = createAuthClient()
 
 export function App() {
-  const [msg, setMsg] = useState({})
+  const { data, isPending } = useSession()
 
-  useEffect(() => {
-    async function getMsg() {
-      const req = await fetch("/msg")
+  if (isPending) {
+    return null
+  }
 
-      if (!req.ok) {
-        setMsg({ msg: "unable to fetch" })
-      }
-
-      const res = await req.json()
-      setMsg(res)
-    }
-
-    getMsg()
-  }, [])
+  async function socialSignIn(provider: "google") {
+    return await signIn.social({ provider })
+  }
 
   return (
     <div>
-      <pre>{JSON.stringify(msg, null, 2)}</pre>
+      <pre>Session: {JSON.stringify(data?.session)}</pre>
+      <pre>User: {JSON.stringify(data?.user)}</pre>
+      <button onClick={async () => await socialSignIn("google")}>
+        Sign In with Google
+      </button>
     </div>
   )
 }
