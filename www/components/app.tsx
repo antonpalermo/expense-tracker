@@ -15,8 +15,8 @@ export function App() {
 
   return (
     <div>
-      <pre>Session: {JSON.stringify(data?.session)}</pre>
-      <pre>User: {JSON.stringify(data?.user)}</pre>
+      <pre>Session: {JSON.stringify(data?.session, null, 2)}</pre>
+      <pre>User: {JSON.stringify(data?.user, null, 2)}</pre>
       <button onClick={async () => await socialSignIn("google")}>
         Sign In with Google
       </button>

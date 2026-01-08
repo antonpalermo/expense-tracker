@@ -34,7 +34,7 @@ export function createAuth(
 }
 
 export function configureBetterAuth(app: Hono<AppBindings>) {
-  app.on(["GET", "POST"], "/*", ctx => {
+  app.on(["GET", "POST"], "/auth/*", ctx => {
     return createAuth(ctx.env).handler(ctx.req.raw)
   })
 }
