@@ -1,6 +1,6 @@
 import { createAuthClient } from "better-auth/react"
 
-const { useSession, signIn } = createAuthClient()
+const { useSession, signIn, signOut } = createAuthClient()
 
 export function App() {
   const { data, isPending } = useSession()
@@ -20,6 +20,7 @@ export function App() {
       <button onClick={async () => await socialSignIn("google")}>
         Sign In with Google
       </button>
+      {data && <button onClick={async () => await signOut()}>Sign Out</button>}
     </div>
   )
 }
