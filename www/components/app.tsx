@@ -1,6 +1,22 @@
-import { createAuthClient } from "better-auth/react"
+import { createRouter, RouterProvider } from "@tanstack/react-router"
 
-const { useSession, signIn, signOut } = createAuthClient()
+import { useSession } from "../lib/auth"
+import { routeTree } from "../routeTree.gen"
+
+const router = createRouter({
+  routeTree,
+  context: {
+    isAuthenticated: false,
+    user: null
+  }
+})
+
+// Register the router instance for type safety
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router
+  }
+}
 
 export function App() {
   const { data, isPending } = useSession()
@@ -9,18 +25,10 @@ export function App() {
     return null
   }
 
-  async function socialSignIn(provider: "google") {
-    return await signIn.social({ provider })
-  }
-
   return (
-    <div>
-      <pre>Session: {JSON.stringify(data?.session, null, 2)}</pre>
-      <pre>User: {JSON.stringify(data?.user, null, 2)}</pre>
-      <button onClick={async () => await socialSignIn("google")}>
-        Sign In with Google
-      </button>
-      {data && <button onClick={async () => await signOut()}>Sign Out</button>}
-    </div>
+    <RouterProvider
+      router={router}
+      context={{ isAuthenticated: !!data, user: data?.user }}
+    />
   )
 }
