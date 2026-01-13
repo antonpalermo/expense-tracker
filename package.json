@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.14.4",
+    "better-auth": "^1.4.12",
+    "better-auth-cloudflare": "^0.2.9",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",
     "next": "15.5.9",
