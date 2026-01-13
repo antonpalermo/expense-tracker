@@ -31,7 +31,15 @@
   ],
   "observability": {
     "enabled": true
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "MAIN_DATABASE",
+      "database_name": "expense-tracker",
+      "database_id": "fcf56408-71c2-4f33-9ce2-a50ad24d63e7",
+      "migrations_dir": "database/migrations"
+    }
+  ]
   /**
    * Smart Placement
    * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
