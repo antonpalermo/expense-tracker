@@ -13,7 +13,7 @@ async function authBuilder() {
 
   return betterAuth({
     appName: "Express Tracker",
-    database: drizzleAdapter(databaseInstance, { provider: "sqlite", schema }),
+    database: drizzleAdapter(databaseInstance, { provider: "pg", schema }),
     baseURL: env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_SECRET
   })
@@ -31,6 +31,6 @@ export async function initAuth() {
 export const auth = betterAuth({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   database: drizzleAdapter(process.env.CLOUDFLARE_D1_ID as any, {
-    provider: "sqlite"
+    provider: "pg"
   })
 })
