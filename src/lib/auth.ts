@@ -5,6 +5,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare"
 import { getDatabaseAsync } from "./database"
 
 import * as schema from "../../database/schema"
+import { nanoid } from "./nanoid"
 
 async function authBuilder() {
   const databaseInstance = await getDatabaseAsync()
@@ -20,6 +21,11 @@ async function authBuilder() {
       google: {
         clientId: env.GOOGLE_CLIENT_ID,
         clientSecret: env.GOOGLE_CLIENT_SECRET
+      }
+    },
+    advanced: {
+      database: {
+        generateId: () => nanoid()
       }
     }
   })

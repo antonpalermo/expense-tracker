@@ -7,6 +7,7 @@ import {
   index,
   decimal
 } from "drizzle-orm/pg-core"
+import { nanoid } from "@/lib/nanoid"
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -81,7 +82,9 @@ export const verification = pgTable(
 )
 
 export const transaction = pgTable("transaction", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .$defaultFn(() => nanoid())
+    .primaryKey(),
   name: text("name").notNull(),
   amount: decimal({ precision: 100 }).notNull(),
   userId: text("user_id")
