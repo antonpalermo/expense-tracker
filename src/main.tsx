@@ -3,8 +3,10 @@ import { createRoot } from "react-dom/client"
 
 import "./globals.css"
 
+import App from "./components/app"
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <h1>Welcome</h1>
+    <App />
   </StrictMode>
 )
