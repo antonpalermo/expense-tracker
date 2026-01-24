@@ -5,7 +5,7 @@ import "./globals.css"
 
 import App from "./components/app"
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>
     <App />
   </StrictMode>

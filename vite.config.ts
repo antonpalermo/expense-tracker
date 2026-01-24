@@ -1,5 +1,6 @@
 import { defineConfig } from "vite"
 
+import { cloudflare } from "@cloudflare/vite-plugin"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 
 import react from "@vitejs/plugin-react"
@@ -19,6 +20,7 @@ export default defineConfig({
         display: "swap"
       }
     }),
+    cloudflare(),
     tsconfigPaths(),
     react()
   ]
