@@ -80,6 +80,19 @@ export const verification = pgTable(
   table => [index("verification_identifier_idx").on(table.identifier)]
 )
 
+export const ledger = pgTable("ledger", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull()
+})
+
 export const transaction = pgTable("transaction", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -97,6 +110,7 @@ export const transaction = pgTable("transaction", {
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  ledgers: many(user),
   transactions: many(transaction)
 }))
 
@@ -110,6 +124,13 @@ export const sessionRelations = relations(session, ({ one }) => ({
 export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
     fields: [account.userId],
+    references: [user.id]
+  })
+}))
+
+export const ledgerRelations = relations(ledger, ({ one }) => ({
+  user: one(user, {
+    fields: [ledger.userId],
     references: [user.id]
   })
 }))
