@@ -1,14 +1,12 @@
-import { Hono } from "hono"
+import { createRoute } from "./lib/create-route"
+
+import authRoutes from "./routes/auth"
 
 import { auth } from "./lib/auth"
 
-const app = new Hono<{ Bindings: CloudflareBindings }>({
-  strict: false
-}).basePath("/api")
+const app = createRoute().basePath("/api")
 
-app.on(["GET", "POST"], "/auth/*", ctx => {
-  return auth(ctx.env).handler(ctx.req.raw)
-})
+const routes = [authRoutes] as const
 
 app.get("/status", ctx => {
   return ctx.json({ status: "healthy" })
