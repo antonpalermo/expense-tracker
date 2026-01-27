@@ -1,4 +1,5 @@
 import { createRoute } from "./lib/create-route"
+import { database } from "./middlewares/database"
 
 import authRoutes from "./routes/auth"
 
@@ -6,7 +7,9 @@ import { auth } from "./lib/auth"
 
 const app = createRoute().basePath("/api")
 
-const routes = [authRoutes] as const
+app.use(database)
+
+const routes = [authRoutes, ledgerRoutes] as const
 
 app.get("/status", ctx => {
   return ctx.json({ status: "healthy" })
