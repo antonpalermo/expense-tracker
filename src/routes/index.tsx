@@ -1,31 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
 
 export const Route = createFileRoute("/")({
   component: HomePage
 })
 
 function HomePage() {
-  const [status, setStatus] = useState({ status: "" })
+  const createLedger = async () => {
+    const request = await fetch("/api/ledgers/create", {
+      method: "POST"
+    })
 
-  useEffect(() => {
-    async function getStatus() {
-      const statusRequest = await fetch("/api/status")
-      if (!statusRequest.ok) {
-        setStatus({ status: "not okay" })
-      }
-
-      const serverStatus = (await statusRequest.json()) as { status: string }
-      setStatus(serverStatus)
+    if (!request.ok) {
+      console.log("not okay, unable to create ledger")
     }
 
-    getStatus()
-  }, [])
+    const response = await request.json()
+    console.log("result", response)
+  }
 
   return (
     <div className="p-2">
       <h3>Welcome Home!</h3>
-      {JSON.stringify(status)}
+      <button onClick={createLedger}>Create</button>
     </div>
   )
 }
