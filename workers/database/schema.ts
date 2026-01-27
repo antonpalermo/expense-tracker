@@ -7,6 +7,7 @@ import {
   index,
   decimal
 } from "drizzle-orm/pg-core"
+import { nanoid } from "../lib/nanoid"
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -80,18 +81,29 @@ export const verification = pgTable(
   table => [index("verification_identifier_idx").on(table.identifier)]
 )
 
-export const ledger = pgTable("ledger", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
-    .notNull()
-})
+export const ledger = pgTable(
+  "ledger",
+  {
+    id: text("id")
+      .$defaultFn(() => nanoid())
+      .unique()
+      .notNull()
+      .primaryKey(),
+    name: text("name").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull()
+  },
+  table => [
+    index("ledger_id_idx").on(table.id),
+    index("ledger_userId_idx").on(table.userId)
+  ]
+)
 
 export const transaction = pgTable("transaction", {
   id: text("id").primaryKey(),

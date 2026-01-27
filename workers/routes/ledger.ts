@@ -15,7 +15,7 @@ routes.post("/create", async ctx => {
 
   const createdLedger = await db
     .insert(ledger)
-    .values({ id: "ABC", name: "Sample", userId: user.id })
+    .values({ name: "Sample", userId: user.id })
     .returning()
 
   return ctx.json({ createdLedger })
