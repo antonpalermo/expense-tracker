@@ -1,8 +1,9 @@
 import { RouterProvider, createRouter } from "@tanstack/react-router"
 
 import { routeTree } from "../routeTree.gen"
+import { useSession } from "../lib/auth"
 
-const router = createRouter({ routeTree })
+const router = createRouter({ routeTree, context: { isAuthenticated: false } })
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
@@ -12,5 +13,13 @@ declare module "@tanstack/react-router" {
 }
 
 export default function App() {
-  return <RouterProvider router={router} />
+  const { data, isPending } = useSession()
+
+  if (isPending) {
+    return <h1>Loading...</h1>
+  }
+
+  return (
+    <RouterProvider router={router} context={{ isAuthenticated: !!data }} />
+  )
 }
