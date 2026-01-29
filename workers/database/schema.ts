@@ -153,3 +153,5 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
     references: [user.id]
   })
 }))
+
+export type Ledger = typeof ledger.$inferInsert

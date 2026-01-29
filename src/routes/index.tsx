@@ -5,6 +5,7 @@ import {
   useNavigate
 } from "@tanstack/react-router"
 import { signOut } from "../lib/auth"
+import LedgerCreateForm from "../components/ledgers/create-form"
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -24,19 +25,6 @@ function HomePage() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const createLedger = async () => {
-    const request = await fetch("/api/ledgers/create", {
-      method: "POST"
-    })
-
-    if (!request.ok) {
-      console.log("not okay, unable to create ledger")
-    }
-
-    const response = await request.json()
-    console.log("result", response)
-  }
-
   const logout = async () => {
     await signOut({
       fetchOptions: {
@@ -55,7 +43,7 @@ function HomePage() {
   return (
     <div className="p-2">
       <h3>Welcome Home!</h3>
-      <button onClick={createLedger}>Create</button>
+      <LedgerCreateForm />
       <button onClick={logout}>Logout</button>
     </div>
   )
