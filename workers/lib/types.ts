@@ -5,6 +5,7 @@ export type AppBindings = {
   Bindings: CloudflareBindings
   Variables: {
     db: NeonDatabase
-    session: Session | null
+    session: Session["session"]
+    user: Session["user"]
   }
 }
