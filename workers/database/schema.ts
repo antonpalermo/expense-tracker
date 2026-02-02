@@ -8,6 +8,7 @@ import {
   decimal
 } from "drizzle-orm/pg-core"
 import { nanoid } from "../lib/nanoid"
+import { createInsertSchema } from "drizzle-zod"
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -155,3 +156,13 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
 }))
 
 export type Ledger = typeof ledger.$inferInsert
+export const createLedgerSchema = createInsertSchema(ledger, {
+  name: field => field.min(3).max(500)
+})
+  .required()
+  .omit({
+    id: true,
+    userId: true,
+    createdAt: true,
+    updatedAt: true
+  })

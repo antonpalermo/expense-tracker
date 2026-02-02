@@ -9,7 +9,7 @@ export default function LedgerCreateForm() {
   const form = useForm({
     defaultValues,
     onSubmit: async ({ value }) => {
-      const request = await fetch("/api/ledgers/create", {
+      const request = await fetch("/api/ledgers", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
