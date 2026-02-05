@@ -1,6 +1,7 @@
 import { validator } from "hono/validator"
 import { HTTPException } from "hono/http-exception"
 
+import { session } from "../middlewares/session"
 import { createRoute } from "../lib/create-route"
 import { createLedgerSchema, ledger } from "../database/schema"
 
@@ -9,7 +10,7 @@ import * as HTTPPhrases from "../status-phrases"
 
 const routes = createRoute().basePath("/ledgers")
 
-routes.post(
+routes.use(session).post(
   "/",
   validator("json", value => {
     const parsed = createLedgerSchema.safeParse(value)
@@ -31,7 +32,7 @@ routes.post(
     const [createdLedger] = await db
       .insert(ledger)
       .values({ name: data.name, userId: user.id })
-      .returning()
+      .returning({ name: ledger.name })
 
     return ctx.json(createdLedger, HTTPStatus.CREATED)
   }
