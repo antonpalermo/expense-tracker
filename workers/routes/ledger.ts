@@ -1,7 +1,6 @@
-import { validator } from "hono/validator"
-import { HTTPException } from "hono/http-exception"
-
 import { session } from "../middlewares/session"
+import { validate } from "../middlewares/validate"
+
 import { createRoute } from "../lib/create-route"
 import { createLedgerSchema, ledger } from "../database/schema"
 
@@ -10,20 +9,9 @@ import * as HTTPPhrases from "../status-phrases"
 
 const routes = createRoute().basePath("/ledgers")
 
-routes.use(session).post(
-  "/",
-  validator("json", value => {
-    const parsed = createLedgerSchema.safeParse(value)
-
-    if (!parsed.success) {
-      throw new HTTPException(HTTPStatus.UNPROCESSABLE_ENTITY, {
-        cause: HTTPPhrases.UNPROCESSABLE_ENTITY
-      })
-    }
-
-    return parsed.data
-  }),
-  async ctx => {
+routes
+  .use(session)
+  .post("/", validate("json", createLedgerSchema), async ctx => {
     const db = ctx.get("db")
     const user = ctx.get("user")
 
@@ -34,8 +22,10 @@ routes.use(session).post(
       .values({ name: data.name, userId: user.id })
       .returning({ name: ledger.name })
 
-    return ctx.json(createdLedger, HTTPStatus.CREATED)
-  }
-)
+    return ctx.json(
+      { data: createdLedger, message: HTTPPhrases.CREATED },
+      HTTPStatus.CREATED
+    )
+  })
 
 export default routes
