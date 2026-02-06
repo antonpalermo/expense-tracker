@@ -6,11 +6,23 @@ import { createLedgerSchema, ledger } from "../database/schema"
 
 import * as HTTPStatus from "../status-codes"
 import * as HTTPPhrases from "../status-phrases"
+import { eq } from "drizzle-orm"
 
 const routes = createRoute().basePath("/ledgers")
 
 routes
   .use(session)
+  .get("/", async ctx => {
+    const db = ctx.get("db")
+    const user = ctx.get("user")
+
+    const ledgers = await db
+      .select()
+      .from(ledger)
+      .where(eq(ledger.userId, user.id))
+
+    return ctx.json({ data: ledgers, message: HTTPPhrases.OK }, HTTPStatus.OK)
+  })
   .post("/", validate("json", createLedgerSchema), async ctx => {
     const db = ctx.get("db")
     const user = ctx.get("user")
