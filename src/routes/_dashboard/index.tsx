@@ -4,10 +4,10 @@ import {
   useLocation,
   useNavigate
 } from "@tanstack/react-router"
-import { signOut } from "../lib/auth"
-import LedgerCreateForm from "../components/ledgers/create-form"
+import { signOut } from "@/lib/auth"
+import LedgerCreateForm from "@/components/ledgers/create-form"
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_dashboard/")({
   component: HomePage,
   beforeLoad: async ({ context, location }) => {
     if (!context.isAuthenticated) {

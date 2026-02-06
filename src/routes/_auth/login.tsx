@@ -2,7 +2,7 @@ import { createFileRoute, useSearch } from "@tanstack/react-router"
 
 import { createAuthClient } from "better-auth/react"
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/_auth/login")({
   component: RouteComponent,
   validateSearch: s => s as { redirect: string }
 })
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/login")({
 const client = createAuthClient()
 
 function RouteComponent() {
-  const search = useSearch({ from: "/login" })
+  const search = useSearch({ from: "/_auth/login" })
 
   console.log(search)
 
