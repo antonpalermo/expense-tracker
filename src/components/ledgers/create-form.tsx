@@ -1,5 +1,6 @@
 import { useForm } from "@tanstack/react-form"
-import type { Ledger } from "../../../workers/database/schema"
+import type { Ledger } from "@/database/schema"
+import { Button } from "@/components/ui/button"
 
 export default function LedgerCreateForm() {
   const defaultValues: Omit<Ledger, "userId"> = {
@@ -49,9 +50,9 @@ export default function LedgerCreateForm() {
         <form.Subscribe
           selector={selector => [selector.canSubmit, selector.isSubmitting]}
           children={([canSubmit, isSubmitting]) => (
-            <button type="submit" disabled={!canSubmit}>
+            <Button type="submit" disabled={!canSubmit}>
               {isSubmitting ? "..." : "Submit"}
-            </button>
+            </Button>
           )}
         />
       </form>

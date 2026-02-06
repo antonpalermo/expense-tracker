@@ -5,6 +5,7 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite"
 
 import react from "@vitejs/plugin-react"
 import unfonts from "unplugin-fonts/vite"
+import tailwind from "@tailwindcss/vite"
 import tsconfigPaths from "vite-tsconfig-paths"
 
 // https://vite.dev/config/
@@ -22,6 +23,7 @@ export default defineConfig({
     }),
     cloudflare(),
     tsconfigPaths(),
-    react()
+    react(),
+    tailwind()
   ]
 })
