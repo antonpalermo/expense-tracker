@@ -1,6 +1,9 @@
 import * as React from "react"
+
+// import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router"
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
+
+import { SidebarProvider } from "@/components/ui/sidebar"
 
 export type RouterContext = {
   isAuthenticated: boolean
@@ -13,8 +16,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootComponent() {
   return (
     <React.Fragment>
-      <Outlet />
-      <TanStackRouterDevtools />
+      <SidebarProvider>
+        <Outlet />
+      </SidebarProvider>
+      {/* <TanStackRouterDevtools /> */}
     </React.Fragment>
   )
 }
