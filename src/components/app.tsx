@@ -1,7 +1,8 @@
 import { RouterProvider, createRouter } from "@tanstack/react-router"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
-import { routeTree } from "../routeTree.gen"
-import { useSession } from "../lib/auth"
+import { routeTree } from "@/routeTree.gen"
+import { useSession } from "@/lib/auth"
 
 const router = createRouter({ routeTree, context: { isAuthenticated: false } })
 
@@ -12,6 +13,8 @@ declare module "@tanstack/react-router" {
   }
 }
 
+const client = new QueryClient()
+
 export default function App() {
   const { data, isPending } = useSession()
 
@@ -20,6 +23,8 @@ export default function App() {
   }
 
   return (
-    <RouterProvider router={router} context={{ isAuthenticated: !!data }} />
+    <QueryClientProvider client={client}>
+      <RouterProvider router={router} context={{ isAuthenticated: !!data }} />
+    </QueryClientProvider>
   )
 }
