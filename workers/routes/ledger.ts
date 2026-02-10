@@ -1,12 +1,13 @@
+import { eq } from "drizzle-orm"
+
 import { session } from "../middlewares/session"
 import { validate } from "../middlewares/validate"
 
 import { createRoute } from "../lib/create-route"
-import { createLedgerSchema, ledger } from "../database/schema"
+import { createLedgerSchema, ledger, metadata } from "../database/schema"
 
 import * as HTTPStatus from "../status-codes"
 import * as HTTPPhrases from "../status-phrases"
-import { eq } from "drizzle-orm"
 
 const routes = createRoute().basePath("/ledgers")
 
@@ -29,10 +30,26 @@ routes
 
     const data = await ctx.req.json()
 
-    const [createdLedger] = await db
-      .insert(ledger)
-      .values({ name: data.name, userId: user.id })
-      .returning({ name: ledger.name })
+    const createdLedger = await db.transaction(async tx => {
+      const [newLedger] = await tx
+        .insert(ledger)
+        .values({ name: data.name, userId: user.id })
+        .returning()
+
+      if (!newLedger) {
+        tx.rollback()
+      }
+
+      await tx
+        .insert(metadata)
+        .values({ defaults: { ledger: newLedger.id }, userId: user.id })
+        .onConflictDoUpdate({
+          target: metadata.userId,
+          set: { defaults: { ledger: newLedger.id } }
+        })
+
+      return newLedger
+    })
 
     return ctx.json(
       { data: createdLedger, message: HTTPPhrases.CREATED },
