@@ -188,7 +188,7 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
   })
 }))
 
-export type Ledger = typeof ledger.$inferInsert
+export type Ledger = typeof ledger.$inferSelect
 export const createLedgerSchema = createInsertSchema(ledger, {
   name: field => field.min(3).max(500)
 })
