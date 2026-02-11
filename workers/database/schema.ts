@@ -6,7 +6,8 @@ import {
   boolean,
   index,
   decimal,
-  json
+  json,
+  uniqueIndex
 } from "drizzle-orm/pg-core"
 import { nanoid } from "../lib/nanoid"
 import { createInsertSchema } from "drizzle-zod"
@@ -103,7 +104,7 @@ export const metadata = pgTable(
   },
   table => [
     index("metadata_id_idx").on(table.id),
-    index("metadata_userId_idx").on(table.userId)
+    uniqueIndex("metadata_userId_unique_idx").on(table.userId)
   ]
 )
 
