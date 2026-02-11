@@ -29,6 +29,13 @@
       "when": 1770112107064,
       "tag": "0003_new_star_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770823304884,
+      "tag": "0004_free_newton_destine",
+      "breakpoints": true
     }
   ]
 }
