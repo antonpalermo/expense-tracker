@@ -21,8 +21,15 @@ routes
       .select()
       .from(ledger)
       .where(eq(ledger.userId, user.id))
+    const defaults = await db
+      .select({ defaults: metadata.defaults })
+      .from(metadata)
+      .where(eq(metadata.userId, user.id))
 
-    return ctx.json({ data: ledgers, message: HTTPPhrases.OK }, HTTPStatus.OK)
+    return ctx.json(
+      { defaults, data: ledgers, message: HTTPPhrases.OK },
+      HTTPStatus.OK
+    )
   })
   .post("/", validate("json", createLedgerSchema), async ctx => {
     const db = ctx.get("db")
