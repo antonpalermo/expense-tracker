@@ -4,7 +4,12 @@ import { session } from "../middlewares/session"
 import { validate } from "../middlewares/validate"
 
 import { createRoute } from "../lib/create-route"
-import { createLedgerSchema, ledger, metadata } from "../database/schema"
+import {
+  createLedgerSchema,
+  ledger,
+  metadata,
+  user as userSchema
+} from "../database/schema"
 
 import * as HTTPStatus from "../status-codes"
 import * as HTTPPhrases from "../status-phrases"
@@ -17,17 +22,19 @@ routes
     const db = ctx.get("db")
     const user = ctx.get("user")
 
-    const ledgers = await db
-      .select()
-      .from(ledger)
-      .where(eq(ledger.userId, user.id))
-    const defaults = await db
-      .select({ defaults: metadata.defaults })
-      .from(metadata)
-      .where(eq(metadata.userId, user.id))
+    const result = await db.query.user.findFirst({
+      where: eq(userSchema.id, user.id),
+      columns: {},
+      with: {
+        metadata: {
+          columns: { defaults: true }
+        },
+        ledgers: true
+      }
+    })
 
     return ctx.json(
-      { defaults, data: ledgers, message: HTTPPhrases.OK },
+      { ledgers: result?.ledgers, default: result?.metadata?.defaults?.ledger },
       HTTPStatus.OK
     )
   })

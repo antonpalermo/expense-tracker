@@ -2,24 +2,25 @@ import * as React from "react"
 
 import { LedgerContext } from "@/contexts"
 import { useQuery } from "@tanstack/react-query"
+import type { Ledger } from "@/database/schema"
+
+type LedgerResponse = {
+  default: string
+  ledgers: Ledger[]
+}
 
 export default function LedgerProvider({
   children
 }: {
   children: React.ReactNode
 }) {
-  const {
-    data: ledgers,
-    isPending,
-    isError,
-    error
-  } = useQuery({
+  const { data, isPending, isError, error } = useQuery({
     queryKey: ["ledgers"],
     queryFn: getLedgers,
     staleTime: Infinity
   })
 
-  async function getLedgers() {
+  async function getLedgers(): Promise<LedgerResponse> {
     const request = await fetch("/api/ledgers")
 
     if (!request.ok) {
@@ -38,6 +39,8 @@ export default function LedgerProvider({
   }
 
   return (
-    <LedgerContext value={{ ledgers: ledgers.data }}>{children}</LedgerContext>
+    <LedgerContext value={{ default: data.default, ledgers: data.ledgers }}>
+      {children}
+    </LedgerContext>
   )
 }

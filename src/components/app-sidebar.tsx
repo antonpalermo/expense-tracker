@@ -10,12 +10,12 @@ import { useLedgers } from "@/hooks/use-ledgers"
 export default function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
-  const { ledgers } = useLedgers()
+  const ledger = useLedgers()
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
-        <LedgerSwitcher ledgers={ledgers} />
+        <LedgerSwitcher default={ledger.default} ledgers={ledger.ledgers} />
       </SidebarHeader>
       <SidebarContent>Content</SidebarContent>
       <SidebarFooter>Footer</SidebarFooter>
