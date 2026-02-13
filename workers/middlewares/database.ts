@@ -3,6 +3,7 @@ import { createMiddleware } from "hono/factory"
 import { Pool } from "@neondatabase/serverless"
 import { drizzle } from "drizzle-orm/neon-serverless"
 
+import * as schemas from "@/database/schema"
 import type { AppBindings } from "../lib/types"
 
 export const database = createMiddleware<AppBindings>(async (ctx, next) => {
@@ -10,7 +11,7 @@ export const database = createMiddleware<AppBindings>(async (ctx, next) => {
     connectionString: ctx.env.DATABASE_URL
   })
 
-  const db = drizzle({ client })
+  const db = drizzle({ client, schema: { ...schemas } })
 
   ctx.set("db", db)
 
