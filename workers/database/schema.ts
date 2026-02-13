@@ -150,7 +150,7 @@ export const userRelations = relations(user, ({ many, one }) => ({
   metadata: one(metadata),
   sessions: many(session),
   accounts: many(account),
-  ledgers: many(user),
+  ledgers: many(ledger),
   transactions: many(transaction)
 }))
 
