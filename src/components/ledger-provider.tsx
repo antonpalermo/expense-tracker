@@ -39,7 +39,12 @@ export default function LedgerProvider({
   }
 
   return (
-    <LedgerContext value={{ default: data.default, ledgers: data.ledgers }}>
+    <LedgerContext
+      value={{
+        default: data.default,
+        ledgers: data.ledgers
+      }}
+    >
       {children}
     </LedgerContext>
   )

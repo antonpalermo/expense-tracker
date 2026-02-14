@@ -70,5 +70,18 @@ routes
       HTTPStatus.CREATED
     )
   })
+  .patch("/:id", async ctx => {
+    const db = ctx.get("db")
+    const user = ctx.get("user")
+
+    const id = ctx.req.param("id")
+
+    await db
+      .update(metadata)
+      .set({ defaults: { ledger: id } })
+      .where(eq(metadata.userId, user.id))
+
+    return ctx.json({ message: "successfully updated" }, HTTPStatus.OK)
+  })
 
 export default routes

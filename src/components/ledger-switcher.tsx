@@ -18,6 +18,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { CheckIcon, ChevronsUpDown, Plus } from "lucide-react"
 import { Dialog, DialogTrigger } from "./ui/dialog"
 import LedgerDialog from "./ledger-dialog"
+import { useMutation } from "@tanstack/react-query"
 
 export default function LedgerSwitcher({
   default: defaultLedgerId,
@@ -28,11 +29,25 @@ export default function LedgerSwitcher({
 }) {
   const isMobile = useIsMobile()
 
+  const updateDefault = useMutation({
+    mutationKey: ["ledgers"],
+    mutationFn: async (id: string) => {
+      const req = await fetch(`/api/ledgers/${id}?metadata=true`, {
+        method: "PATCH"
+      })
+
+      if (!req.ok) {
+        throw new Error("unable to update default ledger")
+      }
+    }
+  })
+
   const defaultLedger = ledgers.find(x => x.id === defaultLedgerId)! // safe to assume that there's always a default ledger
 
   const ledgerItems = ledgers.map(ledger => (
     <DropdownMenuItem
       key={ledger.id}
+      onClick={() => updateDefault.mutate(ledger.id)}
       className="gap-2 p-2 flex items-center justify-between"
     >
       {ledger.name}
