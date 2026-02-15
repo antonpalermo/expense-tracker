@@ -141,7 +141,7 @@ export const transaction = pgTable("transaction", {
     .references(() => user.id, { onDelete: "cascade" }),
   ledgerId: text("ledger_id")
     .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+    .references(() => ledger.id, { onDelete: "no action" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
