@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/sidebar"
 import LedgerSwitcher from "./ledger-switcher"
 import { useLedgers } from "@/hooks/use-ledgers"
+import NavMain from "./nav-main"
 
 export default function AppSidebar({
   ...props
@@ -17,7 +18,9 @@ export default function AppSidebar({
       <SidebarHeader>
         <LedgerSwitcher default={ledger.default} ledgers={ledger.ledgers} />
       </SidebarHeader>
-      <SidebarContent>Content</SidebarContent>
+      <SidebarContent>
+        <NavMain />
+      </SidebarContent>
       <SidebarFooter>Footer</SidebarFooter>
     </Sidebar>
   )
