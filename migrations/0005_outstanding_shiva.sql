@@ -1,0 +1,2 @@
+ALTER TABLE "transaction" ADD COLUMN "ledger_id" text NOT NULL;--> statement-breakpoint
+ALTER TABLE "transaction" ADD CONSTRAINT "transaction_ledger_id_user_id_fk" FOREIGN KEY ("ledger_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;

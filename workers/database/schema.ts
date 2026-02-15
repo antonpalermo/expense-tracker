@@ -139,6 +139,9 @@ export const transaction = pgTable("transaction", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  ledgerId: text("ledger_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -175,17 +178,22 @@ export const metadataRelations = relations(metadata, ({ one }) => ({
   })
 }))
 
-export const ledgerRelations = relations(ledger, ({ one }) => ({
+export const ledgerRelations = relations(ledger, ({ one, many }) => ({
   user: one(user, {
     fields: [ledger.userId],
     references: [user.id]
-  })
+  }),
+  transactions: many(transaction)
 }))
 
 export const transactionRelations = relations(transaction, ({ one }) => ({
   user: one(user, {
     fields: [transaction.userId],
     references: [user.id]
+  }),
+  ledger: one(ledger, {
+    fields: [transaction.ledgerId],
+    references: [ledger.id]
   })
 }))
 
