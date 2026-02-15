@@ -11,6 +11,8 @@ import {
   user as userSchema
 } from "../database/schema"
 
+import transactionRoutes from "./transaction"
+
 import * as HTTPStatus from "../status-codes"
 import * as HTTPPhrases from "../status-phrases"
 
@@ -18,6 +20,7 @@ const routes = createRoute().basePath("/ledgers")
 
 routes
   .use(session)
+
   .get("/", async ctx => {
     const db = ctx.get("db")
     const user = ctx.get("user")
@@ -83,5 +86,7 @@ routes
 
     return ctx.json({ message: "successfully updated" }, HTTPStatus.OK)
   })
+  // add the whole transaction routes as nested functions
+  .route("/", transactionRoutes)
 
 export default routes
