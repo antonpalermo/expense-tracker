@@ -1,9 +1,11 @@
 import * as React from "react"
 
-// import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
-import { Outlet, createRootRouteWithContext } from "@tanstack/react-router"
+import { TanStackDevtools } from "@tanstack/react-devtools"
+import { FormDevtoolsPanel } from "@tanstack/react-form-devtools"
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools"
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 
-import { SidebarProvider } from "@/components/ui/sidebar"
+import { Outlet, createRootRouteWithContext } from "@tanstack/react-router"
 
 export type RouterContext = {
   isAuthenticated: boolean
@@ -16,10 +18,26 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootComponent() {
   return (
     <React.Fragment>
-      <SidebarProvider>
-        <Outlet />
-      </SidebarProvider>
-      {/* <TanStackRouterDevtools /> */}
+      <Outlet />
+      <TanStackDevtools
+        plugins={[
+          {
+            name: "Tanstack Form",
+            render: <FormDevtoolsPanel />,
+            defaultOpen: false
+          },
+          {
+            name: "Tanstack Router",
+            render: <TanStackRouterDevtoolsPanel />,
+            defaultOpen: false
+          },
+          {
+            name: "Tanstack Query",
+            render: <ReactQueryDevtoolsPanel />,
+            defaultOpen: false
+          }
+        ]}
+      />
     </React.Fragment>
   )
 }
