@@ -208,3 +208,16 @@ export const createLedgerSchema = createInsertSchema(ledger, {
     createdAt: true,
     updatedAt: true
   })
+
+export type Transaction = typeof transaction.$inferSelect
+export const createTransactionSchema = createInsertSchema(transaction, {
+  name: field => field.min(5).max(205)
+})
+  .required()
+  .omit({
+    id: true,
+    ledgerId: true,
+    userId: true,
+    createdAt: true,
+    updatedAt: true
+  })
