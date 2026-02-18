@@ -1,17 +1,43 @@
 import {
+  type LucideIcon,
+  LayoutDashboardIcon,
+  BanknoteArrowDownIcon
+} from "lucide-react"
+
+import {
   Sidebar,
-  SidebarContent,
   SidebarFooter,
-  SidebarHeader
+  SidebarHeader,
+  SidebarContent
 } from "@/components/ui/sidebar"
-import LedgerSwitcher from "./ledger-switcher"
 import { useLedgers } from "@/hooks/use-ledgers"
-import NavMain from "./nav-main"
+
+import NavMain from "@/components/nav-main"
+import LedgerSwitcher from "@/components/ledger-switcher"
+
+export type MainRoute = {
+  label: string
+  path: string
+  icon?: LucideIcon
+}
 
 export default function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   const ledger = useLedgers()
+
+  const mainRoutes: MainRoute[] = [
+    {
+      label: "Dashboard",
+      path: "/",
+      icon: LayoutDashboardIcon
+    },
+    {
+      label: "Transactions",
+      path: "/transactions",
+      icon: BanknoteArrowDownIcon
+    }
+  ]
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -19,7 +45,7 @@ export default function AppSidebar({
         <LedgerSwitcher default={ledger.default} ledgers={ledger.ledgers} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain />
+        <NavMain routes={mainRoutes} />
       </SidebarContent>
       <SidebarFooter>Footer</SidebarFooter>
     </Sidebar>

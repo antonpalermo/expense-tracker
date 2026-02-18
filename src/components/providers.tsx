@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query"
 
 import LedgerProvider from "./ledger-provider"
+import { SidebarProvider } from "./ui/sidebar"
 
 const client = new QueryClient({
   mutationCache: new MutationCache({
@@ -20,7 +21,9 @@ const client = new QueryClient({
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={client}>
-      <LedgerProvider>{children}</LedgerProvider>
+      <SidebarProvider>
+        <LedgerProvider>{children}</LedgerProvider>
+      </SidebarProvider>
     </QueryClientProvider>
   )
 }

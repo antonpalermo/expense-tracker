@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react"
 import { Link } from "@tanstack/react-router"
 import {
   SidebarContent,
@@ -8,18 +9,27 @@ import {
   SidebarMenuItem
 } from "./ui/sidebar"
 
-export default function NavMain() {
+export default function NavMain({
+  routes
+}: {
+  routes: { label: string; path: string; icon?: LucideIcon }[]
+}) {
+  const navMenus = routes.map(route => (
+    <SidebarMenuItem key={route.label}>
+      <SidebarMenuButton asChild>
+        <Link to={route.path}>
+          {route.icon && <route.icon />}
+          {route.label}
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  ))
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Main</SidebarGroupLabel>
       <SidebarContent>
-        <SidebarMenu>
-          <SidebarMenuItem className="flex items-center gap-2">
-            <SidebarMenuButton asChild tooltip="Ledger transactions">
-              <Link to="/transactions">Transactions</Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <SidebarMenu>{navMenus}</SidebarMenu>
       </SidebarContent>
     </SidebarGroup>
   )
