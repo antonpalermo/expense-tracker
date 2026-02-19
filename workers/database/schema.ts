@@ -1,16 +1,22 @@
-import { relations } from "drizzle-orm"
+import z from "zod"
 import {
   pgTable,
   text,
-  timestamp,
-  boolean,
-  index,
-  decimal,
   json,
+  index,
+  boolean,
+  decimal,
+  timestamp,
   uniqueIndex
 } from "drizzle-orm/pg-core"
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema
+} from "drizzle-zod"
+import { relations } from "drizzle-orm"
+
 import { nanoid } from "../lib/nanoid"
-import { createInsertSchema } from "drizzle-zod"
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -209,15 +215,26 @@ export const createLedgerSchema = createInsertSchema(ledger, {
     updatedAt: true
   })
 
-export type Transaction = typeof transaction.$inferSelect
-export const createTransactionSchema = createInsertSchema(transaction, {
-  name: field => field.min(5).max(205)
+/**
+ * transaction update schema
+ */
+export const updateTransactionSchema = createUpdateSchema(transaction)
+
+/**
+ * transaction select schema
+ */
+export const selectTransactionSchema = createSelectSchema(transaction)
+
+/**
+ * transaction insert schema
+ */
+export const insertTransactionSchema = createInsertSchema(transaction, {
+  name: z.string().min(5).max(250),
+  amount: z.number()
+}).omit({
+  id: true,
+  userId: true,
+  ledgerId: true,
+  createdAt: true,
+  updatedAt: true
 })
-  .required()
-  .omit({
-    id: true,
-    ledgerId: true,
-    userId: true,
-    createdAt: true,
-    updatedAt: true
-  })

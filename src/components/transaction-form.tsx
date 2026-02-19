@@ -1,3 +1,4 @@
+import z from "zod"
 import { useForm } from "@tanstack/react-form"
 
 import {
@@ -8,16 +9,21 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 
-import { type Transaction } from "@/database/schema"
+import { insertTransactionSchema } from "@/database/schema"
+
+export type TransactionField = z.infer<typeof insertTransactionSchema>
 
 export default function TransactionForm() {
-  const defaultValues: Pick<Transaction, "name" | "amount"> = {
+  const defaultValues: TransactionField = {
     name: "",
-    amount: ""
+    amount: 0
   }
 
   const form = useForm({
     defaultValues,
+    validators: {
+      onBlur: insertTransactionSchema
+    },
     onSubmit: async ({ value }) => {
       const request = await fetch("/api/ledgers/transactions", {
         method: "POST",
@@ -86,7 +92,7 @@ export default function TransactionForm() {
                 name={field.name}
                 value={field.state.value}
                 onBlur={field.handleBlur}
-                onChange={e => field.handleChange(e.target.value)}
+                onChange={e => field.handleChange(e.target.valueAsNumber)}
                 aria-invalid={
                   field.state.meta.isTouched && !field.state.meta.isValid
                 }
