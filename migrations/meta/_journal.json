@@ -50,6 +50,13 @@
       "when": 1771166874724,
       "tag": "0006_pale_lila_cheney",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1771602587664,
+      "tag": "0007_crazy_mastermind",
+      "breakpoints": true
     }
   ]
 }

@@ -5,9 +5,9 @@ import {
   json,
   index,
   boolean,
-  decimal,
   timestamp,
-  uniqueIndex
+  uniqueIndex,
+  numeric
 } from "drizzle-orm/pg-core"
 import {
   createInsertSchema,
@@ -139,9 +139,13 @@ export const ledger = pgTable(
 )
 
 export const transaction = pgTable("transaction", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .$defaultFn(() => nanoid())
+    .unique()
+    .notNull()
+    .primaryKey(),
   name: text("name").notNull(),
-  amount: decimal({ precision: 100 }).notNull(),
+  amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -216,25 +220,29 @@ export const createLedgerSchema = createInsertSchema(ledger, {
   })
 
 /**
- * transaction update schema
- */
-export const updateTransactionSchema = createUpdateSchema(transaction)
-
-/**
  * transaction select schema
  */
 export const selectTransactionSchema = createSelectSchema(transaction)
+
+/**
+ * transaction update schema
+ */
+export const updateTransactionSchema = createUpdateSchema(transaction)
 
 /**
  * transaction insert schema
  */
 export const insertTransactionSchema = createInsertSchema(transaction, {
   name: z.string().min(5).max(250),
-  amount: z.number()
+  // Refine the string to ensure it's a valid currency format
+  amount: z.string().regex(/^-?\d+(\.\d{1,2})?$/)
 }).omit({
   id: true,
   userId: true,
-  ledgerId: true,
   createdAt: true,
   updatedAt: true
 })
+
+export type SelectTransactionRequest = z.infer<typeof selectTransactionSchema>
+export type UpdateTransactionRequest = z.infer<typeof updateTransactionSchema>
+export type InsertTransactionRequest = z.infer<typeof insertTransactionSchema>
