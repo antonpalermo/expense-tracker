@@ -13,6 +13,7 @@
     "db:gen": "drizzle-kit generate --config drizzle.config.ts"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.7.6",
     "@neondatabase/serverless": "^1.0.2",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-form": "^1.28.0",
