@@ -4,7 +4,7 @@ import { onError } from "./middlewares/on-error"
 import { database } from "./middlewares/database"
 
 import authRoutes from "./routes/auth"
-import ledgerRoutes from "./routes/ledger"
+import ledgerRoutes from "./routes/ledger.route"
 
 const app = createRoute().basePath("/api")
 

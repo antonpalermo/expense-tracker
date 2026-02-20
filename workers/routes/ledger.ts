@@ -87,6 +87,6 @@ routes
     return ctx.json({ message: "successfully updated" }, HTTPStatus.OK)
   })
   // add the whole transaction routes as nested functions
-  .route("/", transactionRoutes)
+  .route("/:id", transactionRoutes)
 
 export default routes

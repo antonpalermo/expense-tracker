@@ -238,7 +238,6 @@ export const insertTransactionSchema = createInsertSchema(transaction, {
   amount: z.string().regex(/^-?\d+(\.\d{1,2})?$/)
 }).omit({
   id: true,
-  userId: true,
   createdAt: true,
   updatedAt: true
 })
