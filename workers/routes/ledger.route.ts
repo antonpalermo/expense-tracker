@@ -4,7 +4,10 @@ import * as handler from "@/handlers/ledger.handler"
 
 const routes = createRoute().basePath("/ledgers")
 
-// creates a new ledger transaction
-routes.post("/:id/transactions", ...handler.createTransaction)
+routes
+  // creates a new ledger
+  .post("/", ...handler.createLedger)
+  // creates a new ledger transaction
+  .post("/:id/transactions", ...handler.createTransaction)
 
 export default routes

@@ -207,17 +207,32 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
   })
 }))
 
-export type Ledger = typeof ledger.$inferSelect
-export const createLedgerSchema = createInsertSchema(ledger, {
+/**
+ * ledger select schema
+ */
+export const selectLedgerSchema = createSelectSchema(ledger)
+
+/**
+ * ledger update schema
+ */
+export const updateLedgerSchama = createUpdateSchema(ledger)
+
+/**
+ * ledger insert schema
+ */
+export const insertLedgerSchema = createInsertSchema(ledger, {
   name: field => field.min(3).max(500)
 })
   .required()
   .omit({
     id: true,
-    userId: true,
     createdAt: true,
     updatedAt: true
   })
+
+export type SelectLedgerRequest = z.infer<typeof selectLedgerSchema>
+export type UpdateLedgerRequest = z.infer<typeof updateLedgerSchama>
+export type InsertLedgerRequest = z.infer<typeof insertLedgerSchema>
 
 /**
  * transaction select schema

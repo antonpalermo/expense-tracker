@@ -4,14 +4,32 @@ import { zValidator } from "@hono/zod-validator"
 
 import type { AppBindings } from "@/lib/types"
 import { LedgerService } from "@/services/ledger.service"
-import { insertTransactionSchema } from "@/database/schema"
+import { insertLedgerSchema, insertTransactionSchema } from "@/database/schema"
 
 import * as HTTPStatus from "../status-codes"
 
 const factory = createFactory<AppBindings>()
 
 /**
- * ledger that handles creation of transaction entry.
+ * create ledger handler.
+ */
+export const createLedger = factory.createHandlers(
+  zValidator("json", insertLedgerSchema),
+  async ctx => {
+    const user = ctx.get("user")
+    const payload = ctx.req.valid("json")
+
+    const data = await LedgerService.createLedger({
+      ...payload,
+      userId: user.id
+    })
+
+    return ctx.json(data, HTTPStatus.CREATED)
+  }
+)
+
+/**
+ * create ledger transaction entry handler.
  */
 export const createTransaction = factory.createHandlers(
   zValidator("param", z.object({ id: z.string() })),
@@ -24,7 +42,7 @@ export const createTransaction = factory.createHandlers(
     const param = ctx.req.valid("param")
     const payload = ctx.req.valid("json")
 
-    const data = await LedgerService.create({
+    const data = await LedgerService.createTransaction({
       ...payload,
       userId: user.id,
       ledgerId: param.id
