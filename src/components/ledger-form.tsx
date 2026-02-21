@@ -7,17 +7,17 @@ import {
   FieldLabel
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { createLedgerSchema, type Ledger } from "@/database/schema"
+import { insertLedgerSchema, type InsertLedgerRequest } from "@/database/schema"
 
 export default function LedgerForm() {
-  const defaultValues: Pick<Ledger, "name"> = {
+  const defaultValues: Pick<InsertLedgerRequest, "name"> = {
     name: ""
   }
 
   const form = useForm({
     defaultValues,
     validators: {
-      onSubmit: createLedgerSchema
+      onSubmit: insertLedgerSchema
     },
     onSubmit: async ({ value }) => {
       const request = await fetch("/api/ledgers", {
