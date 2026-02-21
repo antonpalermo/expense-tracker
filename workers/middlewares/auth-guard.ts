@@ -7,7 +7,18 @@ import type { AppBindings } from "../lib/types"
 import * as HTTPStatus from "../status-codes"
 import * as HTTPPhrases from "../status-phrases"
 
-export const session = createMiddleware<AppBindings>(async (ctx, next) => {
+export const authGuard = createMiddleware<AppBindings>(async (ctx, next) => {
+  const currentPath = ctx.req.path
+  const WHITELISTED_PATHS = ["/api/auth"]
+
+  const isPathWhitelisted = WHITELISTED_PATHS.some(path =>
+    currentPath.startsWith(path)
+  )
+
+  if (isPathWhitelisted) {
+    return await next()
+  }
+
   const session = await auth.api.getSession({ headers: ctx.req.raw.headers })
 
   if (!session) {

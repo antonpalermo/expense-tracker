@@ -1,14 +1,15 @@
-import { createRoute } from "./lib/create-route"
+import { createRoute } from "@/lib/create-route"
 
-import { onError } from "./middlewares/on-error"
-import { database } from "./middlewares/database"
+import { onError } from "@/middlewares/on-error"
+import { database } from "@/middlewares/database"
+import { authGuard } from "@/middlewares/auth-guard"
 
-import authRoutes from "./routes/auth"
-import ledgerRoutes from "./routes/ledger.route"
+import authRoutes from "@/routes/auth"
+import ledgerRoutes from "@/routes/ledger.route"
 
 const app = createRoute().basePath("/api")
 
-app.use(database)
+app.use(authGuard).use(database)
 app.onError(onError)
 
 const routes = [authRoutes, ledgerRoutes] as const
