@@ -3,10 +3,11 @@ import { createFactory } from "hono/factory"
 import { zValidator } from "@hono/zod-validator"
 
 import type { AppBindings } from "@/lib/types"
+
 import { LedgerService } from "@/services/ledger.service"
 import { insertLedgerSchema, insertTransactionSchema } from "@/database/schema"
 
-import * as HTTPStatus from "../status-codes"
+import * as HTTPStatus from "@/status-codes"
 
 const factory = createFactory<AppBindings>()
 
@@ -27,6 +28,20 @@ export const createLedger = factory.createHandlers(
     return ctx.json(data, HTTPStatus.CREATED)
   }
 )
+
+/**
+ * gets all ledger created by current user.
+ */
+export const getUserLedgers = factory.createHandlers(async ctx => {
+  const user = ctx.get("user")
+
+  try {
+    const ledgers = await LedgerService.getUserLedgers(user.id)
+    return ctx.json(ledgers, HTTPStatus.OK)
+  } catch (error) {
+    console.log(error)
+  }
+})
 
 /**
  * create ledger transaction entry handler.
