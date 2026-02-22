@@ -21,6 +21,19 @@ export const LedgerService = {
   },
 
   /**
+   *
+   * @param id
+   * @returns
+   */
+  async getLedger(id: string) {
+    const data = await db.query.ledger.findFirst({
+      where: eq(ledger.id, id)
+    })
+
+    return data
+  },
+
+  /**
    * get ledgers by user id
    * @param userId ledger owner
    * @returns all user created ledgers along with the default selected.

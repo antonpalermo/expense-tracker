@@ -1,13 +1,16 @@
 import z from "zod"
-import { createFactory } from "hono/factory"
 import { zValidator } from "@hono/zod-validator"
+import { createFactory } from "hono/factory"
+import { HTTPException } from "hono/http-exception"
 
 import type { AppBindings } from "@/lib/types"
 
 import { LedgerService } from "@/services/ledger.service"
 import { insertLedgerSchema, insertTransactionSchema } from "@/database/schema"
+import { validateIDParam } from "@/middlewares/validate-id"
 
 import * as HTTPStatus from "@/status-codes"
+import * as HTTPPhrases from "@/status-phrases"
 
 const factory = createFactory<AppBindings>()
 
@@ -30,17 +33,31 @@ export const createLedger = factory.createHandlers(
 )
 
 /**
+ *
+ */
+export const getLedger = factory.createHandlers(validateIDParam, async ctx => {
+  const { id } = ctx.req.valid("param")
+
+  const data = await LedgerService.getLedger(id)
+
+  if (!data) {
+    throw new HTTPException(HTTPStatus.NOT_FOUND, {
+      cause: HTTPPhrases.NOT_FOUND
+    })
+  }
+
+  return ctx.json(data, HTTPStatus.OK)
+})
+
+/**
  * gets all ledger created by current user.
  */
-export const getUserLedgers = factory.createHandlers(async ctx => {
+export const getLedgers = factory.createHandlers(async ctx => {
   const user = ctx.get("user")
 
-  try {
-    const ledgers = await LedgerService.getUserLedgers(user.id)
-    return ctx.json(ledgers, HTTPStatus.OK)
-  } catch (error) {
-    console.log(error)
-  }
+  const ledgers = await LedgerService.getUserLedgers(user.id)
+
+  return ctx.json(ledgers, HTTPStatus.OK)
 })
 
 /**

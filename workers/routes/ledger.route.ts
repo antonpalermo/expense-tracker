@@ -6,7 +6,9 @@ const routes = createRoute().basePath("/ledgers")
 
 routes
   // get all ledgers created currently authenticated user.
-  .get("/", ...handler.getUserLedgers)
+  .get("/", ...handler.getLedgers)
+  // get specific ledger
+  .get("/:id", ...handler.getLedger)
   // creates a new ledger.
   .post("/", ...handler.createLedger)
   // creates a new ledger transaction.
