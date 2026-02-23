@@ -207,6 +207,11 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
   })
 }))
 
+export const updateMetadataSchema = createUpdateSchema(metadata)
+
+export type MetadataDefaults = typeof metadata.$inferSelect.defaults
+export type UpdateMetadataRequest = z.infer<typeof updateMetadataSchema>
+
 /**
  * ledger select schema
  */
