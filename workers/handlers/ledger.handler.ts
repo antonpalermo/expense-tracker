@@ -1,4 +1,3 @@
-import z from "zod"
 import { zValidator } from "@hono/zod-validator"
 import { createFactory } from "hono/factory"
 import { HTTPException } from "hono/http-exception"
@@ -64,7 +63,7 @@ export const getLedgers = factory.createHandlers(async ctx => {
  * create ledger transaction entry handler.
  */
 export const createTransaction = factory.createHandlers(
-  zValidator("param", z.object({ id: z.string() })),
+  validateIDParam,
   // we remove the userId from validation since we're getting
   // the user id in the context.
   zValidator("json", insertTransactionSchema.omit({ userId: true })),
