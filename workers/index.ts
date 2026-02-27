@@ -1,7 +1,6 @@
 import { createRoute } from "@/lib/create-route"
 
 import { onError } from "@/middlewares/on-error"
-import { database } from "@/middlewares/database"
 import { authGuard } from "@/middlewares/auth-guard"
 
 import authRoutes from "@/routes/auth"
@@ -10,7 +9,7 @@ import metadataRoutes from "@/routes/metadata.route"
 
 const app = createRoute().basePath("/api")
 
-app.use(authGuard).use(database)
+app.use(authGuard)
 app.onError(onError)
 
 const routes = [authRoutes, ledgerRoutes, metadataRoutes] as const

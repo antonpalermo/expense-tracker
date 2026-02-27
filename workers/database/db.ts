@@ -3,7 +3,7 @@ import { drizzle } from "drizzle-orm/neon-serverless"
 
 import { env } from "cloudflare:workers"
 
-import * as schema from "@/database/schema"
+import * as schema from "@/database/schemas"
 
 const pool = new Pool({ connectionString: env.DATABASE_URL })
 

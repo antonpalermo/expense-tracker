@@ -1,16 +1,17 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { drizzle } from "drizzle-orm/neon-http"
 
 import { env } from "cloudflare:workers"
 
 import * as schema from "../database/schema"
+import { db } from "@/database/db"
 
 export const auth = betterAuth({
   appName: "Expense Tracker",
-  database: drizzleAdapter(drizzle(env.DATABASE_URL), {
+  database: drizzleAdapter(db, {
     provider: "pg",
-    schema
+    schema,
+    transaction: true
   }),
   baseURL: env.BETTER_AUTH_URL,
   secret: env.BETTER_AUTH_SECRET,
