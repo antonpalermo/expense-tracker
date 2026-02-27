@@ -2,7 +2,7 @@ import { createFactory } from "hono/factory"
 
 import { MetadataService } from "@/services/metadata.service"
 import { zValidator } from "@hono/zod-validator"
-import { updateMetadataSchema } from "@/database/schema"
+import { updateMetadataSchema } from "@/database/schemas"
 import type { AppBindings } from "@/lib/types"
 import { HTTPException } from "hono/http-exception"
 

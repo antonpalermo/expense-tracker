@@ -1,12 +1,12 @@
-import { db } from "@/lib/db"
+import { db } from "@/database/db"
 import {
   ledger,
   metadata,
   transaction,
   user,
-  type InsertLedgerRequest,
-  type InsertTransactionRequest
-} from "@/database/schema"
+  type LedgerFields,
+  type TransactionFields
+} from "@/database/schemas"
 import { eq } from "drizzle-orm"
 
 export const LedgerService = {
@@ -15,7 +15,7 @@ export const LedgerService = {
    * @param data ledger data to be created
    * @returns created ledger details
    */
-  async createLedger(data: InsertLedgerRequest) {
+  async createLedger(data: LedgerFields) {
     const [ledgerData] = await db.insert(ledger).values(data).returning()
     return ledgerData
   },
@@ -73,7 +73,7 @@ export const LedgerService = {
    * @param data transaction data to be created
    * @returns created transaction details
    */
-  async createTransaction(data: InsertTransactionRequest) {
+  async createTransaction(data: TransactionFields) {
     const [transactionData] = await db
       .insert(transaction)
       .values(data)

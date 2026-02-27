@@ -3,7 +3,7 @@ import { createRoute } from "@/lib/create-route"
 import { onError } from "@/middlewares/on-error"
 import { authGuard } from "@/middlewares/auth-guard"
 
-import authRoutes from "@/routes/auth"
+import authRoutes from "@/routes/auth.route"
 import ledgerRoutes from "@/routes/ledger.route"
 import metadataRoutes from "@/routes/metadata.route"
 

@@ -1,3 +1,4 @@
+import z from "zod"
 import { relations } from "drizzle-orm"
 import {
   pgTable,
@@ -7,6 +8,11 @@ import {
   index,
   uniqueIndex
 } from "drizzle-orm/pg-core"
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema
+} from "drizzle-zod"
 
 import { nanoid } from "@/lib/nanoid"
 import { user } from "@/database/schemas/user"
@@ -41,3 +47,11 @@ export const metadataRelations = relations(metadata, ({ one }) => ({
     references: [user.id]
   })
 }))
+
+export const selectMetadataSchema = createSelectSchema(metadata)
+export const insertMetadataSchema = createInsertSchema(metadata)
+export const updateMetadataSchema = createUpdateSchema(metadata)
+
+export type Metadata = z.infer<typeof selectMetadataSchema>
+export type MetadataFields = z.infer<typeof insertMetadataSchema>
+export type MetadataOptional = z.infer<typeof updateMetadataSchema>

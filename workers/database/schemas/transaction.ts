@@ -1,5 +1,11 @@
+import z from "zod"
 import { relations } from "drizzle-orm"
 import { pgTable, text, numeric, timestamp } from "drizzle-orm/pg-core"
+import {
+  createSelectSchema,
+  createInsertSchema,
+  createUpdateSchema
+} from "drizzle-zod"
 
 import { nanoid } from "@/lib/nanoid"
 
@@ -37,3 +43,11 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
     references: [ledger.id]
   })
 }))
+
+export const selectTransactionSchema = createSelectSchema(transaction)
+export const insertTransactionSchema = createInsertSchema(transaction)
+export const updateTransactionSchema = createUpdateSchema(transaction)
+
+export type Transaction = z.infer<typeof selectTransactionSchema>
+export type TransactionFields = z.infer<typeof insertTransactionSchema>
+export type TransactionOptional = z.infer<typeof updateTransactionSchema>

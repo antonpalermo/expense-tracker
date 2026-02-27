@@ -5,7 +5,7 @@ import { HTTPException } from "hono/http-exception"
 import type { AppBindings } from "@/lib/types"
 
 import { LedgerService } from "@/services/ledger.service"
-import { insertLedgerSchema, insertTransactionSchema } from "@/database/schema"
+import { insertMetadataSchema, insertTransactionSchema } from "@/database/schemas"
 import { validateIDParam } from "@/middlewares/validate-id"
 
 import * as HTTPStatus from "@/status-codes"
@@ -17,7 +17,7 @@ const factory = createFactory<AppBindings>()
  * create ledger handler.
  */
 export const createLedger = factory.createHandlers(
-  zValidator("json", insertLedgerSchema),
+  zValidator("json", insertMetadataSchema),
   async ctx => {
     const user = ctx.get("user")
     const payload = ctx.req.valid("json")

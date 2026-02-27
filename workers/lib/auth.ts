@@ -3,7 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle"
 
 import { env } from "cloudflare:workers"
 
-import * as schema from "../database/schema"
+import * as schema from "@/database/schemas"
 import { db } from "@/database/db"
 
 export const auth = betterAuth({

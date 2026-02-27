@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
 
-import { db } from "@/lib/db"
-import { metadata } from "@/database/schema"
+import { db } from "@/database/db"
+import { metadata } from "@/database/schemas"
 
 export const MetadataService = {
   /**
