@@ -25,9 +25,7 @@
       "indexes": {
         "transaction_id_unique": {
           "name": "transaction_id_unique",
-          "columns": [
-            "id"
-          ],
+          "columns": ["id"],
           "isUnique": true
         }
       },
