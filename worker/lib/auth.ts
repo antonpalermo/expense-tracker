@@ -14,7 +14,13 @@ const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "sqlite",
     schema: schemas
-  })
+  }),
+  socialProviders: {
+    google: {
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET
+    }
+  }
 })
 // comment until here!
 
