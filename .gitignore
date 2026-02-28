@@ -25,3 +25,8 @@ dist-ssr
 
 # wrangler
 .wrangler
+
+# environment variables
+.env
+.env.local
+.env.production
