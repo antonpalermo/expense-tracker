@@ -2,5 +2,5 @@ node_modules
 dist
 .wrangler
 .tanstack
-routeTree.gen.ts
+**/*.gen.ts
 worker-configuration.d.ts
