@@ -15,6 +15,13 @@
       "when": 1772289988802,
       "tag": "0001_dashing_excalibur",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1772444502883,
+      "tag": "0002_ambiguous_famine",
+      "breakpoints": true
     }
   ]
 }
