@@ -1,14 +1,20 @@
 import * as React from "react"
 
 export default function App() {
-  const [count, setCount] = React.useState(0)
+  const [result, setResult] = React.useState()
+
+  React.useEffect(() => {
+    async function getEntries() {
+      const response = await fetch("/api/entries")
+      setResult(await response.json())
+    }
+
+    getEntries()
+  }, [])
 
   return (
     <div>
-      <span>{count}</span>
-      <button onClick={() => setCount(current => current + 1)}>
-        increment
-      </button>
+      <span>{JSON.stringify(result, null, 2)}</span>
     </div>
   )
 }
