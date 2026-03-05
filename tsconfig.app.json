@@ -26,7 +26,8 @@
 
     "baseUrl": ".",
     "paths": {
-      "@client/*": ["./www/*"]
+      "@client/*": ["./www/*"],
+      "@workers/*": ["./worker/*"]
     }
   },
   "include": ["www"]

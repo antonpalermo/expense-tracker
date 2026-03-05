@@ -1,4 +1,7 @@
+import z from "zod"
+
 import { relations, sql } from "drizzle-orm"
+import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core"
 
 import { createId } from "@paralleldrive/cuid2"
@@ -32,3 +35,8 @@ export const entryRelations = relations(entry, ({ one }) => ({
     references: [user.id]
   })
 }))
+
+export type Entry = z.infer<typeof selectEntrySchema>
+
+export const selectEntrySchema = createSelectSchema(entry)
+export const insertEntrySchema = createInsertSchema(entry)
