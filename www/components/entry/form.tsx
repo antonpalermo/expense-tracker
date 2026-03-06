@@ -1,70 +1,83 @@
+import * as React from "react"
+
 import { useForm } from "@tanstack/react-form"
-
 import { insertEntrySchema } from "@workers/database/schemas"
-import React from "react"
-import type z from "zod"
-
-type Entry = z.infer<typeof insertEntrySchema>
 
 export default function EntryForm() {
-  const defaultValues: Pick<Entry, "name"> = {
+  const [result, setResult] = React.useState()
+  const defaultValues = {
     name: ""
   }
 
   const form = useForm({
     defaultValues,
     validators: {
-      onBlur: insertEntrySchema
+      onChange: insertEntrySchema.omit({ userId: true })
     },
     onSubmit: async ({ value }) => {
-      console.log(value)
+      const request = await fetch("/api/entries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(value)
+      })
+
+      if (!request.ok) {
+        throw new Error("Unable to create new entry!")
+      }
+
+      setResult(await request.json())
     }
   })
 
   return (
-    <form
-      onSubmit={e => {
-        e.preventDefault()
-        e.stopPropagation()
+    <React.Fragment>
+      {JSON.stringify(result)}
+      <form
+        onSubmit={e => {
+          e.preventDefault()
+          e.stopPropagation()
 
-        form.handleSubmit()
-      }}
-    >
-      <form.Field
-        name="name"
-        children={field => (
-          <React.Fragment>
-            <label htmlFor={field.name}>Name</label>
-            <input
-              id={field.name}
-              name={field.name}
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={e => field.handleChange(e.target.value)}
-            />
-          </React.Fragment>
-        )}
-      />
-      <form.Subscribe
-        selector={state => [state.canSubmit, state.isSubmitting]}
-        children={([canSubmit, isSubmitting]) => (
-          <React.Fragment>
-            <button type="submit" disabled={!canSubmit}>
-              {isSubmitting ? "..." : "Submit"}
-            </button>
-            <button
-              type="reset"
-              onClick={e => {
-                // Avoid unexpected resets of form elements (especially <select> elements)
-                e.preventDefault()
-                form.reset()
-              }}
-            >
-              Reset
-            </button>
-          </React.Fragment>
-        )}
-      />
-    </form>
+          form.handleSubmit()
+        }}
+      >
+        <form.Field
+          name="name"
+          children={field => (
+            <React.Fragment>
+              <label htmlFor={field.name}>Name</label>
+              <input
+                id={field.name}
+                name={field.name}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={e => field.handleChange(e.target.value)}
+              />
+            </React.Fragment>
+          )}
+        />
+        <form.Subscribe
+          selector={state => [state.canSubmit, state.isSubmitting]}
+          children={([canSubmit, isSubmitting]) => (
+            <React.Fragment>
+              <button type="submit" disabled={!canSubmit}>
+                {isSubmitting ? "..." : "Submit"}
+              </button>
+              <button
+                type="reset"
+                onClick={e => {
+                  // Avoid unexpected resets of form elements (especially <select> elements)
+                  e.preventDefault()
+                  form.reset()
+                }}
+              >
+                Reset
+              </button>
+            </React.Fragment>
+          )}
+        />
+      </form>
+    </React.Fragment>
   )
 }
