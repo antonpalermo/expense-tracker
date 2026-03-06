@@ -38,5 +38,19 @@ export const entryRelations = relations(entry, ({ one }) => ({
 
 export type Entry = z.infer<typeof selectEntrySchema>
 
-export const selectEntrySchema = createSelectSchema(entry)
-export const insertEntrySchema = createInsertSchema(entry)
+export const selectEntrySchema = createSelectSchema(entry, {
+  id: z.string(),
+  name: z.string(),
+  userId: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date()
+})
+
+export const insertEntrySchema = createInsertSchema(entry, {
+  name: z.string(),
+  userId: z.string()
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+})
