@@ -10,6 +10,13 @@ import * as EntryService from "@workers/services/entry.service"
 
 const factory = createFactory<AppBindings>()
 
+export const getEntries = factory.createHandlers(async ctx => {
+  const user = ctx.get("user")
+  const entries = await EntryService.getEntries(user.id)
+
+  return ctx.json(entries, HTTPStatus.OK)
+})
+
 export const createEntry = factory.createHandlers(
   zValidator("json", insertEntrySchema.omit({ userId: true })),
   async ctx => {
