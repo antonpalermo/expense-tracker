@@ -1,0 +1,44 @@
+name: application deployment
+run-name: pull request ${{github.event.number}} is currently being deployed by ${{github.actor}}
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  deployment:
+    name: "wrangler deployment"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+
+      - name: installing dependencies
+        run: bun install --production
+
+      - name: building application for production use
+        run: bun run build
+
+      - name: deploying application
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          secrets: |
+            BETTER_AUTH_URL
+            BETTER_AUTH_SECRET
+            GOOGLE_CLIENT_ID
+            GOOGLE_CLIENT_SECRET
+          packageManager: bun
+          wranglerVersion: 4.71.0
+          command: |
+            d1 migrations apply ${{secrets.PROJECT_NAME}} --remote
+
+        env:
+          BETTER_AUTH_URL: ${{secrets.BETTER_AUTH_URL}}
+          BETTER_AUTH_SECRET: ${{secrets.BETTER_AUTH_SECRET}}
+          GOOGLE_CLIENT_ID: ${{secrets.GOOGLE_CLIENT_ID}}
+          GOOGLE_CLIENT_SECRET: ${{secrets.GOOGLE_CLIENT_SECRET}}
