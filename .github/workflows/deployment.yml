@@ -35,6 +35,7 @@ jobs:
           packageManager: bun
           wranglerVersion: 4.71.0
           command: |
+            deploy
             d1 migrations apply ${{secrets.PROJECT_NAME}} --remote
 
         env:
