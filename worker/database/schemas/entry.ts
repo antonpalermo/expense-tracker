@@ -5,7 +5,9 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core"
 
 import { createId } from "@paralleldrive/cuid2"
+
 import { user } from "./auth"
+import { ledger } from "./ledger"
 
 export const entry = sqliteTable(
   "entry",
@@ -18,6 +20,9 @@ export const entry = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    ledgerId: text("ledger_id")
+      .notNull()
+      .references(() => ledger.id, { onDelete: "cascade" }),
     createdAt: integer("created_at", { mode: "timestamp_ms" })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
@@ -26,13 +31,20 @@ export const entry = sqliteTable(
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull()
   },
-  table => [index("entry_userId_idx").on(table.userId)]
+  table => [
+    index("entry_userId_idx").on(table.userId),
+    index("entry_ledgerId_idx").on(table.ledgerId)
+  ]
 )
 
 export const entryRelations = relations(entry, ({ one }) => ({
   user: one(user, {
     fields: [entry.userId],
     references: [user.id]
+  }),
+  ledger: one(ledger, {
+    fields: [entry.ledgerId],
+    references: [ledger.id]
   })
 }))
 
