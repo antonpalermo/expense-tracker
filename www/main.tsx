@@ -4,6 +4,8 @@ import { createRouter, RouterProvider } from "@tanstack/react-router"
 
 import { routeTree } from "@client/routeTree.gen"
 
+import "@client/globals.css"
+
 const root = document.getElementById("root") as HTMLElement
 const router = createRouter({ routeTree })
 
