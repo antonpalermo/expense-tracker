@@ -7,8 +7,9 @@ import {
 
 import App from "@client/components/app"
 import { authClient, logout } from "@client/lib/auth-client"
+import LedgerDialog from "@client/components/ledger-dialog"
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_dashboardLayout/")({
   component: RouteComponent,
   beforeLoad: async ({ location }) => {
     const { data: session } = await authClient.getSession()
@@ -35,6 +36,7 @@ function RouteComponent() {
 
   return (
     <div>
+      <LedgerDialog />
       <App />
       <button
         onClick={async () =>
