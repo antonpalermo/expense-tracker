@@ -9,18 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardLayoutRouteRouteImport } from './routes/_dashboardLayout/route'
 import { Route as AuthLayoutRouteRouteImport } from './routes/_authLayout/route'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardLayoutIndexRouteImport } from './routes/_dashboardLayout/index'
 import { Route as AuthLayoutLoginRouteImport } from './routes/_authLayout/login'
 
+const DashboardLayoutRouteRoute = DashboardLayoutRouteRouteImport.update({
+  id: '/_dashboardLayout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthLayoutRouteRoute = AuthLayoutRouteRouteImport.update({
   id: '/_authLayout',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const DashboardLayoutIndexRoute = DashboardLayoutIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => DashboardLayoutRouteRoute,
 } as any)
 const AuthLayoutLoginRoute = AuthLayoutLoginRouteImport.update({
   id: '/login',
@@ -29,34 +34,47 @@ const AuthLayoutLoginRoute = AuthLayoutLoginRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof DashboardLayoutIndexRoute
   '/login': typeof AuthLayoutLoginRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof DashboardLayoutIndexRoute
   '/login': typeof AuthLayoutLoginRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_authLayout': typeof AuthLayoutRouteRouteWithChildren
+  '/_dashboardLayout': typeof DashboardLayoutRouteRouteWithChildren
   '/_authLayout/login': typeof AuthLayoutLoginRoute
+  '/_dashboardLayout/': typeof DashboardLayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/login'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/login'
-  id: '__root__' | '/' | '/_authLayout' | '/_authLayout/login'
+  id:
+    | '__root__'
+    | '/_authLayout'
+    | '/_dashboardLayout'
+    | '/_authLayout/login'
+    | '/_dashboardLayout/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AuthLayoutRouteRoute: typeof AuthLayoutRouteRouteWithChildren
+  DashboardLayoutRouteRoute: typeof DashboardLayoutRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_dashboardLayout': {
+      id: '/_dashboardLayout'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof DashboardLayoutRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authLayout': {
       id: '/_authLayout'
       path: ''
@@ -64,12 +82,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLayoutRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_dashboardLayout/': {
+      id: '/_dashboardLayout/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof DashboardLayoutIndexRouteImport
+      parentRoute: typeof DashboardLayoutRouteRoute
     }
     '/_authLayout/login': {
       id: '/_authLayout/login'
@@ -93,9 +111,20 @@ const AuthLayoutRouteRouteWithChildren = AuthLayoutRouteRoute._addFileChildren(
   AuthLayoutRouteRouteChildren,
 )
 
+interface DashboardLayoutRouteRouteChildren {
+  DashboardLayoutIndexRoute: typeof DashboardLayoutIndexRoute
+}
+
+const DashboardLayoutRouteRouteChildren: DashboardLayoutRouteRouteChildren = {
+  DashboardLayoutIndexRoute: DashboardLayoutIndexRoute,
+}
+
+const DashboardLayoutRouteRouteWithChildren =
+  DashboardLayoutRouteRoute._addFileChildren(DashboardLayoutRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AuthLayoutRouteRoute: AuthLayoutRouteRouteWithChildren,
+  DashboardLayoutRouteRoute: DashboardLayoutRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
