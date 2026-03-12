@@ -4,9 +4,12 @@ import {
   DialogHeader,
   DialogContent,
   DialogTrigger,
-  DialogDescription
+  DialogDescription,
+  DialogFooter
 } from "@client/components/ui/dialog"
-import { Button } from "./ui/button"
+import { Button } from "@client/components/ui/button"
+
+import LedgerForm from "@client/components/ledger-form"
 
 export default function LedgerDialog() {
   return (
@@ -21,6 +24,13 @@ export default function LedgerDialog() {
             Lorem ipsum dolor sit amet, consectetur adipiscing elit.
           </DialogDescription>
         </DialogHeader>
+        <LedgerForm />
+        <DialogFooter>
+          <Button variant="ghost">Cancel</Button>
+          <Button type="submit" form="ledger-form">
+            Create
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
