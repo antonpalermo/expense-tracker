@@ -1,4 +1,6 @@
+import { toast } from "sonner"
 import { useForm } from "@tanstack/react-form"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { Input } from "@client/components/ui/input"
 import { Field, FieldGroup, FieldLabel } from "@client/components/ui/field"
@@ -7,11 +9,41 @@ export default function LedgerForm() {
   const defaultData = {
     name: ""
   }
+  const queryClient = useQueryClient()
+  const createLedger = useMutation({
+    mutationFn: async (ledger: { name: string }) => {
+      toast.promise(
+        async () => {
+          const request = await fetch("/api/ledgers", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(ledger)
+          })
+
+          if (!request.ok) {
+            throw new Error("unable to create ledger")
+          }
+
+          return await request.json()
+        },
+        {
+          loading: "creating new ledger...",
+          success: data => `${data.name} ledger successfully created`,
+          error: "Unable to create new ledger."
+        }
+      )
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ledgers"] })
+    }
+  })
 
   const form = useForm({
     defaultValues: defaultData,
     onSubmit: async ({ value }) => {
-      console.log(value)
+      await createLedger.mutateAsync(value)
     }
   })
 
