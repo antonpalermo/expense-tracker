@@ -4,7 +4,7 @@ import { HTTPException } from "hono/http-exception"
 import type { AppBindings } from "@workers/types"
 import { zValidator } from "@hono/zod-validator"
 import { insertLedgerSchema } from "@workers/database/schemas/ledger"
-import { createLedger } from "@workers/services/ledger.service"
+import { createLedger, getLedgers } from "@workers/services/ledger.service"
 
 import * as HTTPStatus from "@workers/status-codes"
 import * as HTTPPhrases from "@workers/status-phrases"
@@ -13,7 +13,11 @@ const routes = new Hono<AppBindings>({ strict: false }).basePath("/ledgers")
 
 routes
   .get("/", async ctx => {
-    return ctx.json({ msg: "get ledgers" })
+    const user = ctx.get("user")
+
+    const ledgers = await getLedgers(user.id)
+
+    return ctx.json(ledgers, HTTPStatus.OK)
   })
   .post(
     "/",

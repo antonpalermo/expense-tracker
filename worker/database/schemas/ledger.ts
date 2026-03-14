@@ -5,7 +5,7 @@ import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core"
 
 import { user } from "./auth"
 import { entry } from "./entry"
-import { createInsertSchema } from "drizzle-zod"
+import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import z from "zod"
 
 export const ledger = sqliteTable(
@@ -38,8 +38,7 @@ export const ledgerRelations = relations(ledger, ({ one, many }) => ({
   entries: many(entry)
 }))
 
-export type LedgerInput = z.infer<typeof insertLedgerSchema>
-
+export const selectLedgerSchema = createSelectSchema(ledger)
 export const insertLedgerSchema = createInsertSchema(ledger, {
   name: z.string(),
   userId: z.string()
@@ -48,3 +47,5 @@ export const insertLedgerSchema = createInsertSchema(ledger, {
   createdAt: true,
   updatedAt: true
 })
+
+export type LedgerInput = z.infer<typeof insertLedgerSchema>
