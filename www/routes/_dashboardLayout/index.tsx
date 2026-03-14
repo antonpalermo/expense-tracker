@@ -8,6 +8,8 @@ import {
 import App from "@client/components/app"
 import { authClient, logout } from "@client/lib/auth-client"
 import LedgerDialog from "@client/components/ledger-dialog"
+import useLedgers from "@client/hooks/use-ledgers"
+// import LedgerSelector from "@client/components/ledger-selector"
 
 export const Route = createFileRoute("/_dashboardLayout/")({
   component: RouteComponent,
@@ -34,8 +36,16 @@ function RouteComponent() {
     from: "/"
   })
 
+  const { data, isPending } = useLedgers()
+
+  if (isPending) {
+    // TODO: use skeleton here
+    return <h1>Loading...</h1>
+  }
+
   return (
     <div>
+      {JSON.stringify(data)}
       <LedgerDialog />
       <App />
       <button
