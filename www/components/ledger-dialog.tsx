@@ -3,20 +3,17 @@ import {
   DialogTitle,
   DialogHeader,
   DialogContent,
-  DialogTrigger,
   DialogDescription,
   DialogFooter
 } from "@client/components/ui/dialog"
 import { Button } from "@client/components/ui/button"
+import { createLedgerDialogHandle } from "@client/components/dialog-registry"
 
 import LedgerForm from "@client/components/ledger-form"
 
 export default function LedgerDialog() {
   return (
-    <Dialog>
-      <DialogTrigger>
-        <Button>Create</Button>
-      </DialogTrigger>
+    <Dialog handle={createLedgerDialogHandle}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create new ledger</DialogTitle>
