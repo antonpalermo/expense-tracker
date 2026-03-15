@@ -11,6 +11,8 @@ import {
 import { Button } from "@client/components/ui/button"
 
 import { selectLedgerSchema } from "@workers/database/schemas"
+import { DialogTrigger } from "./ui/dialog"
+import { createLedgerDialogHandle } from "./dialog-registry"
 
 export type LedgerSelectorProps = {
   ledgers: z.infer<typeof selectLedgerSchema>[]
@@ -32,6 +34,9 @@ export default function LedgerSelector({ ledgers }: LedgerSelectorProps) {
           {availableLedgers}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        <DialogTrigger className="w-full" handle={createLedgerDialogHandle}>
+          <DropdownMenuItem>Create</DropdownMenuItem>
+        </DialogTrigger>
       </DropdownMenuContent>
     </DropdownMenu>
   )

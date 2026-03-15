@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { Input } from "@client/components/ui/input"
 import { Field, FieldGroup, FieldLabel } from "@client/components/ui/field"
+import { createLedgerDialogHandle } from "./dialog-registry"
 
 export default function LedgerForm() {
   const defaultData = {
@@ -30,7 +31,10 @@ export default function LedgerForm() {
         },
         {
           loading: "creating new ledger...",
-          success: data => `${data.name} ledger successfully created`,
+          success: data => {
+            createLedgerDialogHandle.close()
+            return `${data.name} ledger successfully created`
+          },
           error: "Unable to create new ledger."
         }
       )
