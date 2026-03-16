@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm"
 import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core"
 
 import { ledger } from "./ledger"
+import { metadata } from "./metadata"
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
@@ -89,10 +90,11 @@ export const verification = sqliteTable(
   table => [index("verification_identifier_idx").on(table.identifier)]
 )
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ many, one }) => ({
   ledgers: many(ledger),
   sessions: many(session),
-  accounts: many(account)
+  accounts: many(account),
+  metadata: one(metadata)
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
