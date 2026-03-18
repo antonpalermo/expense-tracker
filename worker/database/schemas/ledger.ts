@@ -1,14 +1,14 @@
 import { createId } from "@paralleldrive/cuid2"
 
 import { relations, sql } from "drizzle-orm"
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core"
+import { pgTable, text, integer, index } from "drizzle-orm/pg-core"
 
 import { user } from "./auth"
 import { entry } from "./entry"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import z from "zod"
 
-export const ledger = sqliteTable(
+export const ledger = pgTable(
   "ledger",
   {
     id: text()
