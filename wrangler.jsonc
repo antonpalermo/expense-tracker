@@ -9,14 +9,6 @@
     "not_found_handling": "single-page-application"
   },
   "compatibility_flags": ["nodejs_compat"],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "xpens",
-      "database_id": "7a235dad-2021-4743-bb64-098a319a5b3f",
-      "migrations_dir": "./drizzle/migrations"
-    }
-  ],
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1,
