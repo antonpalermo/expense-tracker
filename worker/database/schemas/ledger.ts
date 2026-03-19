@@ -1,12 +1,11 @@
+import z from "zod"
+import { relations } from "drizzle-orm"
 import { createId } from "@paralleldrive/cuid2"
-
-import { relations, sql } from "drizzle-orm"
-import { pgTable, text, integer, index } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, index } from "drizzle-orm/pg-core"
+import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 
 import { user } from "./auth"
 import { entry } from "./entry"
-import { createInsertSchema, createSelectSchema } from "drizzle-zod"
-import z from "zod"
 
 export const ledger = pgTable(
   "ledger",
@@ -19,11 +18,9 @@ export const ledger = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    createdAt: integer("created_at", { mode: "timestamp_ms" })
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-      .notNull(),
-    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull()
   },
