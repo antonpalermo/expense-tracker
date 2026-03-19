@@ -1,15 +1,15 @@
 import z from "zod"
 
-import { relations, sql } from "drizzle-orm"
+import { relations } from "drizzle-orm"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core"
+import { pgTable, text, timestamp, index } from "drizzle-orm/pg-core"
 
 import { createId } from "@paralleldrive/cuid2"
 
 import { user } from "./auth"
 import { ledger } from "./ledger"
 
-export const entry = sqliteTable(
+export const entry = pgTable(
   "entry",
   {
     id: text()
@@ -23,11 +23,9 @@ export const entry = sqliteTable(
     ledgerId: text("ledger_id")
       .notNull()
       .references(() => ledger.id, { onDelete: "cascade" }),
-    createdAt: integer("created_at", { mode: "timestamp_ms" })
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-      .notNull(),
-    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull()
   },
