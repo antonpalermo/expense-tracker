@@ -1,6 +1,9 @@
 import { relations } from "drizzle-orm"
 import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core"
 
+import { ledger } from "./ledger"
+import { metadata } from "./metadata"
+
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -73,9 +76,11 @@ export const verification = pgTable(
   table => [index("verification_identifier_idx").on(table.identifier)]
 )
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
-  accounts: many(account)
+  accounts: many(account),
+  ledgers: many(ledger),
+  metadata: one(metadata)
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
