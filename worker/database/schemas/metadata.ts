@@ -1,7 +1,13 @@
 import { createId } from "@paralleldrive/cuid2"
 
-import { relations } from "drizzle-orm"
-import { jsonb, text, index, timestamp, pgTable } from "drizzle-orm/pg-core"
+import { relations, sql } from "drizzle-orm"
+import {
+  sqliteTable,
+  blob,
+  text,
+  index,
+  integer
+} from "drizzle-orm/sqlite-core"
 
 import { user } from "./auth"
 
@@ -9,7 +15,7 @@ export type Defaults = {
   ledgerId: string
 }
 
-export const metadata = pgTable(
+export const metadata = sqliteTable(
   "metadata",
   {
     id: text()
@@ -20,10 +26,12 @@ export const metadata = pgTable(
       .notNull()
       .unique()
       .references(() => user.id, { onDelete: "cascade" }),
-    defauts: jsonb().$type<Defaults>(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
+    defauts: blob({ mode: "json" }).$type<Defaults>(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull()
   },
