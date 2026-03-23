@@ -28,7 +28,8 @@
     {
       "binding": "DATABASE",
       "database_name": "xpens",
-      "database_id": "21f01b85-b493-4add-b415-4b3b655d1649"
+      "database_id": "21f01b85-b493-4add-b415-4b3b655d1649",
+      "migrations_dir": "./drizzle"
     }
   ]
 }
