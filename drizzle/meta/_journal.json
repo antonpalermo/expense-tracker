@@ -8,6 +8,13 @@
       "when": 1774278526862,
       "tag": "0000_low_strong_guy",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1774364681895,
+      "tag": "0001_ledger_trigger",
+      "breakpoints": true
     }
   ]
 }
