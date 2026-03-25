@@ -36,16 +36,19 @@ function RouteComponent() {
     from: "/"
   })
 
-  const { data, isPending } = useLedgers()
+  const { data, isPending, isError } = useLedgers()
+
+  if (isError) {
+    throw new Error("unable to fetch all ledgers")
+  }
 
   if (isPending) {
-    // TODO: use skeleton here
-    return <h1>Loading...</h1>
+    return <div>Loading...</div>
   }
 
   return (
     <div>
-      <LedgerSelector ledgers={data} />
+      <LedgerSelector data={data} />
       <LedgerDialog />
       <App />
       <button

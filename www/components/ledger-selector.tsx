@@ -15,18 +15,25 @@ import { DialogTrigger } from "./ui/dialog"
 import { createLedgerDialogHandle } from "./dialog-registry"
 
 export type LedgerSelectorProps = {
-  ledgers: z.infer<typeof selectLedgerSchema>[]
+  data: {
+    default: string
+    ledgers: z.infer<typeof selectLedgerSchema>[]
+  }
 }
 
-export default function LedgerSelector({ ledgers }: LedgerSelectorProps) {
-  const availableLedgers = ledgers.map(ledger => (
+export default function LedgerSelector({ data }: LedgerSelectorProps) {
+  const defaultSelected = data.ledgers.find(
+    ledger => ledger.id === data.default
+  )
+
+  const availableLedgers = data.ledgers.map(ledger => (
     <DropdownMenuItem key={ledger.id}>{ledger.name}</DropdownMenuItem>
   ))
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <Button variant="outline">Select Ledger</Button>
+        <Button variant="outline">{defaultSelected?.name}</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>

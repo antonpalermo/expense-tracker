@@ -1,6 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
+import type { selectLedgerSchema } from "@workers/database/schemas"
+import type z from "zod"
 
-async function getLedgers() {
+async function getLedgers(): Promise<{
+  default: string
+  ledgers: z.infer<typeof selectLedgerSchema>[]
+}> {
   const request = await fetch("/api/ledgers")
   if (!request.ok) {
     throw new Error("unable to fetch ledgers")
@@ -9,15 +14,11 @@ async function getLedgers() {
 }
 
 export default function useLedgers() {
-  const { isError, ...rest } = useQuery({
+  const result = useQuery({
     queryKey: ["ledgers"],
     queryFn: getLedgers,
     staleTime: Infinity
   })
 
-  if (isError) {
-    throw new Error("unable to fetch ledgers")
-  }
-
-  return rest
+  return result
 }
