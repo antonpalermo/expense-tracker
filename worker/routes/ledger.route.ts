@@ -54,7 +54,7 @@ routes
       try {
         const result = await db
           .update(metadata)
-          .set({ defauts: { ledgerId: id } })
+          .set({ defaults: { ledgerId: id } })
           .where(eq(metadata.userId, user.id))
         return ctx.json(result)
       } catch (error) {

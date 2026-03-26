@@ -1,6 +1,6 @@
 {
-  "id": "a65edfd8-1935-461a-97c4-de21acf7b692",
-  "prevId": "912f8c34-333a-48a1-8ebb-8aff6a7c05e9",
+  "id": "1d48bea3-67a2-45b6-875b-20337061a391",
+  "prevId": "8c1feef7-d1d3-4a9c-8bf4-11b83fe4a700",
   "version": "6",
   "dialect": "sqlite",
   "tables": {
@@ -552,9 +552,9 @@
           "notNull": true,
           "autoincrement": false
         },
-        "defauts": {
-          "name": "defauts",
-          "type": "blob",
+        "defaults": {
+          "name": "defaults",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
