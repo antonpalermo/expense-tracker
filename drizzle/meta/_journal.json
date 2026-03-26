@@ -5,22 +5,15 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1774278526862,
-      "tag": "0000_low_strong_guy",
+      "when": 1774539988740,
+      "tag": "0000_freezing_peter_quill",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "6",
-      "when": 1774364681895,
-      "tag": "0001_ledger_trigger",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1774539325157,
-      "tag": "0002_even_queen_noir",
+      "when": 1774540021795,
+      "tag": "0001_set_default_ledger_trigger",
       "breakpoints": true
     }
   ]

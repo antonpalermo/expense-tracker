@@ -14,7 +14,7 @@ export async function getLedgers(userId: string) {
       with: {
         ledgers: true,
         metadata: {
-          columns: { defauts: true }
+          columns: { defaults: true }
         }
       }
     })
@@ -24,7 +24,7 @@ export async function getLedgers(userId: string) {
     }
 
     return {
-      default: result.metadata?.defauts?.ledgerId,
+      default: result.metadata?.defaults?.ledgerId,
       ledgers: result.ledgers
     }
   } catch (error) {
@@ -54,7 +54,7 @@ export async function updateDefaultLedger(data: {
   try {
     const result = await db
       .update(metadata)
-      .set({ defauts: { ledgerId: data.ledgerId } })
+      .set({ defaults: { ledgerId: data.ledgerId } })
       .where(eq(metadata.userId, data.userId))
 
     return result

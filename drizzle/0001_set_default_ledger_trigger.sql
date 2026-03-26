@@ -1,5 +1,5 @@
 -- Custom SQL migration file, put your code below! --
-DROP TRIGGER IF EXISTS trg_after_insert_ledger;
+DROP TRIGGER IF EXISTS set_default_ledger_trigger;
 
 -- this trigger will set use the user_id as id to create a new metadata record
 -- if user_id exist then update the existing record.
@@ -14,8 +14,8 @@ VALUES
   ) ON CONFLICT (user_id) DO
 UPDATE
 SET
-  defauts = json_set (
-    COALESCE(metadata.defauts, json ('{}')),
+  defaults = json_set (
+    COALESCE(metadata.defaults, json ('{}')),
     '$.ledgerId',
     NEW.id
   );

@@ -20,7 +20,7 @@ export const metadata = sqliteTable(
       .notNull()
       .unique()
       .references(() => user.id, { onDelete: "cascade" }),
-    defauts: text("defaults", { mode: "json" }).$type<Defaults>(),
+    defaults: text("defaults", { mode: "json" }).$type<Defaults>(),
     createdAt: integer("created_at", { mode: "timestamp_ms" })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
