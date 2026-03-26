@@ -13,6 +13,7 @@ import { Button } from "@client/components/ui/button"
 import { selectLedgerSchema } from "@workers/database/schemas"
 import { DialogTrigger } from "./ui/dialog"
 import { createLedgerDialogHandle } from "./dialog-registry"
+import { useMutation } from "@tanstack/react-query"
 
 export type LedgerSelectorProps = {
   data: {
@@ -22,12 +23,32 @@ export type LedgerSelectorProps = {
 }
 
 export default function LedgerSelector({ data }: LedgerSelectorProps) {
+  const setDefaultLedgerMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const request = await fetch(`/api/ledgers/defaults/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+
+      if (!request.ok) {
+        throw new Error("unable to update default ledger")
+      }
+    }
+  })
+
   const defaultSelected = data.ledgers.find(
     ledger => ledger.id === data.default
   )
 
   const availableLedgers = data.ledgers.map(ledger => (
-    <DropdownMenuItem key={ledger.id}>{ledger.name}</DropdownMenuItem>
+    <DropdownMenuItem
+      key={ledger.id}
+      onClick={() => setDefaultLedgerMutation.mutate(ledger.id)}
+    >
+      {ledger.name}
+    </DropdownMenuItem>
   ))
 
   return (

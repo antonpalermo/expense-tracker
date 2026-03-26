@@ -1,5 +1,5 @@
 import { db } from "@workers/database/db"
-import { user } from "@workers/database/schemas"
+import { metadata, user } from "@workers/database/schemas"
 import { ledger, type LedgerInput } from "@workers/database/schemas/ledger"
 import { eq } from "drizzle-orm"
 import { HTTPException } from "hono/http-exception"
@@ -43,6 +43,22 @@ export async function createLedger(input: LedgerInput) {
     return result[0]
   } catch (error) {
     // TODO: improve logging here.
+    console.log(error)
+  }
+}
+
+export async function updateDefaultLedger(data: {
+  ledgerId: string
+  userId: string
+}) {
+  try {
+    const result = await db
+      .update(metadata)
+      .set({ defauts: { ledgerId: data.ledgerId } })
+      .where(eq(metadata.userId, data.userId))
+
+    return result
+  } catch (error) {
     console.log(error)
   }
 }
