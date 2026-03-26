@@ -8,6 +8,10 @@ import { createLedger, getLedgers } from "@workers/services/ledger.service"
 
 import * as HTTPStatus from "@workers/status-codes"
 import * as HTTPPhrases from "@workers/status-phrases"
+import z from "zod"
+import { db } from "@workers/database/db"
+import { metadata } from "@workers/database/schemas"
+import { eq } from "drizzle-orm"
 
 const routes = new Hono<AppBindings>({ strict: false }).basePath("/ledgers")
 
@@ -38,6 +42,25 @@ routes
       })
 
       return ctx.json(ledger, HTTPStatus.CREATED)
+    }
+  )
+  .patch(
+    "/defaults/:id",
+    zValidator("param", z.object({ id: z.cuid2() })),
+    async ctx => {
+      const user = ctx.get("user")
+      const { id } = ctx.req.valid("param")
+
+      try {
+        const result = await db
+          .update(metadata)
+          .set({ defauts: { ledgerId: id } })
+          .where(eq(metadata.userId, user.id))
+        return ctx.json(result)
+      } catch (error) {
+        console.log(error)
+        throw new HTTPException(HTTPStatus.SERVICE_UNAVAILABLE)
+      }
     }
   )
 

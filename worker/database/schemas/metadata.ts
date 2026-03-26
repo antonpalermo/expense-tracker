@@ -1,13 +1,7 @@
 import { createId } from "@paralleldrive/cuid2"
 
 import { relations, sql } from "drizzle-orm"
-import {
-  sqliteTable,
-  blob,
-  text,
-  index,
-  integer
-} from "drizzle-orm/sqlite-core"
+import { sqliteTable, text, index, integer } from "drizzle-orm/sqlite-core"
 
 import { user } from "./auth"
 
@@ -26,7 +20,7 @@ export const metadata = sqliteTable(
       .notNull()
       .unique()
       .references(() => user.id, { onDelete: "cascade" }),
-    defauts: blob({ mode: "json" }).$type<Defaults>(),
+    defauts: text("defaults", { mode: "json" }).$type<Defaults>(),
     createdAt: integer("created_at", { mode: "timestamp_ms" })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),

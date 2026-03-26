@@ -5,7 +5,7 @@ DROP TRIGGER IF EXISTS trg_after_insert_ledger;
 -- if user_id exist then update the existing record.
 CREATE TRIGGER IF NOT EXISTS set_default_ledger_trigger AFTER INSERT ON ledger BEGIN
 INSERT INTO
-  metadata (id, defauts, user_id)
+  metadata (id, defaults, user_id)
 VALUES
   (
     NEW.user_id,
