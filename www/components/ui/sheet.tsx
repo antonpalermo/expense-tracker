@@ -70,8 +70,7 @@ function SheetContent({
               />
             }
           >
-            <IconX
-            />
+            <IconX />
             <span className="sr-only">Close</span>
           </SheetPrimitive.Close>
         )}
@@ -131,5 +130,5 @@ export {
   SheetHeader,
   SheetFooter,
   SheetTitle,
-  SheetDescription,
+  SheetDescription
 }

@@ -48,14 +48,14 @@ function BreadcrumbLink({
     defaultTagName: "a",
     props: mergeProps<"a">(
       {
-        className: cn("transition-colors hover:text-foreground", className),
+        className: cn("transition-colors hover:text-foreground", className)
       },
       props
     ),
     render,
     state: {
-      slot: "breadcrumb-link",
-    },
+      slot: "breadcrumb-link"
+    }
   })
 }
 
@@ -85,9 +85,7 @@ function BreadcrumbSeparator({
       className={cn("[&>svg]:size-3.5", className)}
       {...props}
     >
-      {children ?? (
-        <IconChevronRight />
-      )}
+      {children ?? <IconChevronRight />}
     </li>
   )
 }
@@ -107,8 +105,7 @@ function BreadcrumbEllipsis({
       )}
       {...props}
     >
-      <IconDots
-      />
+      <IconDots />
       <span className="sr-only">More</span>
     </span>
   )
@@ -121,5 +118,5 @@ export {
   BreadcrumbLink,
   BreadcrumbPage,
   BreadcrumbSeparator,
-  BreadcrumbEllipsis,
+  BreadcrumbEllipsis
 }
