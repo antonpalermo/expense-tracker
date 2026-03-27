@@ -18,7 +18,9 @@ function RouteComponent() {
             <SidebarTrigger className="-ml-1" />
           </div>
         </header>
-        <Outlet />
+        <div className="px-4">
+          <Outlet />
+        </div>
       </SidebarInset>
     </React.Fragment>
   )
