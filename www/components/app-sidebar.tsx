@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Sidebar, SidebarHeader } from "./ui/sidebar"
-import LedgerSelector from "./ledger-selector"
+import LedgerSwitcher from "./ledger-switcher"
 
 export default function AppSidebar({
   ...props
@@ -8,7 +8,7 @@ export default function AppSidebar({
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
-        <LedgerSelector />
+        <LedgerSwitcher />
       </SidebarHeader>
     </Sidebar>
   )
