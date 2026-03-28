@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import App from "@client/components/app"
 import { authClient } from "@client/lib/auth-client"
+import LedgerDialog from "@client/components/ledger-dialog"
 
 export const Route = createFileRoute("/_dashboardLayout/")({
   component: RouteComponent,
@@ -21,5 +21,5 @@ export const Route = createFileRoute("/_dashboardLayout/")({
 })
 
 function RouteComponent() {
-  return <App />
+  return <LedgerDialog />
 }
