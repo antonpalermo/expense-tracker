@@ -25,10 +25,30 @@ import { useSidebar } from "@client/hooks/use-sidebar"
 import { createLedgerDialogHandle } from "./dialog-registry"
 import { DialogTrigger } from "./ui/dialog"
 import { cn } from "@client/lib/utils"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 export default function LedgerSwitcher() {
   const { isMobile } = useSidebar()
   const { data, isPending, isError } = useLedgers()
+
+  const queryClient = useQueryClient()
+  const setLedgerMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const request = await fetch(`/api/ledgers/defaults/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+
+      if (!request.ok) {
+        throw new Error("unable to set default ledger")
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ledgers"] })
+    }
+  })
 
   if (isPending) {
     return <Skeleton className="w-56 h-12" />
@@ -44,7 +64,11 @@ export default function LedgerSwitcher() {
     const isCurrentLedger = currentLedger?.id === ledger.id
 
     return (
-      <DropdownMenuItem key={ledger.id} className="gap-2 p-2 ">
+      <DropdownMenuItem
+        key={ledger.id}
+        className="gap-2 p-2 "
+        onClick={async () => await setLedgerMutation.mutateAsync(ledger.id)}
+      >
         <div className="flex size-6 items-center justify-center rounded-md border">
           <IconFilePercent className="size-3.5 shrink-0" />
         </div>
