@@ -3,7 +3,7 @@ import { HTTPException } from "hono/http-exception"
 
 import type { AppBindings } from "@workers/types"
 import { zValidator } from "@hono/zod-validator"
-import { insertLedgerSchema } from "@workers/database/schemas/ledger"
+import { insertLedgerSchema, ledger } from "@workers/database/schemas/ledger"
 import { createLedger, getLedgers } from "@workers/services/ledger.service"
 
 import * as HTTPStatus from "@workers/status-codes"
@@ -63,5 +63,22 @@ routes
       }
     }
   )
+  .get("/:id", zValidator("param", z.object({ id: z.cuid2() })), async ctx => {
+    const { id } = ctx.req.valid("param")
+    try {
+      const result = await db.query.ledger.findFirst({
+        where: eq(ledger.id, id)
+      })
+
+      if (!result) {
+        return ctx.notFound()
+      }
+
+      return ctx.json(result)
+    } catch (error) {
+      console.log(error)
+      throw new HTTPException(HTTPStatus.SERVICE_UNAVAILABLE)
+    }
+  })
 
 export default routes
