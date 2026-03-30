@@ -13,31 +13,19 @@ export default function LedgerForm() {
   const queryClient = useQueryClient()
   const createLedger = useMutation({
     mutationFn: async (ledger: { name: string }) => {
-      toast.promise(
-        async () => {
-          const request = await fetch("/api/ledgers", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(ledger)
-          })
-
-          if (!request.ok) {
-            throw new Error("unable to create ledger")
-          }
-
-          return await request.json()
+      const request = await fetch("/api/ledgers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
         },
-        {
-          loading: "creating new ledger...",
-          success: data => {
-            createLedgerDialogHandle.close()
-            return `${data.name} ledger successfully created`
-          },
-          error: "Unable to create new ledger."
-        }
-      )
+        body: JSON.stringify(ledger)
+      })
+
+      if (!request.ok) {
+        throw new Error("unable to create ledger")
+      }
+
+      return await request.json()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ledgers"] })
@@ -47,7 +35,19 @@ export default function LedgerForm() {
   const form = useForm({
     defaultValues: defaultData,
     onSubmit: async ({ value }) => {
-      await createLedger.mutateAsync(value)
+      toast.promise(
+        async () => {
+          await createLedger.mutateAsync(value)
+        },
+        {
+          loading: "creating new ledger...",
+          success: () => {
+            createLedgerDialogHandle.close()
+            return `${value.name} ledger successfully created`
+          },
+          error: "Unable to create new ledger."
+        }
+      )
     }
   })
 
