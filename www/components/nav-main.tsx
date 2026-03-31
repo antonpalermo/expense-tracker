@@ -19,7 +19,7 @@ export type MainNavProps = {
   items: NavItem[]
 }
 
-export default function MainNav({ items }: MainNavProps) {
+export default function NavMain({ items }: MainNavProps) {
   const plaformNav = items.map(nav => (
     <SidebarMenuItem key={nav.label}>
       <SidebarMenuButton
