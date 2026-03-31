@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { routeTree } from "@client/routeTree.gen"
 
 import { Toaster } from "@client/components/ui/sonner"
-import { SidebarProvider } from "@client/components/ui/sidebar"
 
 import "@client/globals.css"
 
@@ -24,10 +23,8 @@ declare module "@tanstack/react-router" {
 createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={client}>
-      <SidebarProvider>
-        <RouterProvider router={router} />
-        <Toaster />
-      </SidebarProvider>
+      <RouterProvider router={router} />
+      <Toaster />
     </QueryClientProvider>
   </StrictMode>
 )
