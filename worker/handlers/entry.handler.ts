@@ -25,6 +25,7 @@ export const createEntry = factory.createHandlers(
 
     const entry = await EntryService.createEntry({
       name: data.name,
+      ledgerId: "",
       userId: user.id
     })
 
