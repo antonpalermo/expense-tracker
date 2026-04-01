@@ -9,6 +9,7 @@ import {
   DialogClose
 } from "./ui/dialog"
 import { Button } from "./ui/button"
+import EntryForm from "./entry-form"
 
 export default function EntryDialog() {
   return (
@@ -18,6 +19,7 @@ export default function EntryDialog() {
           <DialogTitle>Create new entry</DialogTitle>
           <DialogDescription>Creates a new ledger entry</DialogDescription>
         </DialogHeader>
+        <EntryForm />
         <DialogFooter>
           <DialogClose render={<Button variant="ghost">Cancel</Button>} />
           <Button type="submit" form="ledger-form">
