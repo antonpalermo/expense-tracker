@@ -15,6 +15,13 @@
       "when": 1774540021795,
       "tag": "0001_set_default_ledger_trigger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1775145711031,
+      "tag": "0002_demonic_bill_hollister",
+      "breakpoints": true
     }
   ]
 }

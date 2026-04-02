@@ -2,7 +2,13 @@ import z from "zod"
 
 import { relations, sql } from "drizzle-orm"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core"
+import {
+  sqliteTable,
+  text,
+  integer,
+  index,
+  real
+} from "drizzle-orm/sqlite-core"
 
 import { createId } from "@paralleldrive/cuid2"
 
@@ -16,7 +22,8 @@ export const entry = sqliteTable(
       .$defaultFn(() => createId())
       .unique()
       .primaryKey(),
-    name: text().notNull(),
+    amount: real().notNull(),
+    description: text().notNull(),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
@@ -52,14 +59,16 @@ export type Entry = z.infer<typeof selectEntrySchema>
 
 export const selectEntrySchema = createSelectSchema(entry, {
   id: z.string(),
-  name: z.string(),
+  amount: z.coerce.number(),
+  description: z.string(),
   userId: z.string(),
   createdAt: z.date(),
   updatedAt: z.date()
 })
 
 export const insertEntrySchema = createInsertSchema(entry, {
-  name: z.string(),
+  amount: z.coerce.number(),
+  description: z.string(),
   userId: z.string()
 }).omit({
   id: true,
