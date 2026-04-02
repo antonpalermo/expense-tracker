@@ -22,7 +22,7 @@ export default function EntryDialog() {
         <EntryForm />
         <DialogFooter>
           <DialogClose render={<Button variant="ghost">Cancel</Button>} />
-          <Button type="submit" form="ledger-form">
+          <Button type="submit" form="entry-form">
             Create
           </Button>
         </DialogFooter>

@@ -14,11 +14,21 @@ export default function EntryForm() {
     defaultValues: {
       description: "",
       amount: ""
+    },
+    onSubmit: async value => {
+      console.log(value)
     }
   })
 
   return (
-    <form id="entry-form">
+    <form
+      id="entry-form"
+      onSubmit={e => {
+        e.preventDefault()
+        e.stopPropagation()
+        form.handleSubmit()
+      }}
+    >
       <FieldGroup>
         <form.Field
           name="amount"
