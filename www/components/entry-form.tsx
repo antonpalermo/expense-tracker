@@ -8,15 +8,55 @@ import {
   InputGroupTextarea
 } from "./ui/input-group"
 import { IconCurrencyPeso } from "@tabler/icons-react"
+import { useMutation } from "@tanstack/react-query"
+import { toast } from "sonner"
+import { createEntryDialogHandle } from "./dialog-registry"
+import useLedgers from "@client/hooks/use-ledgers"
 
 export default function EntryForm() {
+  const { data } = useLedgers()
+
+  const createEntryMutation = useMutation({
+    mutationFn: async (details: {
+      ledgerId: string
+      entry: { amount: string; description: string }
+    }) => {
+      const request = await fetch(`/api/ledgers/${data?.default}/entries`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(details.entry)
+      })
+
+      if (!request.ok) {
+        throw new Error("unable to create ledger entries")
+      }
+    }
+  })
+
   const form = useForm({
     defaultValues: {
-      description: "",
-      amount: ""
+      amount: "",
+      description: ""
     },
-    onSubmit: async value => {
-      console.log(value)
+    onSubmit: async ({ value }) => {
+      toast.promise(
+        async () => {
+          await createEntryMutation.mutateAsync({
+            ledgerId: "",
+            entry: value
+          })
+        },
+        {
+          loading: "creating ledger entry...",
+          success: () => {
+            createEntryDialogHandle.close()
+            return "ledger entry created"
+          },
+          error: "unable to create ledger entry"
+        }
+      )
     }
   })
 

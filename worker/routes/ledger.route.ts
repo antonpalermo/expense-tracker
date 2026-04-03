@@ -10,7 +10,7 @@ import * as HTTPStatus from "@workers/status-codes"
 import * as HTTPPhrases from "@workers/status-phrases"
 import z from "zod"
 import { db } from "@workers/database/db"
-import { metadata } from "@workers/database/schemas"
+import { entry, metadata } from "@workers/database/schemas"
 import { eq } from "drizzle-orm"
 
 const routes = new Hono<AppBindings>({ strict: false }).basePath("/ledgers")
@@ -80,5 +80,31 @@ routes
       throw new HTTPException(HTTPStatus.SERVICE_UNAVAILABLE)
     }
   })
+  .post(
+    "/:ledgerId/entries",
+    zValidator("param", z.object({ ledgerId: z.cuid2() })),
+    zValidator(
+      "json",
+      z.object({
+        amount: z.coerce.number(),
+        description: z.string()
+      })
+    ),
+    async ctx => {
+      const user = ctx.get("user")
+      const body = ctx.req.valid("json")
+
+      const { ledgerId } = ctx.req.valid("param")
+
+      const result = await db.insert(entry).values({
+        amount: body.amount,
+        description: body.description,
+        ledgerId,
+        userId: user.id
+      })
+
+      return ctx.json(result, HTTPStatus.CREATED)
+    }
+  )
 
 export default routes
