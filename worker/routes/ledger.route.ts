@@ -80,6 +80,27 @@ routes
       throw new HTTPException(HTTPStatus.SERVICE_UNAVAILABLE)
     }
   })
+  .get(
+    "/:ledgerId/entries",
+    zValidator("param", z.object({ ledgerId: z.cuid2() })),
+    async ctx => {
+      const { ledgerId } = ctx.req.valid("param")
+
+      const result = await db.query.entry.findMany({
+        where: eq(entry.ledgerId, ledgerId),
+        with: {
+          user: {
+            columns: {
+              name: true,
+              image: true
+            }
+          }
+        }
+      })
+
+      return ctx.json(result)
+    }
+  )
   .post(
     "/:ledgerId/entries",
     zValidator("param", z.object({ ledgerId: z.cuid2() })),
