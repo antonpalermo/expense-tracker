@@ -7,13 +7,14 @@ import entriesRroutes from "@workers/routes/entry.route"
 import ledgersRoutes from "@workers/routes/ledger.route"
 
 import authGuard from "@workers/middlewares/auth-guard"
+import dependecyInjection from "@workers/middlewares/dependency-injection"
 
 const app = new Hono({ strict: false }).basePath("/api")
 
 app.use(logger())
 app.use(secureHeaders())
 
-app.use(authGuard)
+app.use(authGuard).use(dependecyInjection)
 
 const routes = [authRoutes, entriesRroutes, ledgersRoutes]
 

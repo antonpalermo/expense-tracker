@@ -27,6 +27,7 @@
     "@tanstack/react-form": "^1.28.4",
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-router": "^1.163.3",
+    "awilix": "^13.0.3",
     "better-auth": "^1.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
