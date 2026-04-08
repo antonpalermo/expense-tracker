@@ -8,13 +8,14 @@ import {
   InputGroupTextarea
 } from "./ui/input-group"
 import { IconCurrencyPeso } from "@tabler/icons-react"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { createEntryDialogHandle } from "./dialog-registry"
 import useLedgers from "@client/hooks/use-ledgers"
 
 export default function EntryForm() {
   const { data } = useLedgers()
+  const queryClient = useQueryClient()
 
   const createEntryMutation = useMutation({
     mutationFn: async (details: {
@@ -32,6 +33,9 @@ export default function EntryForm() {
       if (!request.ok) {
         throw new Error("unable to create ledger entries")
       }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["entries"] })
     }
   })
 
