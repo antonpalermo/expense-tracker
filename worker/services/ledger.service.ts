@@ -1,37 +1,7 @@
 import { db } from "@workers/database/db"
-import { metadata, user } from "@workers/database/schemas"
+import { metadata } from "@workers/database/schemas"
 import { ledger, type LedgerInput } from "@workers/database/schemas/ledger"
 import { eq } from "drizzle-orm"
-import { HTTPException } from "hono/http-exception"
-
-import * as HTTPStatus from "@workers/status-codes"
-
-export async function getLedgers(userId: string) {
-  try {
-    const result = await db.query.user.findFirst({
-      where: eq(user.id, userId),
-      columns: {},
-      with: {
-        ledgers: true,
-        metadata: {
-          columns: { defaults: true }
-        }
-      }
-    })
-
-    if (!result) {
-      throw new HTTPException(HTTPStatus.NOT_FOUND)
-    }
-
-    return {
-      default: result.metadata?.defaults?.ledgerId,
-      ledgers: result.ledgers
-    }
-  } catch (error) {
-    // TODO: improve logging here.
-    console.log(error)
-  }
-}
 
 export async function createLedger(input: LedgerInput) {
   try {
