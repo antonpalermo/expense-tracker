@@ -4,11 +4,8 @@ import { HTTPException } from "hono/http-exception"
 
 import type { AppBindings } from "@workers/types"
 import { zValidator } from "@hono/zod-validator"
-import { insertLedgerSchema } from "@workers/database/schemas/ledger"
-import { createLedger } from "@workers/services/ledger.service"
 
 import * as HTTPStatus from "@workers/status-codes"
-import * as HTTPPhrases from "@workers/status-phrases"
 import * as handler from "@workers/handlers/ledger.handler"
 
 import { eq } from "drizzle-orm"
@@ -18,29 +15,9 @@ import { entry, metadata } from "@workers/database/schemas"
 const routes = new Hono<AppBindings>({ strict: false }).basePath("/ledgers")
 
 routes
+  .post("/", ...handler.createLedger)
   .get("/", ...handler.getLedgers)
   .get("/:id", ...handler.getLedger)
-  .post(
-    "/",
-    zValidator("json", insertLedgerSchema.omit({ userId: true }), result => {
-      if (!result.success) {
-        throw new HTTPException(HTTPStatus.BAD_REQUEST, {
-          message: HTTPPhrases.BAD_REQUEST
-        })
-      }
-    }),
-    async ctx => {
-      const user = ctx.get("user")
-      const ledgerData = ctx.req.valid("json")
-
-      const ledger = await createLedger({
-        name: ledgerData.name,
-        userId: user.id
-      })
-
-      return ctx.json(ledger, HTTPStatus.CREATED)
-    }
-  )
   .patch(
     "/defaults/:id",
     zValidator("param", z.object({ id: z.cuid2() })),
