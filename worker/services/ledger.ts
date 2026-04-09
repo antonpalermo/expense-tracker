@@ -1,14 +1,20 @@
+import type z from "zod"
 import { eq } from "drizzle-orm"
 
 import { db } from "@workers/database/db"
 import {
   ledger as ledgerSchema,
+  user as userSchema,
   selectLedgerSchema,
-  user as userSchema
+  insertLedgerSchema
 } from "@workers/database/schemas"
-import type z from "zod"
 
 export class LedgerService {
+  async createLedger(details: z.infer<typeof insertLedgerSchema>) {
+    const [ledger] = await db.insert(ledgerSchema).values(details).returning()
+    return ledger
+  }
+
   async getLedger(id: string) {
     return await db.query.ledger.findFirst({
       where: eq(ledgerSchema.id, id),
