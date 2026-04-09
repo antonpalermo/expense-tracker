@@ -5,7 +5,7 @@ import { HTTPException } from "hono/http-exception"
 import type { AppBindings } from "@workers/types"
 import { zValidator } from "@hono/zod-validator"
 import { insertLedgerSchema } from "@workers/database/schemas/ledger"
-import { createLedger, getLedgers } from "@workers/services/ledger.service"
+import { createLedger } from "@workers/services/ledger.service"
 
 import * as HTTPStatus from "@workers/status-codes"
 import * as HTTPPhrases from "@workers/status-phrases"
@@ -18,13 +18,8 @@ import { entry, metadata } from "@workers/database/schemas"
 const routes = new Hono<AppBindings>({ strict: false }).basePath("/ledgers")
 
 routes
-  .get("/", async ctx => {
-    const user = ctx.get("user")
-
-    const ledgers = await getLedgers(user.id)
-
-    return ctx.json(ledgers, HTTPStatus.OK)
-  })
+  .get("/", ...handler.getLedgers)
+  .get("/:id", ...handler.getLedger)
   .post(
     "/",
     zValidator("json", insertLedgerSchema.omit({ userId: true }), result => {
@@ -65,7 +60,6 @@ routes
       }
     }
   )
-  .get("/:id", ...handler.getLedger)
   .get(
     "/:ledgerId/entries",
     zValidator("param", z.object({ ledgerId: z.cuid2() })),
