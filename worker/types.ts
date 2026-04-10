@@ -1,6 +1,7 @@
 import type { AwilixContainer } from "awilix"
+
 import auth from "@workers/lib/auth"
-import type { LedgerService } from "@workers/services/ledger"
+import type { Cradle } from "@workers/container"
 
 export type Session = typeof auth.$Infer.Session
 
@@ -9,6 +10,6 @@ export type AppBindings = {
   Variables: {
     user: Session["user"]
     session: Session["session"]
-    container: AwilixContainer<{ ledgerService: LedgerService }>
+    container: AwilixContainer<Cradle>
   }
 }

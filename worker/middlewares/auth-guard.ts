@@ -10,6 +10,7 @@ import type { AppBindings } from "@workers/types"
 const factory = createFactory<AppBindings>()
 
 const authGuard = factory.createMiddleware(async (ctx, next) => {
+  const container = ctx.get("container")
   const currentRoute = ctx.req.path
   const publicRoutes = ["/api/auth"]
 
@@ -30,6 +31,10 @@ const authGuard = factory.createMiddleware(async (ctx, next) => {
       message: HTTPPhrases.UNAUTHORIZED
     })
   }
+
+  const userService = container.resolve("userService")
+
+  userService.setUser(currentSession.user)
 
   ctx.set("user", currentSession.user)
   ctx.set("session", currentSession.session)
