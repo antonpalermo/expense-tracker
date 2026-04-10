@@ -1,11 +1,16 @@
 import { createContainer, asClass } from "awilix"
-import { LedgerService } from "./services/ledger"
+import { LedgerService } from "./services/ledger.service"
+import { UserService } from "./services/user.service"
 
-const container = createContainer<{
+export type Cradle = {
+  userService: UserService
   ledgerService: LedgerService
-}>({ strict: true })
+}
+
+const container = createContainer<Cradle>({ strict: true })
 
 container.register({
+  userService: asClass(UserService).singleton(),
   ledgerService: asClass(LedgerService).singleton()
 })
 

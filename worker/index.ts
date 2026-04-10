@@ -14,7 +14,7 @@ const app = new Hono({ strict: false }).basePath("/api")
 app.use(logger())
 app.use(secureHeaders())
 
-app.use(authGuard).use(dependecyInjection)
+app.use(dependecyInjection).use(authGuard)
 
 app.notFound(notFound)
 
