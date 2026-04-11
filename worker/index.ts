@@ -7,6 +7,7 @@ import ledgersRoutes from "@workers/routes/ledger.route"
 
 import authGuard from "@workers/middlewares/auth-guard"
 import dependecyInjection from "@workers/middlewares/dependency-injection"
+import notFound from "./middlewares/not-found"
 
 const app = new Hono({ strict: false }).basePath("/api")
 
@@ -14,6 +15,8 @@ app.use(logger())
 app.use(secureHeaders())
 
 app.use(authGuard).use(dependecyInjection)
+
+app.notFound(notFound)
 
 const routes = [authRoutes, ledgersRoutes]
 
