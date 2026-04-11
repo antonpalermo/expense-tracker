@@ -1,6 +1,5 @@
 import z from "zod"
 import { Hono } from "hono"
-import { HTTPException } from "hono/http-exception"
 
 import type { AppBindings } from "@workers/types"
 import { zValidator } from "@hono/zod-validator"
@@ -10,33 +9,15 @@ import * as handler from "@workers/handlers/ledger.handler"
 
 import { eq } from "drizzle-orm"
 import { db } from "@workers/database/db"
-import { entry, metadata } from "@workers/database/schemas"
+import { entry } from "@workers/database/schemas"
 
 const routes = new Hono<AppBindings>({ strict: false }).basePath("/ledgers")
 
 routes
-  .post("/", ...handler.createLedger)
   .get("/", ...handler.getLedgers)
+  .post("/", ...handler.createLedger)
   .get("/:id", ...handler.getLedger)
-  .patch(
-    "/defaults/:id",
-    zValidator("param", z.object({ id: z.cuid2() })),
-    async ctx => {
-      const user = ctx.get("user")
-      const { id } = ctx.req.valid("param")
-
-      try {
-        const result = await db
-          .update(metadata)
-          .set({ defaults: { ledgerId: id } })
-          .where(eq(metadata.userId, user.id))
-        return ctx.json(result)
-      } catch (error) {
-        console.log(error)
-        throw new HTTPException(HTTPStatus.SERVICE_UNAVAILABLE)
-      }
-    }
-  )
+  .patch("/defaults/:id", ...handler.setLedger)
   .get(
     "/:ledgerId/entries",
     zValidator("param", z.object({ ledgerId: z.cuid2() })),

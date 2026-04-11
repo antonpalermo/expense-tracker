@@ -20,7 +20,9 @@ const param = z.object({
   id: z.cuid2()
 })
 
-const validateLedgerInput = zValidator(
+const validateLedgerParam = zValidator("param", param)
+
+const validateLedgerBody = zValidator(
   "json",
   insertLedgerSchema.omit({ userId: true }),
   result => {
@@ -32,8 +34,23 @@ const validateLedgerInput = zValidator(
   }
 )
 
+export const setLedger = factory.createHandlers(
+  validateLedgerParam,
+  async ctx => {
+    const container = ctx.get("container")
+    const ledgerService = container.resolve("ledgerService")
+    const { id } = ctx.req.valid("param")
+
+    const ledger = await ledgerService.setLedger(id)
+
+    console.log(ledger)
+
+    return ctx.json({ message: "updated" })
+  }
+)
+
 export const createLedger = factory.createHandlers(
-  validateLedgerInput,
+  validateLedgerBody,
   async ctx => {
     const user = ctx.get("user")
     const container = ctx.get("container")

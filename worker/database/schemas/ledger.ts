@@ -2,7 +2,11 @@ import z from "zod"
 import { relations, sql } from "drizzle-orm"
 import { createId } from "@paralleldrive/cuid2"
 import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core"
-import { createInsertSchema, createSelectSchema } from "drizzle-zod"
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema
+} from "drizzle-zod"
 
 import { user } from "./auth"
 import { entry } from "./entry"
@@ -38,6 +42,7 @@ export const ledgerRelations = relations(ledger, ({ one, many }) => ({
 }))
 
 export const selectLedgerSchema = createSelectSchema(ledger)
+export const updateLedgerSchema = createUpdateSchema(ledger)
 export const insertLedgerSchema = createInsertSchema(ledger, {
   name: z.string(),
   userId: z.string()
