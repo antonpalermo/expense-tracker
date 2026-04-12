@@ -42,22 +42,33 @@ export class LedgerService {
       })
   }
 
-  async ownedLedgers(userId: string): Promise<
-    | {
-        default: z.infer<typeof selectLedgerSchema> | undefined
-        ledgers: z.infer<typeof selectLedgerSchema>[]
-      }
-    | undefined
-  > {
+  async getLedgers(): Promise<{
+    default: z.infer<typeof selectLedgerSchema> | undefined
+    ledgers: z.infer<typeof selectLedgerSchema>[]
+  }> {
+    const user = this.userService.getUser()
+    const metadata = db
+      .$with("metadata")
+      .as(
+        db
+          .select()
+          .from(metadataSchema)
+          .where(eq(metadataSchema.userId, user.id))
+      )
+
+    const ledgers = await db
+      .with(metadata)
+      .select()
+      .from(ledgerSchema)
+      .where(eq(ledgerSchema.userId, user.id))
+
+    console.log(ledgers)
+
     const userLedgers = await db.query.user.findFirst({
       columns: {},
-      where: eq(userSchema.id, userId),
+      where: eq(userSchema.id, user.id),
       with: { ledgers: true, metadata: { columns: { defaults: true } } }
     })
-
-    if (!userLedgers) {
-      return undefined
-    }
 
     const ledger = userLedgers.ledgers.find(
       ledger => ledger.id === userLedgers.metadata?.defaults?.ledgerId

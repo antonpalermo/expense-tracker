@@ -72,11 +72,10 @@ export const createLedger = factory.createHandlers(
 )
 
 export const getLedgers = factory.createHandlers(async ctx => {
-  const user = ctx.get("user")
   const container = ctx.get("container")
   const ledgerService = container.resolve("ledgerService")
 
-  const ledgers = await ledgerService.ownedLedgers(user.id)
+  const ledgers = await ledgerService.getLedgers()
 
   if (!ledgers) {
     // used unauthorized here since if the user is not
