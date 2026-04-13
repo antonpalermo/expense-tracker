@@ -3,10 +3,8 @@ import { eq } from "drizzle-orm"
 
 import { db } from "@workers/database/db"
 import {
-  user as userSchema,
   ledger as ledgerSchema,
   metadata as metadataSchema,
-  selectLedgerSchema,
   insertLedgerSchema
 } from "@workers/database/schemas"
 import type { Cradle } from "@workers/container"
@@ -42,41 +40,12 @@ export class LedgerService {
       })
   }
 
-  async getLedgers(): Promise<{
-    default: z.infer<typeof selectLedgerSchema> | undefined
-    ledgers: z.infer<typeof selectLedgerSchema>[]
-  }> {
+  async getLedgers() {
     const user = this.userService.getUser()
-    const metadata = db
-      .$with("metadata")
-      .as(
-        db
-          .select()
-          .from(metadataSchema)
-          .where(eq(metadataSchema.userId, user.id))
-      )
 
-    const ledgers = await db
-      .with(metadata)
+    return await db
       .select()
       .from(ledgerSchema)
       .where(eq(ledgerSchema.userId, user.id))
-
-    console.log(ledgers)
-
-    const userLedgers = await db.query.user.findFirst({
-      columns: {},
-      where: eq(userSchema.id, user.id),
-      with: { ledgers: true, metadata: { columns: { defaults: true } } }
-    })
-
-    const ledger = userLedgers.ledgers.find(
-      ledger => ledger.id === userLedgers.metadata?.defaults?.ledgerId
-    )
-
-    return {
-      default: ledger,
-      ledgers: userLedgers.ledgers
-    }
   }
 }

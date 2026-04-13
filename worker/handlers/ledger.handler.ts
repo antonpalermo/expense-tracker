@@ -1,5 +1,5 @@
 import z from "zod"
-import { setCookie } from "hono/cookie"
+import { getCookie, setCookie } from "hono/cookie"
 import { createFactory } from "hono/factory"
 import { HTTPException } from "hono/http-exception"
 
@@ -72,22 +72,17 @@ export const createLedger = factory.createHandlers(
 )
 
 export const getLedgers = factory.createHandlers(async ctx => {
+  const cookie = getCookie(ctx)
   const container = ctx.get("container")
   const ledgerService = container.resolve("ledgerService")
 
   const ledgers = await ledgerService.getLedgers()
 
-  if (!ledgers) {
-    // used unauthorized here since if the user is not
-    // authenticated there will be no result.
-    throw new HTTPException(HTTPStatus.UNAUTHORIZED)
-  }
+  const defaultLedger = ledgers.find(
+    ledger => ledger.id === cookie.default_ledger
+  )
 
-  if (ledgers.default) {
-    setCookie(ctx, "default_ledger", ledgers.default.id)
-  }
-
-  return ctx.json(ledgers, HTTPStatus.OK)
+  return ctx.json({ default: defaultLedger, ledgers }, HTTPStatus.OK)
 })
 
 export const getLedger = factory.createHandlers(
