@@ -82,6 +82,10 @@ export const getLedgers = factory.createHandlers(async ctx => {
     ledger => ledger.id === cookie.default_ledger
   )
 
+  if (!defaultLedger) {
+    return ctx.json({ default: undefined, ledgers }, HTTPStatus.OK)
+  }
+
   return ctx.json({ default: defaultLedger, ledgers }, HTTPStatus.OK)
 })
 
