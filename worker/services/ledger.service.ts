@@ -22,10 +22,16 @@ export class LedgerService {
   }
 
   async getLedger(id: string) {
-    return await db.query.ledger.findFirst({
+    const ledger = await db.query.ledger.findFirst({
       where: eq(ledgerSchema.id, id),
-      with: { entries: true } // <- only return entries for the past 30 days.
+      with: { entries: true }
     })
+
+    if (!ledger) {
+      return null
+    }
+
+    return ledger
   }
 
   async setLedger(id: string) {

@@ -89,19 +89,26 @@ export const getLedgers = factory.createHandlers(async ctx => {
   return ctx.json({ default: defaultLedger, ledgers }, HTTPStatus.OK)
 })
 
-export const getLedger = factory.createHandlers(
-  zValidator("param", param),
-  async ctx => {
-    const param = ctx.req.valid("param")
-    const container = ctx.get("container")
-    const ledgerService = container.resolve("ledgerService")
+export const getLedger = factory.createHandlers(async (ctx, next) => {
+  const id = ctx.req.param("id")
+  const container = ctx.get("container")
+  const ledgerService = container.resolve("ledgerService")
 
-    const ledgerDetails = await ledgerService.getLedger(param.id)
+  const validParam = param.safeParse({
+    id
+  })
 
-    if (!ledgerDetails) {
-      throw new HTTPException(HTTPStatus.NOT_FOUND)
-    }
-
-    return ctx.json(ledgerDetails, HTTPStatus.OK)
+  if (!validParam.success) {
+    throw new HTTPException(HTTPStatus.BAD_REQUEST)
   }
-)
+
+  const ledgerDetails = await ledgerService.getLedger(validParam.data.id)
+
+  if (!ledgerDetails) {
+    throw new HTTPException(HTTPStatus.NOT_FOUND)
+  }
+
+  ctx.set("ledger", ledgerDetails)
+
+  return next()
+})
