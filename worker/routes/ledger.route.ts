@@ -9,13 +9,14 @@ import * as handler from "@workers/handlers/ledger.handler"
 
 import { db } from "@workers/database/db"
 import { entry } from "@workers/database/schemas"
+import entriesRoute from "@workers/routes/entry.route"
 
 const routes = new Hono<AppBindings>({ strict: false }).basePath("/ledgers")
 
 routes
   .get("/", ...handler.getLedgers)
   .post("/", ...handler.createLedger)
-  .get("/:id", ...handler.getLedger)
+  .route("/:id", entriesRoute)
   .patch("/defaults/:id", ...handler.setLedger)
   .post(
     "/:ledgerId/entries",
