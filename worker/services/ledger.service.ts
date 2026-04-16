@@ -5,9 +5,13 @@ import { db } from "@workers/database/db"
 import {
   ledger as ledgerSchema,
   metadata as metadataSchema,
-  insertLedgerSchema
+  entry as entrySchema,
+  insertLedgerSchema,
+  insertEntrySchema
 } from "@workers/database/schemas"
 import type { Cradle } from "@workers/container"
+
+export type InsertEntryDTO = Omit<z.infer<typeof insertEntrySchema>, "userId">
 
 export class LedgerService {
   private readonly userService: Cradle["userService"]
@@ -19,6 +23,20 @@ export class LedgerService {
   async createLedger(details: z.infer<typeof insertLedgerSchema>) {
     const [ledger] = await db.insert(ledgerSchema).values(details).returning()
     return ledger
+  }
+
+  async createEntry(details: InsertEntryDTO) {
+    const user = this.userService.getUser()
+
+    const [entry] = await db
+      .insert(entrySchema)
+      .values({
+        ...details,
+        userId: user.id
+      })
+      .returning()
+
+    return entry
   }
 
   async getLedger(id: string) {
