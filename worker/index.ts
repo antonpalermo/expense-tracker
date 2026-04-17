@@ -4,6 +4,7 @@ import { secureHeaders } from "hono/secure-headers"
 
 import authRoutes from "@workers/routes/auth.route"
 import ledgersRoutes from "@workers/routes/ledger.route"
+import metadataRoutes from "@workers/routes/metadata.route"
 
 import authGuard from "@workers/middlewares/auth-guard"
 import dependecyInjection from "@workers/middlewares/dependency-injection"
@@ -18,7 +19,7 @@ app.use(dependecyInjection).use(authGuard)
 
 app.notFound(notFound)
 
-const routes = [authRoutes, ledgersRoutes]
+const routes = [authRoutes, ledgersRoutes, metadataRoutes]
 
 routes.forEach(route => app.route("/", route))
 

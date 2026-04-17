@@ -4,6 +4,7 @@ import { relations, sql } from "drizzle-orm"
 import { sqliteTable, text, index, integer } from "drizzle-orm/sqlite-core"
 
 import { user } from "./auth"
+import { createInsertSchema } from "drizzle-zod"
 
 export type Defaults = {
   ledgerId: string
@@ -38,3 +39,10 @@ export const metadataRelations = relations(metadata, ({ one }) => ({
     references: [user.id]
   })
 }))
+
+export const insertMetadataSchema = createInsertSchema(metadata).omit({
+  id: true,
+  userId: true,
+  updatedAt: true,
+  createdAt: true
+})
