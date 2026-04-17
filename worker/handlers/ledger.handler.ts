@@ -1,5 +1,5 @@
 import z from "zod"
-import { getCookie, setCookie } from "hono/cookie"
+import { getCookie } from "hono/cookie"
 import { createFactory } from "hono/factory"
 import { HTTPException } from "hono/http-exception"
 
@@ -10,10 +10,9 @@ import * as HTTPPhrases from "@workers/status-phrases"
 
 import type { AppBindings } from "@workers/types"
 import { insertLedgerSchema } from "@workers/database/schemas"
+import { COOKIES, setCookie } from "@workers/lib/set-cookie"
 
 const factory = createFactory<AppBindings>()
-
-const DEFAULT_LEDGER_COOKIE = "default_ledger"
 
 // ledger cuid validation schema
 const param = z.object({
@@ -64,7 +63,7 @@ export const createLedger = factory.createHandlers(
     })
 
     if (ledger) {
-      setCookie(ctx, DEFAULT_LEDGER_COOKIE, ledger.id)
+      setCookie(ctx, COOKIES.LEDGER, ledger.id)
     }
 
     return ctx.json(ledger)

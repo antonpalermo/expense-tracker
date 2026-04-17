@@ -7,7 +7,7 @@ import * as HTTPPhrases from "@workers/status-phrases"
 import type { AppBindings } from "@workers/types"
 import { zValidator } from "@hono/zod-validator"
 import { insertMetadataSchema } from "@workers/database/schemas"
-import { setCookie } from "hono/cookie"
+import { COOKIES, setCookie } from "@workers/lib/set-cookie"
 
 const factory = createFactory<AppBindings>()
 
@@ -23,8 +23,6 @@ const validateMetadataBody = zValidator(
   }
 )
 
-const DEFAULT_LEDGER_COOKIE = "default_ledger"
-
 export const upsertDefault = factory.createHandlers(
   validateMetadataBody,
   async ctx => {
@@ -36,7 +34,7 @@ export const upsertDefault = factory.createHandlers(
     const result = await metadataService.upsertDefaults({ ...body })
 
     if (result.defaults?.ledgerId) {
-      setCookie(ctx, DEFAULT_LEDGER_COOKIE, result.defaults.ledgerId)
+      setCookie(ctx, COOKIES.LEDGER, result.defaults.ledgerId)
     }
 
     return ctx.json({ msg: "successfully updated" })
