@@ -1,5 +1,4 @@
 import z from "zod"
-import { getCookie } from "hono/cookie"
 import { createFactory } from "hono/factory"
 import { HTTPException } from "hono/http-exception"
 
@@ -71,15 +70,15 @@ export const createLedger = factory.createHandlers(
 )
 
 export const getLedgers = factory.createHandlers(async ctx => {
-  const cookie = getCookie(ctx)
   const container = ctx.get("container")
+
   const ledgerService = container.resolve("ledgerService")
+  const metadataService = container.resolve("metadataService")
 
   const ledgers = await ledgerService.getLedgers()
+  const metadata = await metadataService.getDefaults()
 
-  const defaultLedger = ledgers.find(
-    ledger => ledger.id === cookie.default_ledger
-  )
+  const defaultLedger = ledgers.find(ledger => ledger.id === metadata?.ledgerId)
 
   if (!defaultLedger) {
     return ctx.json({ default: undefined, ledgers }, HTTPStatus.OK)
