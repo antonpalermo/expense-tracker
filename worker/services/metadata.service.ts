@@ -1,6 +1,7 @@
 import type { Cradle } from "@workers/container"
 import { db } from "@workers/database/db"
 import { metadata, type insertMetadataSchema } from "@workers/database/schemas"
+import { eq } from "drizzle-orm"
 import type z from "zod"
 
 export class MetadataService {
@@ -8,6 +9,19 @@ export class MetadataService {
 
   constructor({ userService }: Cradle) {
     this.userService = userService
+  }
+
+  async getDefaults() {
+    const result = await db.query.metadata.findFirst({
+      where: eq(metadata.userId, this.userService.getUser().id),
+      columns: { defaults: true }
+    })
+
+    if (!result?.defaults) {
+      return undefined
+    }
+
+    return result.defaults
   }
 
   async upsertDefaults(data: z.infer<typeof insertMetadataSchema>) {
