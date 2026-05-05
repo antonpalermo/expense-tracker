@@ -15,7 +15,13 @@
         "enabled": true
     },
     "upload_source_maps": true,
-    "compatibility_flags": ["nodejs_compat"]
+    "compatibility_flags": ["nodejs_compat"],
+    "kv_namespaces": [
+        {
+            "binding": "XPENS_KV",
+            "id": "dd14af9ac7ce4ef295bd827ccef2586a"
+        }
+    ]
     /**
      * Smart Placement
      * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
