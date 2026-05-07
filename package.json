@@ -12,6 +12,7 @@
         "cf-typegen": "wrangler types --env-interface CloudflareBindings"
     },
     "dependencies": {
+        "@tanstack/react-query": "^5.100.9",
         "hono": "^4.12.15",
         "react": "^19.2.5",
         "react-dom": "^19.2.5"
