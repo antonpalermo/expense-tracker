@@ -1,26 +1,31 @@
-import * as React from "react"
-// import { useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 
 export default function DynamicForm() {
-    const [schema, setSchema] = React.useState({})
-
-    React.useEffect(() => {
-        const getSchema = async () => {
-            const request = await fetch("/api/forms/schema")
-            if (!request) {
-                throw new Error("unable to fetch form schema")
-            }
-            const data = await request.json()
-            setSchema(data)
+    const getSchema = async () => {
+        const request = await fetch("/api/forms/schema")
+        if (!request) {
+            throw new Error("unable to fetch form schema")
         }
+        return await request.json()
+    }
 
-        getSchema()
-    }, [])
+    const {
+        data: schema,
+        isError,
+        isPending
+    } = useQuery({
+        queryKey: ["FORM_SCHEMA"],
+        queryFn: getSchema
+    })
+
+    if (isError) {
+        throw new Error("unable to get form schema")
+    }
 
     return (
         <div>
             <h1>Dynamic Form</h1>
-            {JSON.stringify(schema)}
+            {!isPending && JSON.stringify(schema)}
         </div>
     )
 }
