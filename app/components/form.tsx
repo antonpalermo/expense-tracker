@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
+import { useAppForm } from "../hooks/form"
+import Input from "./input"
 
 export default function DynamicForm() {
     const getSchema = async () => {
@@ -13,10 +15,19 @@ export default function DynamicForm() {
         data: schema,
         isError,
         isPending
-    } = useQuery({
+    } = useQuery<{ fields: { uid: string; name: string; type: string }[] }>({
         queryKey: ["FORM_SCHEMA"],
         queryFn: getSchema
     })
+    const form = useAppForm({
+        onSubmit: async ({ value }) => {
+            console.log(value)
+        }
+    })
+
+    if (isPending) {
+        return null
+    }
 
     if (isError) {
         throw new Error("unable to get form schema")
@@ -25,7 +36,36 @@ export default function DynamicForm() {
     return (
         <div>
             <h1>Dynamic Form</h1>
-            {!isPending && JSON.stringify(schema)}
+            <form
+                onSubmit={e => {
+                    e.preventDefault()
+                    form.handleSubmit()
+                }}
+            >
+                <pre>
+                    {schema.fields.map(field => JSON.stringify(field, null, 2))}
+                </pre>
+                {schema.fields.map(field => (
+                    <form.Field
+                        key={field.uid}
+                        name={field.name}
+                        children={({ state, handleChange, handleBlur }) => (
+                            <div>
+                                <label htmlFor={field.uid}>{field.name}</label>
+                                <input
+                                    name={field.uid}
+                                    value={state.value as undefined}
+                                    onBlur={handleBlur}
+                                    onChange={e => handleChange(e.target.value)}
+                                />
+                            </div>
+                        )}
+                    />
+                ))}
+                <form.Subscribe>
+                    <button type="submit">send</button>
+                </form.Subscribe>
+            </form>
         </div>
     )
 }
