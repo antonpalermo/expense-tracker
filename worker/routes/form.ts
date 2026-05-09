@@ -16,6 +16,7 @@ export type FormConfig = {
 
 export const FORM_CONFIG_KEY = "user:form_schema"
 
+// set the form config in cache for 24 hours
 async function setFormConfig<T>(value: T) {
     await set<T>(FORM_CONFIG_KEY, value, {
         expirationTtl: 60 * 60 * 24
@@ -46,6 +47,17 @@ async function createBlankConfig() {
     await setFormConfig(blankConfig)
 
     return blankConfig
+}
+
+function buildSchema(config: FieldSchema[]) {
+    return config.map(field => {
+        switch (field.type) {
+            case "text":
+                return [field.id, ""]
+            case "number":
+                return [field.id, 0]
+        }
+    })
 }
 
 async function getConfig(): Promise<FormConfig | undefined> {
@@ -87,8 +99,15 @@ routes.on(["POST", "GET", "PATCH"], "/schema", async ctx => {
             return ctx.json(newSchema)
         }
         case "GET": {
-            const schema = await getConfig()
-            return ctx.json(schema)
+            const config = await getConfig()
+
+            if (!config) {
+                return await ctx.notFound()
+            }
+
+            const schema = Object.fromEntries(buildSchema(config.fields))
+
+            return ctx.json({ schema, fields: config.fields })
         }
         case "PATCH": {
             const body = await ctx.req.json()

@@ -1,6 +1,16 @@
 import { useQuery } from "@tanstack/react-query"
 import { useAppForm } from "../hooks/form"
-import Input from "./input"
+
+type Field = {
+    id: string
+    name: string
+    type: string
+}
+
+type FormResponse = {
+    schema: { [key: string]: unknown }
+    fields: Field[]
+}
 
 export default function DynamicForm() {
     const getSchema = async () => {
@@ -11,22 +21,19 @@ export default function DynamicForm() {
         return await request.json()
     }
 
-    const {
-        data: schema,
-        isError,
-        isPending
-    } = useQuery<{ fields: { uid: string; name: string; type: string }[] }>({
+    const { data, isError, isPending } = useQuery<FormResponse>({
         queryKey: ["FORM_SCHEMA"],
         queryFn: getSchema
     })
     const form = useAppForm({
+        defaultValues: !isPending && data?.schema,
         onSubmit: async ({ value }) => {
             console.log(value)
         }
     })
 
     if (isPending) {
-        return null
+        return <div>loading....</div>
     }
 
     if (isError) {
@@ -42,18 +49,15 @@ export default function DynamicForm() {
                     form.handleSubmit()
                 }}
             >
-                <pre>
-                    {schema.fields.map(field => JSON.stringify(field, null, 2))}
-                </pre>
-                {schema.fields.map(field => (
+                {data.fields.map(field => (
                     <form.Field
-                        key={field.uid}
-                        name={field.name}
+                        key={field.id}
+                        name={field.id}
                         children={({ state, handleChange, handleBlur }) => (
                             <div>
-                                <label htmlFor={field.uid}>{field.name}</label>
+                                <label htmlFor={field.id}>{field.name}</label>
                                 <input
-                                    name={field.uid}
+                                    name={field.id}
                                     value={state.value as undefined}
                                     onBlur={handleBlur}
                                     onChange={e => handleChange(e.target.value)}
