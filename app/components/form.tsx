@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { useAppForm } from "../hooks/form"
 
 type Field = {
@@ -21,14 +21,35 @@ export default function DynamicForm() {
         return await request.json()
     }
 
+    const createTask = async (value: unknown) => {
+        const request = await fetch("/api/tasks", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(value)
+        })
+
+        if (!request) {
+            throw new Error("unable to create tasks")
+        }
+
+        return await request.json()
+    }
+
     const { data, isError, isPending } = useQuery<FormResponse>({
         queryKey: ["FORM_SCHEMA"],
         queryFn: getSchema
     })
+
+    const createTaskMutation = useMutation({
+        mutationFn: createTask
+    })
+
     const form = useAppForm({
-        defaultValues: !isPending && data?.schema,
+        defaultValues: !isPending ? data?.schema : {},
         onSubmit: async ({ value }) => {
-            console.log(value)
+            await createTaskMutation.mutateAsync(value)
         }
     })
 
