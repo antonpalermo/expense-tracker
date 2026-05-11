@@ -9,14 +9,18 @@
         "lint": "eslint .",
         "preview": "bun run build && vite preview",
         "deploy": "bun run build && wrangler deploy",
-        "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+        "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+        "db:migrate": "wrangler d1 migrations apply xpens",
+        "db:gen": "drizzle-kit generate --config drizzle.config.ts"
     },
     "dependencies": {
         "@tanstack/react-devtools": "^0.10.2",
         "@tanstack/react-form": "^1.29.1",
         "@tanstack/react-form-devtools": "^0.2.24",
         "@tanstack/react-query": "^5.100.9",
+        "drizzle-orm": "^0.45.2",
         "hono": "^4.12.15",
+        "nanoid": "^5.1.11",
         "react": "^19.2.5",
         "react-dom": "^19.2.5"
     },
@@ -27,6 +31,7 @@
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^6.0.1",
+        "drizzle-kit": "^0.31.10",
         "eslint": "^10.2.1",
         "eslint-plugin-react-hooks": "^7.1.1",
         "eslint-plugin-react-refresh": "^0.5.2",
