@@ -1,83 +1,122 @@
-import type { Bindings } from "@/bindings"
+import type { Bindings, Field, FormSchema } from "@/bindings"
+import { db } from "@/database/db"
+import { formTable } from "@/database/schemas"
 import { get, set } from "@/lib/cache"
+import nanoid from "@/lib/nanoid"
 import { Hono } from "hono"
 
 const routes = new Hono<Bindings>({ strict: false }).basePath("/forms")
 
-export type FieldSchema = {
-    id: string
-    name: string
-    type: "text" | "number"
-}
-
-export type FormConfig = {
-    fields: FieldSchema[]
-}
-
 export const FORM_CONFIG_KEY = "user:form_schema"
 
+function buildSchema(fields: Field[]) {
+    const fieldDetails = fields.map(field => [field.uid, field.default])
+    return { schema: Object.fromEntries(fieldDetails), fields }
+}
+
+function parseFormResponse(fields: Field[]) {
+    if (!fields) {
+        return undefined
+    }
+
+    return buildSchema(fields)
+}
+
 // set the form config in cache for 24 hours
-async function setFormConfig<T>(value: T) {
+async function setFormSchema<T>(value: T) {
     await set<T>(FORM_CONFIG_KEY, value, {
         expirationTtl: 60 * 60 * 24
     })
 }
 
-async function createBlankConfig() {
-    const blankConfig: FormConfig = {
-        fields: [
-            {
-                id: crypto.randomUUID(),
-                name: "Name",
-                type: "text"
-            },
-            {
-                id: crypto.randomUUID(),
-                name: "Description",
-                type: "text"
-            },
-            {
-                id: crypto.randomUUID(),
-                name: "Amount",
-                type: "number"
-            }
-        ]
-    }
+async function getFormSchema() {
+    const cachedFormSchema = await get(FORM_CONFIG_KEY)
 
-    await setFormConfig(blankConfig)
-
-    return blankConfig
-}
-
-function buildSchema(config: FieldSchema[]) {
-    return config.map(field => {
-        switch (field.type) {
-            case "text":
-                return [field.id, ""]
-            case "number":
-                return [field.id, 0]
-        }
-    })
-}
-
-async function getConfig(): Promise<FormConfig | undefined> {
-    // 1. check if available in kv
-    // 2. if available return quickly else fetch from database
-    // 3. set in kv then return result
-
-    const schema = await get(FORM_CONFIG_KEY)
-
-    if (!schema) {
-        // get in database then set to kv and return schema
-        console.log("not available")
+    if (!cachedFormSchema) {
         return undefined
     }
 
-    return JSON.parse(schema)
+    return JSON.parse(cachedFormSchema)
 }
 
-async function createField(field: FieldSchema) {
-    const schema = await getConfig()
+async function createBlankSchema() {
+    const blankSchema: Field[] = [
+        {
+            uid: nanoid(),
+            name: "Name",
+            type: "text",
+            default: ""
+        },
+        {
+            uid: nanoid(),
+            name: "Description",
+            type: "text",
+            default: ""
+        },
+        {
+            uid: nanoid(),
+            name: "Amount",
+            type: "number",
+            default: 0
+        }
+    ]
+
+    try {
+        const formSchema = await db
+            .insert(formTable)
+            .values({ fields: blankSchema })
+            .returning()
+
+        // 100% sure that this will contains fields lol
+        const fields = formSchema[0].fields!
+
+        const parsedResponse = parseFormResponse(fields)
+        await setFormSchema(parsedResponse)
+
+        return parsedResponse
+    } catch (error) {
+        throw new Error("app: unable to insert new form schema", {
+            cause: error
+        })
+    }
+}
+
+async function getFormDetails(): Promise<FormSchema | undefined> {
+    try {
+        // checks cache if schema is available
+        const cachedFormSchema = await getFormSchema()
+
+        if (!cachedFormSchema) {
+            // if cache is not available then get the schema from database
+            const formSchema = await db
+                .select({ fields: formTable.fields })
+                .from(formTable)
+                .limit(1)
+
+            // if no form schema and no cache schema then return undefined
+            // meaning there's no schema created yet.
+            if (!formSchema[0].fields) {
+                return undefined
+            }
+
+            // if there's a form schema found in db set it in cache
+            // for fast subsequent queries.
+            const parsedResponse = parseFormResponse(formSchema[0].fields)
+            await setFormSchema(parsedResponse)
+
+            return parsedResponse
+        }
+
+        return cachedFormSchema
+    } catch (error) {
+        throw new Error("app: unable to get formSchema configuration", {
+            cause: error
+        })
+    }
+}
+
+async function createField(field: Field) {
+    const schema = await getFormDetails()
 
     if (!schema) {
         console.log("no schema available")
@@ -85,7 +124,7 @@ async function createField(field: FieldSchema) {
     }
 
     schema.fields.push(field)
-    await setFormConfig(schema)
+    await setFormSchema(schema)
 
     return schema
 }
@@ -95,19 +134,12 @@ routes.on(["POST", "GET", "PATCH"], "/schema", async ctx => {
 
     switch (method) {
         case "POST": {
-            const newSchema = await createBlankConfig()
-            return ctx.json(newSchema)
+            const result = await createBlankSchema()
+            return ctx.json(result)
         }
         case "GET": {
-            const config = await getConfig()
-
-            if (!config) {
-                return await ctx.notFound()
-            }
-
-            const schema = Object.fromEntries(buildSchema(config.fields))
-
-            return ctx.json({ schema, fields: config.fields })
+            const result = await getFormDetails()
+            return ctx.json(result)
         }
         case "PATCH": {
             const body = await ctx.req.json()
