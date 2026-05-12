@@ -9,7 +9,7 @@ export const formTable = sqliteTable("forms", {
         .unique()
         .primaryKey()
         .$defaultFn(() => nanoid()),
-    schema: text({ mode: "json" }).$type<Field>(),
+    fields: text({ mode: "json" }).$type<Field[]>(),
     createdAt: integer("created_at", { mode: "timestamp_ms" })
         .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
         .notNull(),
