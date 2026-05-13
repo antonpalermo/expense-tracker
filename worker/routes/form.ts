@@ -3,6 +3,7 @@ import { db } from "@/database/db"
 import { formTable } from "@/database/schemas"
 import { get, set } from "@/lib/cache"
 import nanoid from "@/lib/nanoid"
+import { sql } from "drizzle-orm"
 import { Hono } from "hono"
 
 const routes = new Hono<Bindings>({ strict: false }).basePath("/forms")
@@ -115,18 +116,30 @@ async function getFormDetails(): Promise<FormSchema | undefined> {
     }
 }
 
-async function createField(field: Field) {
-    const schema = await getFormDetails()
-
-    if (!schema) {
-        console.log("no schema available")
-        return
+async function createField(field: Omit<Field, "uid">) {
+    const data = {
+        uid: nanoid(),
+        ...field
     }
 
-    schema.fields.push(field)
-    await setFormSchema(schema)
+    try {
+        const [updatedFields] = await db
+            .update(formTable)
+            .set({
+                fields: sql`json_insert(${formTable.fields}, '$[#]', json(${JSON.stringify(data)}))`
+            })
+            .returning({
+                fields: formTable.fields
+            })
 
-    return schema
+        await setFormSchema(updatedFields)
+
+        return parseFormResponse(updatedFields.fields!)
+    } catch (error) {
+        throw new Error("app: insert new field in formSchema configuration", {
+            cause: error
+        })
+    }
 }
 
 routes.on(["POST", "GET", "PATCH"], "/schema", async ctx => {
@@ -143,9 +156,9 @@ routes.on(["POST", "GET", "PATCH"], "/schema", async ctx => {
         }
         case "PATCH": {
             const body = await ctx.req.json()
-            // should be HTTP POST in the future?
-            const updatedSchema = await createField(body)
-            return ctx.json(updatedSchema)
+
+            const result = await createField(body)
+            return ctx.json(result)
         }
     }
 })
