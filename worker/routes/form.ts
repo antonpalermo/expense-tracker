@@ -10,17 +10,9 @@ const routes = new Hono<Bindings>({ strict: false }).basePath("/forms")
 
 export const FORM_CONFIG_KEY = "user:form_schema"
 
-function buildSchema(fields: Field[]) {
+function buildSchema(fields: Field[]): FormSchema {
     const fieldDetails = fields.map(field => [field.uid, field.default])
     return { schema: Object.fromEntries(fieldDetails), fields }
-}
-
-function parseFormResponse(fields: Field[]) {
-    if (!fields) {
-        return undefined
-    }
-
-    return buildSchema(fields)
 }
 
 // set the form config in cache for 24 hours
@@ -28,16 +20,6 @@ async function setFormSchema<T>(value: T) {
     await set<T>(FORM_CONFIG_KEY, value, {
         expirationTtl: 60 * 60 * 24
     })
-}
-
-async function getFormSchema() {
-    const cachedFormSchema = await get(FORM_CONFIG_KEY)
-
-    if (!cachedFormSchema) {
-        return undefined
-    }
-
-    return JSON.parse(cachedFormSchema)
 }
 
 async function createBlankSchema() {
@@ -71,7 +53,7 @@ async function createBlankSchema() {
         // 100% sure that this will contains fields lol
         const fields = formSchema[0].fields!
 
-        const parsedResponse = parseFormResponse(fields)
+        const parsedResponse = buildSchema(fields)
         await setFormSchema(parsedResponse)
 
         return parsedResponse
@@ -82,38 +64,30 @@ async function createBlankSchema() {
     }
 }
 
-async function getFormDetails(): Promise<FormSchema | undefined> {
-    try {
-        // checks cache if schema is available
-        const cachedFormSchema = await getFormSchema()
+async function getFormDetails(): Promise<FormSchema | null> {
+    const cachedSchema = await get<FormSchema>(FORM_CONFIG_KEY)
 
-        if (!cachedFormSchema) {
-            // if cache is not available then get the schema from database
-            const formSchema = await db
-                .select({ fields: formTable.fields })
-                .from(formTable)
-                .limit(1)
+    if (!cachedSchema) {
+        const [formSchema] = await db
+            .select({ fields: formTable.fields })
+            .from(formTable)
+            .limit(1)
 
-            // if no form schema and no cache schema then return undefined
-            // meaning there's no schema created yet.
-            if (!formSchema[0].fields) {
-                return undefined
-            }
-
-            // if there's a form schema found in db set it in cache
-            // for fast subsequent queries.
-            const parsedResponse = parseFormResponse(formSchema[0].fields)
-            await setFormSchema(parsedResponse)
-
-            return parsedResponse
+        // if no form schema and no cache schema then return undefined
+        // meaning there's no schema created yet.
+        if (!formSchema) {
+            return null
         }
 
-        return cachedFormSchema
-    } catch (error) {
-        throw new Error("app: unable to get formSchema configuration", {
-            cause: error
-        })
+        // if there's a form schema found in db set it in cache
+        // for fast subsequent queries.
+        const parsedResponse = buildSchema(formSchema.fields!)
+        await setFormSchema(parsedResponse)
+
+        return parsedResponse
     }
+
+    return cachedSchema
 }
 
 async function createField(field: Omit<Field, "uid">) {
@@ -132,9 +106,14 @@ async function createField(field: Omit<Field, "uid">) {
                 fields: formTable.fields
             })
 
-        await setFormSchema(updatedFields)
+        if (!updatedFields.fields) {
+            return
+        }
 
-        return parseFormResponse(updatedFields.fields!)
+        const parsedResponse = buildSchema(updatedFields.fields)
+        await setFormSchema(parsedResponse)
+
+        return parsedResponse
     } catch (error) {
         throw new Error("app: insert new field in formSchema configuration", {
             cause: error
@@ -152,6 +131,11 @@ routes.on(["POST", "GET", "PATCH"], "/schema", async ctx => {
         }
         case "GET": {
             const result = await getFormDetails()
+
+            if (!result) {
+                return ctx.notFound()
+            }
+
             return ctx.json(result)
         }
         case "PATCH": {
