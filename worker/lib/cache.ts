@@ -1,7 +1,7 @@
 import { env } from "cloudflare:workers"
 
-export async function get(key: string) {
-    return await env.APP_CACHE.get(key)
+export async function get<T>(key: string) {
+    return env.APP_CACHE.get<T>(key, "json")
 }
 
 export async function set<T>(
