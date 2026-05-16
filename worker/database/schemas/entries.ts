@@ -1,4 +1,5 @@
 import { relations, sql } from "drizzle-orm"
+import { createInsertSchema } from "drizzle-zod"
 import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core"
 
 import nanoid from "../../lib/nanoid"
@@ -33,3 +34,5 @@ export const entriesTableRelation = relations(entriesTable, ({ one }) => ({
         references: [formTable.id]
     })
 }))
+
+export const entriesInsertSchema = createInsertSchema(entriesTable)
