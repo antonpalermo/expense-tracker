@@ -1,16 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useAppForm } from "../hooks/form"
 
-type Field = {
-    id: string
-    name: string
-    type: string
-}
-
-type FormResponse = {
-    schema: { [key: string]: unknown }
-    fields: Field[]
-}
+import type { FormSchema } from "../../worker/bindings"
 
 export default function DynamicForm() {
     const getSchema = async () => {
@@ -22,7 +13,7 @@ export default function DynamicForm() {
     }
 
     const createTask = async (value: unknown) => {
-        const request = await fetch("/api/tasks", {
+        const request = await fetch("/api/entries", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -37,7 +28,7 @@ export default function DynamicForm() {
         return await request.json()
     }
 
-    const { data, isError, isPending } = useQuery<FormResponse>({
+    const { data, isError, isPending } = useQuery<FormSchema>({
         queryKey: ["FORM_SCHEMA"],
         queryFn: getSchema
     })
@@ -72,13 +63,14 @@ export default function DynamicForm() {
             >
                 {data.fields.map(field => (
                     <form.Field
-                        key={field.id}
-                        name={field.id}
+                        key={field.uid}
+                        name={field.uid}
                         children={({ state, handleChange, handleBlur }) => (
                             <div>
-                                <label htmlFor={field.id}>{field.name}</label>
+                                <label htmlFor={field.uid}>{field.name}</label>
                                 <input
-                                    name={field.id}
+                                    id={field.uid}
+                                    name={field.uid}
                                     value={state.value as undefined}
                                     onBlur={handleBlur}
                                     onChange={e => handleChange(e.target.value)}
