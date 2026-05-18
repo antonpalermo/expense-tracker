@@ -47,9 +47,24 @@ async function getEntries(formId: string) {
         return Object.fromEntries(schema)
     })
 
-    const entries = formResult?.entries.map(entry => ({ ...entry.data }))
+    const records = formResult?.entries.map(entry => ({ ...entry.data }))
 
-    return { fields, entries }
+    const sanitizedResult = fields && Object.assign({}, ...fields)
+
+    const entries = records?.map(record => {
+        const transformedRecord: Record<string, unknown> = {}
+
+        Object.entries(record).forEach(([key, value]) => {
+            const readableKey = sanitizedResult[key]
+            if (readableKey) {
+                transformedRecord[readableKey] = value
+            }
+        })
+
+        return transformedRecord
+    })
+
+    return entries
 }
 
 routes.on(["POST"], "/", async ctx => {
