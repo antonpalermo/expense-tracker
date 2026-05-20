@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import DynamicForm from "./form"
+import DataTable from "./data-table"
 
 const getEntries = async () => {
     const request = await fetch("/api/entries/jTIgiBp1Jz74oKtnJxNo")
@@ -26,8 +27,8 @@ export default function Entries() {
     return (
         <div>
             <h1>Application Entries</h1>
-            <pre>{JSON.stringify(data, null, 2)}</pre>
             <DynamicForm />
+            <DataTable data={data} />
         </div>
     )
 }
