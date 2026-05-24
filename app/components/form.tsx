@@ -1,9 +1,10 @@
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAppForm } from "../hooks/form"
 
 import type { FormSchema } from "../../worker/bindings"
 
 export default function DynamicForm() {
+    const client = useQueryClient()
     const getSchema = async () => {
         const request = await fetch("/api/forms/schema")
         if (!request) {
@@ -13,12 +14,16 @@ export default function DynamicForm() {
     }
 
     const createTask = async (value: unknown) => {
+        const data = {
+            formId: "jTIgiBp1Jz74oKtnJxNo",
+            data: value
+        }
         const request = await fetch("/api/entries", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(value)
+            body: JSON.stringify(data)
         })
 
         if (!request) {
@@ -34,7 +39,12 @@ export default function DynamicForm() {
     })
 
     const createTaskMutation = useMutation({
-        mutationFn: createTask
+        mutationFn: createTask,
+        onSuccess: () => {
+            client.invalidateQueries({
+                queryKey: ["entries"]
+            })
+        }
     })
 
     const form = useAppForm({
