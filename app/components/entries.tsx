@@ -7,7 +7,7 @@ import DynamicForm from "./form"
 import DataTable from "./data-table"
 
 const getEntries = async () => {
-    const request = await fetch("/api/entries/jTIgiBp1Jz74oKtnJxNo")
+    const request = await fetch("/api/entries")
     if (!request.ok) {
         throw new Error("unable to fetch all entries")
     }

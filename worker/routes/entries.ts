@@ -5,8 +5,6 @@ import { entriesInsertSchema, entriesTable } from "../database/schemas/entries"
 import type { Bindings } from "../bindings"
 
 import z from "zod"
-import { eq } from "drizzle-orm"
-import { formTable } from "@/database/schemas"
 
 type Entries = z.infer<typeof entriesInsertSchema>
 
@@ -27,9 +25,8 @@ async function createEntry(details: Entries) {
     return entry
 }
 
-async function getEntries(formId: string) {
+async function getEntries() {
     const formResult = await db.query.formTable.findFirst({
-        where: eq(formTable.id, formId),
         columns: {
             fields: true
         },
@@ -67,10 +64,15 @@ async function getEntries(formId: string) {
     return entries
 }
 
-routes.on(["POST"], "/", async ctx => {
+routes.on(["POST", "GET"], "/", async ctx => {
     const method = ctx.req.method
 
     switch (method) {
+        case "GET": {
+            const entries = await getEntries()
+
+            return ctx.json(entries)
+        }
         case "POST": {
             const body = await ctx.req.json()
 
@@ -78,14 +80,6 @@ routes.on(["POST"], "/", async ctx => {
             return ctx.json(task)
         }
     }
-})
-
-routes.get("/:id", async ctx => {
-    const { id } = ctx.req.param()
-
-    const entries = await getEntries(id)
-
-    return ctx.json(entries)
 })
 
 export default routes
