@@ -6,19 +6,14 @@ import { useQuery } from "@tanstack/react-query"
 import DynamicForm from "./form"
 import DataTable from "./data-table"
 
-const getEntries = async () => {
-    const request = await fetch("/api/entries")
-    if (!request.ok) {
-        throw new Error("unable to fetch all entries")
-    }
-    return await request.json()
-}
+import { getEntries } from "../apis/entries"
+import { entriesKeys } from "../query-keys"
 
 type DynamicData = Record<string, unknown>
 
 export default function Entries() {
     const { data, isError, isPending } = useQuery<DynamicData[]>({
-        queryKey: ["entries"],
+        queryKey: entriesKeys.all,
         queryFn: getEntries
     })
 

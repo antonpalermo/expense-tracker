@@ -2,47 +2,23 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAppForm } from "../hooks/form"
 
 import type { FormSchema } from "../../worker/bindings"
+import { getFormSchema } from "../apis/form-schema"
+import { entriesKeys, formSchemaKeys } from "../query-keys"
+import { createEntry } from "../apis/entries"
 
 export default function DynamicForm() {
     const client = useQueryClient()
-    const getSchema = async () => {
-        const request = await fetch("/api/forms/schema")
-        if (!request) {
-            throw new Error("unable to fetch form schema")
-        }
-        return await request.json()
-    }
-
-    const createTask = async (value: unknown) => {
-        const data = {
-            formId: "jTIgiBp1Jz74oKtnJxNo",
-            data: value
-        }
-        const request = await fetch("/api/entries", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
-        })
-
-        if (!request) {
-            throw new Error("unable to create tasks")
-        }
-
-        return await request.json()
-    }
 
     const { data, isError, isPending } = useQuery<FormSchema>({
-        queryKey: ["FORM_SCHEMA"],
-        queryFn: getSchema
+        queryKey: formSchemaKeys.all,
+        queryFn: getFormSchema
     })
 
     const createTaskMutation = useMutation({
-        mutationFn: createTask,
+        mutationFn: createEntry,
         onSuccess: () => {
             client.invalidateQueries({
-                queryKey: ["entries"]
+                queryKey: entriesKeys.all
             })
         }
     })
