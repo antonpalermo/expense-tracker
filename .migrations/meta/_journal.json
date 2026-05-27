@@ -1,34 +1,34 @@
 {
-  "version": "7",
-  "dialect": "sqlite",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "6",
-      "when": 1778506848384,
-      "tag": "0000_big_old_lace",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1778598003983,
-      "tag": "0001_adorable_surge",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1778850793899,
-      "tag": "0002_bent_rattler",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1778851151113,
-      "tag": "0003_amazing_venus",
-      "breakpoints": true
-    }
-  ]
+    "version": "7",
+    "dialect": "sqlite",
+    "entries": [
+        {
+            "idx": 0,
+            "version": "6",
+            "when": 1778506848384,
+            "tag": "0000_big_old_lace",
+            "breakpoints": true
+        },
+        {
+            "idx": 1,
+            "version": "6",
+            "when": 1778598003983,
+            "tag": "0001_adorable_surge",
+            "breakpoints": true
+        },
+        {
+            "idx": 2,
+            "version": "6",
+            "when": 1778850793899,
+            "tag": "0002_bent_rattler",
+            "breakpoints": true
+        },
+        {
+            "idx": 3,
+            "version": "6",
+            "when": 1778851151113,
+            "tag": "0003_amazing_venus",
+            "breakpoints": true
+        }
+    ]
 }

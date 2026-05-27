@@ -7,5 +7,3 @@ export async function getFormSchema() {
 
     return await request.json()
 }
-
-
