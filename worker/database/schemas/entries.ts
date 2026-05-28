@@ -13,7 +13,7 @@ export const entriesTable = sqliteTable(
             .primaryKey()
             .$defaultFn(() => nanoid()),
         formId: text("form_id"),
-        data: text("data", { mode: "json" }).$type<Record<string, unknown>[]>(),
+        data: text("data", { mode: "json" }).$type<Record<string, unknown>>(),
         createdAt: integer("created_at", { mode: "timestamp_ms" })
             .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
             .notNull(),
