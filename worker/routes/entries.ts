@@ -68,7 +68,6 @@ async function getEntries() {
     })
 
     const records = formResult?.entries.map(entry => ({ ...entry.data }))
-    console.log(records)
 
     const sanitizedResult = fields && Object.assign({}, ...fields)
 
@@ -108,7 +107,6 @@ async function getEntry(id: string) {
     if (!result.form?.fields || !result.data) {
         throw new Error("no fields available")
     }
-
 
     const fields = parseFields(result.form.fields)
     const data = mapFields(fields, result.data)
