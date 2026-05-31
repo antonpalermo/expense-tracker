@@ -1,18 +1,36 @@
+import * as React from "react"
 import {
     flexRender,
     getCoreRowModel,
-    useReactTable,
-    type ColumnDef
+    useReactTable
 } from "@tanstack/react-table"
 
 export default function DataTable({
-    columns,
     data
 }: {
-    columns: ColumnDef<Record<string, unknown>, unknown>[]
     data: Record<string, unknown>[]
 }) {
     "use no memo"
+
+    const columns = React.useMemo(() => {
+        if (!data || data.length === 0) return []
+
+        const columnShape = Object.keys(data[data.length - 1])
+
+        return columnShape.map(key => ({
+            accessorKey: key,
+            header: key.charAt(0).toUpperCase() + key.slice(1),
+            cell: (info: { getValue: () => void }) => {
+                const value = info.getValue()
+                if (typeof value === "object" && value !== null) {
+                    return JSON.stringify(value)
+                }
+                return value !== null && value !== undefined
+                    ? String(value)
+                    : "-"
+            }
+        }))
+    }, [data])
 
     // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({

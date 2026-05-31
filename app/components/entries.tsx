@@ -1,7 +1,3 @@
-"use client"
-
-import * as React from "react"
-
 import { useQuery } from "@tanstack/react-query"
 import DynamicForm from "./form"
 import DataTable from "./data-table"
@@ -17,26 +13,6 @@ export default function Entries() {
         queryFn: getEntries
     })
 
-    const columns = React.useMemo(() => {
-        if (!data || data.length === 0) return []
-
-        const columnShape = Object.keys(data[data.length - 1])
-
-        return columnShape.map(key => ({
-            accessorKey: key,
-            header: key.charAt(0).toUpperCase() + key.slice(1),
-            cell: (info: { getValue: () => void }) => {
-                const value = info.getValue()
-                if (typeof value === "object" && value !== null) {
-                    return JSON.stringify(value)
-                }
-                return value !== null && value !== undefined
-                    ? String(value)
-                    : "-"
-            }
-        }))
-    }, [data])
-
     if (isError) {
         return <span>Error</span>
     }
@@ -49,7 +25,7 @@ export default function Entries() {
         <div>
             <h1>Application Entries</h1>
             <DynamicForm />
-            <DataTable columns={columns} data={data} />
+            <DataTable data={data} />
         </div>
     )
 }
