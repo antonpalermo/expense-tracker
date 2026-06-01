@@ -17,7 +17,7 @@ export default function DataTable({
 
         const columnShape = Object.keys(data[data.length - 1])
 
-        return columnShape.map(key => ({
+        const generatedColumns = columnShape.map(key => ({
             accessorKey: key,
             header: key.charAt(0).toUpperCase() + key.slice(1),
             cell: (info: { getValue: () => void }) => {
@@ -30,6 +30,14 @@ export default function DataTable({
                     : "-"
             }
         }))
+
+        return [
+            ...generatedColumns,
+            {
+                id: "actions",
+                cell: ({ row }) => <button>Edit {row.original.Name}</button>
+            }
+        ]
     }, [data])
 
     // eslint-disable-next-line react-hooks/incompatible-library
