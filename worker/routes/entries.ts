@@ -12,7 +12,13 @@ type Entries = z.infer<typeof entriesInsertSchema>
 
 const routes = new Hono<Bindings>({ strict: false }).basePath("/entries")
 
-function parseFields(fields: Field[]): Record<string, string>[] {
+function parseFields(
+    fields: Field[] | null | undefined
+): Record<string, string>[] {
+    if (!fields) {
+        throw new Error("fields cannot be null")
+    }
+
     return fields
         .map(field => [[field.uid, field.name]])
         .map(result => Object.fromEntries(result))
@@ -56,16 +62,25 @@ async function getEntries() {
         with: {
             entries: {
                 columns: {
+                    id: true,
                     data: true
                 }
             }
         }
     })
 
-    const fields = formResult?.fields?.map(field => {
-        const schema = [[field.uid, field.name]]
-        return Object.fromEntries(schema)
-    })
+    const fields = parseFields(formResult?.fields)
+    const result = formResult?.entries.map(({ id, data }) => ({
+        id,
+        ...Object.fromEntries(
+            Object.entries(fields).map(([key, value]) => [
+                value,
+                data ? (data[key] ?? null) : null
+            ])
+        )
+    }))
+
+    console.log(result)
 
     const records = formResult?.entries.map(entry => ({ ...entry.data }))
 
