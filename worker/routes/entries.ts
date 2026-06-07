@@ -39,6 +39,16 @@ function mapFields(
     }, {})
 }
 
+function parse(fields: Field[] | null): Record<string, unknown> {
+    if (!fields) {
+        throw new Error("")
+    }
+
+    return Object.fromEntries(
+        fields.map(form => [form.uid, form.name.toLowerCase()])
+    )
+}
+
 async function createEntry(details: Entries) {
     const sanitizedPayload = entriesInsertSchema.safeParse(details)
 
@@ -55,7 +65,7 @@ async function createEntry(details: Entries) {
 }
 
 async function getEntries() {
-    const formResult = await db.query.formTable.findFirst({
+    const response = await db.query.formTable.findFirst({
         columns: {
             fields: true
         },
@@ -63,43 +73,31 @@ async function getEntries() {
             entries: {
                 columns: {
                     id: true,
-                    data: true
+                    data: true,
+                    createdAt: true,
+                    updatedAt: true
                 }
             }
         }
     })
 
-    const fields = parseFields(formResult?.fields)
-    const result = formResult?.entries.map(({ id, data }) => ({
+    if (!response) {
+        throw new Error("no form found")
+    }
+
+    console.log(parse(response.fields), parseFields(response.fields))
+
+    return response.entries.map(({ id, data, createdAt, updatedAt }) => ({
         id,
         ...Object.fromEntries(
-            Object.entries(fields).map(([key, value]) => [
+            Object.entries(parse(response.fields)).map(([key, value]) => [
                 value,
                 data ? (data[key] ?? null) : null
             ])
-        )
+        ),
+        createdAt,
+        updatedAt
     }))
-
-    console.log(result)
-
-    const records = formResult?.entries.map(entry => ({ ...entry.data }))
-
-    const sanitizedResult = fields && Object.assign({}, ...fields)
-
-    const entries = records?.map(record => {
-        const transformedRecord: Record<string, unknown> = {}
-
-        Object.entries(record).forEach(([key, value]) => {
-            const readableKey = sanitizedResult[key]
-            if (readableKey) {
-                transformedRecord[readableKey] = value
-            }
-        })
-
-        return transformedRecord
-    })
-
-    return entries
 }
 
 async function getEntry(id: string) {
