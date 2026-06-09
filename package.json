@@ -11,7 +11,11 @@
         "deploy": "bun run build && wrangler deploy",
         "cf-typegen": "wrangler types --env-interface CloudflareBindings",
         "db:migrate": "wrangler d1 migrations apply xpens",
-        "db:gen": "drizzle-kit generate --config drizzle.config.ts"
+        "db:gen": "drizzle-kit generate --config drizzle.config.ts",
+        "prepare": "husky"
+    },
+    "lint-staged": {
+        "**/*": "prettier --write --ignore-unknown"
     },
     "dependencies": {
         "@tanstack/react-devtools": "^0.10.2",
@@ -40,6 +44,8 @@
         "eslint-plugin-react-hooks": "^7.1.1",
         "eslint-plugin-react-refresh": "^0.5.2",
         "globals": "^17.5.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^17.0.7",
         "prettier": "^3.8.3",
         "typescript": "~6.0.2",
         "typescript-eslint": "^8.58.2",
