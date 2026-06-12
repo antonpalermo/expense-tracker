@@ -1,6 +1,12 @@
 import { sql } from "drizzle-orm"
 import { createInsertSchema } from "drizzle-zod"
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core"
+import {
+    sqliteTable,
+    text,
+    integer,
+    index,
+    real
+} from "drizzle-orm/sqlite-core"
 
 import nanoid from "../../lib/nanoid"
 
@@ -13,7 +19,7 @@ export const entriesTable = sqliteTable(
             .$defaultFn(() => nanoid()),
         name: text("name").notNull(),
         description: text("description"),
-        amount: integer("amount").notNull(),
+        amount: real("amount").notNull(),
         createdAt: integer("created_at", { mode: "timestamp_ms" })
             .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
             .notNull(),
