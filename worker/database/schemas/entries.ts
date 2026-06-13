@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm"
-import { createInsertSchema } from "drizzle-zod"
+import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import {
     sqliteTable,
     text,
@@ -31,4 +31,5 @@ export const entriesTable = sqliteTable(
     table => [index("entries_id_index").on(table.id)]
 )
 
-export const entriesInsertSchema = createInsertSchema(entriesTable)
+export const insertEntriesSchema = createInsertSchema(entriesTable)
+export const selectEntriesSchema = createSelectSchema(entriesTable)
