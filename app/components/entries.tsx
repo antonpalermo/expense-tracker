@@ -4,11 +4,10 @@ import DataTable from "./data-table"
 
 import { getEntries } from "../apis/entries"
 import { entriesKeys } from "../query-keys"
-
-type DynamicData = Record<string, unknown>
+import type { SelectEntry } from "../types"
 
 export default function Entries() {
-    const { data, isError, isPending } = useQuery<DynamicData[]>({
+    const { data, isError, isPending } = useQuery<SelectEntry[]>({
         queryKey: entriesKeys.all,
         queryFn: getEntries
     })

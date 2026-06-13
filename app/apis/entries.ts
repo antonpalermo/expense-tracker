@@ -1,3 +1,5 @@
+import type { InsertEntry } from "../types"
+
 export async function getEntries() {
     const request = await fetch("/api/entries")
     if (!request.ok) {
@@ -6,17 +8,13 @@ export async function getEntries() {
     return await request.json()
 }
 
-export async function createEntry(value: unknown) {
-    const data = {
-        formId: "jTIgiBp1Jz74oKtnJxNo", // TODO: need to be based on the user's form
-        data: value
-    }
+export async function createEntry(value: InsertEntry) {
     const request = await fetch("/api/entries", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(value)
     })
 
     if (!request) {
