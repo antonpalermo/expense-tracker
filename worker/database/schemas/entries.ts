@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm/sqlite-core"
 
 import nanoid from "../../lib/nanoid"
+import { z } from "zod"
 
 export const entriesTable = sqliteTable(
     "entries",
@@ -32,4 +33,6 @@ export const entriesTable = sqliteTable(
 )
 
 export const insertEntriesSchema = createInsertSchema(entriesTable)
-export const selectEntriesSchema = createSelectSchema(entriesTable)
+export const selectEntriesSchema = createSelectSchema(entriesTable, {
+    amount: z.coerce.number()
+})

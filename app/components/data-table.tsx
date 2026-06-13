@@ -1,44 +1,30 @@
-import * as React from "react"
 import {
     flexRender,
+    useReactTable,
     getCoreRowModel,
-    useReactTable
+    createColumnHelper
 } from "@tanstack/react-table"
+import type { SelectEntry } from "../types"
 
-export default function DataTable({
-    data
-}: {
-    data: Record<string, unknown>[]
-}) {
+const columnHelper = createColumnHelper<SelectEntry>()
+
+const columns = [
+    columnHelper.accessor("name", {
+        header: () => <span>Name</span>
+    }),
+    columnHelper.accessor("description", {
+        header: () => <span>Description</span>
+    }),
+    columnHelper.accessor("amount", {
+        header: () => <span>Amount</span>
+    }),
+    columnHelper.accessor("createdAt", {
+        header: () => <span>Date Created</span>
+    })
+]
+
+export default function DataTable({ data }: { data: SelectEntry[] }) {
     "use no memo"
-
-    const columns = React.useMemo(() => {
-        if (!data || data.length === 0) return []
-
-        const columnShape = Object.keys(data[data.length - 1])
-
-        const generatedColumns = columnShape.map(key => ({
-            accessorKey: key,
-            header: key.charAt(0).toUpperCase() + key.slice(1),
-            cell: (info: { getValue: () => void }) => {
-                const value = info.getValue()
-                if (typeof value === "object" && value !== null) {
-                    return JSON.stringify(value)
-                }
-                return value !== null && value !== undefined
-                    ? String(value)
-                    : "-"
-            }
-        }))
-
-        return [
-            ...generatedColumns,
-            {
-                id: "actions",
-                cell: ({ row }) => <button>Edit {row.original.Name}</button>
-            }
-        ]
-    }, [data])
 
     // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
