@@ -14,7 +14,7 @@ const routes = new Hono<HonoBindings>({ strict: false }).basePath("/entries")
 
 routes
     .get("/", async ctx => {
-        return ctx.json({ msg: "hello from " + ctx.req.method })
+        return ctx.json(await EntriesService.getEntries())
     })
     .post("/", validate("json", insertEntriesSchema), async ctx => {
         const data = ctx.req.valid("json")
