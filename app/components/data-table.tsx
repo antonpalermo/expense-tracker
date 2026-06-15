@@ -8,6 +8,13 @@ import type { SelectEntry } from "../types"
 
 const columnHelper = createColumnHelper<SelectEntry>()
 
+const parseDate = (input: Date) => {
+    const date = new Date(input)
+    return Intl.DateTimeFormat("en-PH", {
+        dateStyle: "medium"
+    }).format(date)
+}
+
 const columns = [
     columnHelper.accessor("name", {
         header: () => <span>Name</span>
@@ -19,7 +26,11 @@ const columns = [
         header: () => <span>Amount</span>
     }),
     columnHelper.accessor("createdAt", {
-        header: () => <span>Date Created</span>
+        header: () => <span>Date Created</span>,
+        cell: ({ row }) => {
+            const date = parseDate(row.original.createdAt)
+            return <span>{date}</span>
+        }
     })
 ]
 

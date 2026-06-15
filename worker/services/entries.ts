@@ -19,3 +19,15 @@ export async function create(entry: z.infer<typeof insertEntriesSchema>) {
         })
     }
 }
+
+export async function getEntries() {
+    try {
+        const data = await db.select().from(entriesTable)
+        return data
+    } catch (error) {
+        throw new HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, {
+            cause: HTTPPhrases.INTERNAL_SERVER_ERROR,
+            message: "Unable to insert new entry" + error
+        })
+    }
+}
