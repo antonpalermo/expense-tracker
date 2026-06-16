@@ -31,6 +31,16 @@ const columns = [
             const date = parseDate(row.original.createdAt)
             return <span>{date}</span>
         }
+    }),
+    columnHelper.display({
+        id: "actions",
+        cell: ({ row }) => {
+            return (
+                <button onClick={() => console.log(row.original.id)}>
+                    Action
+                </button>
+            )
+        }
     })
 ]
 
