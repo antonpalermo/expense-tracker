@@ -2,7 +2,7 @@ import Entries from "./entries"
 
 export default function App() {
     return (
-        <div>
+        <div className="bg-amber-200">
             <Entries />
         </div>
     )
