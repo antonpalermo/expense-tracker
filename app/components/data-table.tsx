@@ -1,20 +1,27 @@
+import type { ColumnDef } from "@tanstack/react-table"
 import {
     flexRender,
-    useReactTable,
     getCoreRowModel,
-    type ColumnDef
+    useReactTable
 } from "@tanstack/react-table"
-import type { SelectEntry } from "../types"
+import {
+    Table,
+    TableRow,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader
+} from "@/components/ui/table"
 
-export type DateTableProps<D, T> = {
-    data: D
-    columns: ColumnDef<T>
+export type DataTableProps<T extends Record<string, unknown>> = {
+    data: T[]
+    columns: ColumnDef<T>[]
 }
 
-export default function DataTable<D extends Record<string, unknown>, T>({
+export function DataTable<T extends Record<string, unknown>>({
     data,
     columns
-}: DateTableProps<D, T>) {
+}: DataTableProps<T>) {
     "use no memo"
 
     // eslint-disable-next-line react-hooks/incompatible-library
@@ -24,41 +31,49 @@ export default function DataTable<D extends Record<string, unknown>, T>({
         getCoreRowModel: getCoreRowModel()
     })
 
+    const contents = table.getRowModel().rows.map(row => (
+        <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+            {row.getVisibleCells().map(cell => (
+                <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+            ))}
+        </TableRow>
+    ))
+
+    const contentNotFound = (
+        <TableRow>
+            <TableCell colSpan={columns.length} className="h-24 text-center">
+                No results.
+            </TableCell>
+        </TableRow>
+    )
+
+    const header = table.getHeaderGroups().map(group => (
+        <TableRow key={group.id}>
+            {group.headers.map(heading => (
+                <TableHead key={heading.id}>
+                    {heading.isPlaceholder
+                        ? null
+                        : flexRender(
+                              heading.column.columnDef.header,
+                              heading.getContext()
+                          )}
+                </TableHead>
+            ))}
+        </TableRow>
+    ))
+
     return (
-        <div>
-            <h2>Entries</h2>
-            <table>
-                <thead>
-                    {table.getHeaderGroups().map(headerGroup => (
-                        <tr key={headerGroup.id}>
-                            {headerGroup.headers.map(header => (
-                                <th key={header.id}>
-                                    {header.isPlaceholder
-                                        ? null
-                                        : flexRender(
-                                              header.column.columnDef.header,
-                                              header.getContext()
-                                          )}
-                                </th>
-                            ))}
-                        </tr>
-                    ))}
-                </thead>
-                <tbody>
-                    {table.getRowModel().rows.map(row => (
-                        <tr key={row.id}>
-                            {row.getVisibleCells().map(cell => (
-                                <td key={cell.id}>
-                                    {flexRender(
-                                        cell.column.columnDef.cell,
-                                        cell.getContext()
-                                    )}
-                                </td>
-                            ))}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+        <div className="overflow-hidden rounded-md border">
+            <Table>
+                <TableHeader>{header}</TableHeader>
+                <TableBody>
+                    {table.getRowModel().rows.length
+                        ? contents
+                        : contentNotFound}
+                </TableBody>
+            </Table>
         </div>
     )
 }
