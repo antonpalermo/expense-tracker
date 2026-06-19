@@ -1,11 +1,13 @@
-import { Button } from "@/components/ui/button"
-
-import { columns } from "@/components/entries/columns"
-import { DataTable } from "@/components/entries/data-table"
-import { entriesKeys } from "@/query-keys"
-import { getEntries } from "@/apis/entries"
 import { useQuery } from "@tanstack/react-query"
+
+import { Button } from "@/components/ui/button"
+import { columns } from "@/components/entries/columns"
+import { DataTable } from "@/components/data-table"
+
+import { entriesKeys } from "@/query-keys"
 import type { SelectEntry } from "@/types"
+
+import { getEntries } from "@/apis/entries"
 
 export default function App() {
     const { data, isError, isPending } = useQuery<SelectEntry[]>({
