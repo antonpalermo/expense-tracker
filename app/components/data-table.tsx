@@ -15,7 +15,8 @@ import {
 
 export type DataTableProps<T extends Record<string, unknown>> = {
     data: T[]
-    columns: ColumnDef<T>[]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    columns: ColumnDef<T, any>[]
 }
 
 export function DataTable<T extends Record<string, unknown>>({
