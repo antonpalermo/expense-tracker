@@ -34,5 +34,8 @@ export const entriesTable = sqliteTable(
 
 export const insertEntriesSchema = createInsertSchema(entriesTable)
 export const selectEntriesSchema = createSelectSchema(entriesTable, {
+    id: z.string(),
+    name: z.string(),
+    description: z.string(),
     amount: z.coerce.number()
 })

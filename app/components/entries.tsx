@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
 import DynamicForm from "./form"
-import DataTable from "./data-table"
 
 import { getEntries } from "../apis/entries"
 import { entriesKeys } from "../query-keys"
@@ -24,7 +23,6 @@ export default function Entries() {
         <div>
             <h1>Application Entries</h1>
             <DynamicForm />
-            <DataTable data={data} />
         </div>
     )
 }
