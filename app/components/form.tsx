@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAppForm } from "../hooks/form"
-import type { InsertEntry } from "../types"
+import type { EntryPayload } from "../types"
 import { createEntry } from "../apis/entries"
 import { entriesKeys } from "../query-keys"
 
-const defaultValues: InsertEntry = {
+const defaultValues: EntryPayload = {
     name: "",
     description: "",
     amount: 0
