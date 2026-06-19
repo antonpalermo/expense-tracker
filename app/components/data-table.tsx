@@ -2,49 +2,19 @@ import {
     flexRender,
     useReactTable,
     getCoreRowModel,
-    createColumnHelper
+    type ColumnDef
 } from "@tanstack/react-table"
 import type { SelectEntry } from "../types"
 
-const columnHelper = createColumnHelper<SelectEntry>()
-
-const parseDate = (input: Date) => {
-    const date = new Date(input)
-    return Intl.DateTimeFormat("en-PH", {
-        dateStyle: "medium"
-    }).format(date)
+export type DateTableProps<D, T> = {
+    data: D
+    columns: ColumnDef<T>
 }
 
-const columns = [
-    columnHelper.accessor("name", {
-        header: () => <span>Name</span>
-    }),
-    columnHelper.accessor("description", {
-        header: () => <span>Description</span>
-    }),
-    columnHelper.accessor("amount", {
-        header: () => <span>Amount</span>
-    }),
-    columnHelper.accessor("createdAt", {
-        header: () => <span>Date Created</span>,
-        cell: ({ row }) => {
-            const date = parseDate(row.original.createdAt)
-            return <span>{date}</span>
-        }
-    }),
-    columnHelper.display({
-        id: "actions",
-        cell: ({ row }) => {
-            return (
-                <button onClick={() => console.log(row.original.id)}>
-                    Action
-                </button>
-            )
-        }
-    })
-]
-
-export default function DataTable({ data }: { data: SelectEntry[] }) {
+export default function DataTable<D extends Record<string, unknown>, T>({
+    data,
+    columns
+}: DateTableProps<D, T>) {
     "use no memo"
 
     // eslint-disable-next-line react-hooks/incompatible-library
