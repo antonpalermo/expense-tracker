@@ -1,12 +1,12 @@
 import { createColumnHelper } from "@tanstack/react-table"
 import { EllipsisVertical } from "lucide-react"
 
-import type { SelectEntry } from "@/types"
+import type { Entry } from "@/types"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 
-const columnHelper = createColumnHelper<SelectEntry>()
+const columnHelper = createColumnHelper<Entry>()
 
 const parseDate = (input: Date) => {
     const date = new Date(input)

@@ -5,12 +5,12 @@ import { columns } from "@/components/entries/columns"
 import { DataTable } from "@/components/data-table"
 
 import { entriesKeys } from "@/query-keys"
-import type { SelectEntry } from "@/types"
+import type { Entry } from "@/types"
 
 import { getEntries } from "@/apis/entries"
 
 export default function App() {
-    const { data, isError, isPending } = useQuery<SelectEntry[]>({
+    const { data, isError, isPending } = useQuery<Entry[]>({
         queryKey: entriesKeys.all,
         queryFn: getEntries
     })

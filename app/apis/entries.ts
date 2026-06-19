@@ -1,4 +1,4 @@
-import type { InsertEntry } from "../types"
+import type { EntryPayload } from "@/types"
 
 export async function getEntries() {
     const request = await fetch("/api/entries")
@@ -8,7 +8,7 @@ export async function getEntries() {
     return await request.json()
 }
 
-export async function createEntry(value: InsertEntry) {
+export async function createEntry(value: EntryPayload) {
     const request = await fetch("/api/entries", {
         method: "POST",
         headers: {
