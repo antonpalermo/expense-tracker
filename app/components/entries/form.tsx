@@ -1,5 +1,3 @@
-import { useForm } from "@tanstack/react-form"
-
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -12,6 +10,7 @@ import {
 } from "@/components/ui/field"
 
 import type { EntryPayload as Entry } from "@/types"
+import { useAppForm } from "@/hooks/form"
 
 const defaults: Entry = {
     name: "",
@@ -20,7 +19,7 @@ const defaults: Entry = {
 }
 
 export default function EntryForm() {
-    const form = useForm({
+    const form = useAppForm({
         defaultValues: defaults,
         onSubmit: async ({ value }) => {
             console.log(value)
