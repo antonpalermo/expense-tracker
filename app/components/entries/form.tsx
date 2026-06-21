@@ -1,3 +1,6 @@
+import { toast } from "sonner"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -8,9 +11,12 @@ import {
     FieldGroup,
     FieldLabel
 } from "@/components/ui/field"
+import { entryDialogHandler } from "@/components/dialog-handlers"
 
 import type { EntryPayload as Entry } from "@/types"
 import { useAppForm } from "@/hooks/form"
+import { createEntry } from "@/apis/entries"
+import { entriesKeys } from "@/query-keys"
 
 const defaults: Entry = {
     name: "",
@@ -19,10 +25,23 @@ const defaults: Entry = {
 }
 
 export default function EntryForm() {
+    const queryClient = useQueryClient()
+    const createEntryMutation = useMutation({
+        mutationFn: createEntry,
+        onSuccess: async () => {
+            queryClient.invalidateQueries({ queryKey: [entriesKeys] })
+            entryDialogHandler.close()
+        }
+    })
+
     const form = useAppForm({
         defaultValues: defaults,
         onSubmit: async ({ value }) => {
-            console.log(value)
+            toast.promise(await createEntryMutation.mutateAsync(value), {
+                loading: "Creating...",
+                success: () => `Created`,
+                error: "Error encountered!"
+            })
         }
     })
 
