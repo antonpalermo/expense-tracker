@@ -14,7 +14,7 @@ import EntryDialog from "@/components/entries/dialog"
 
 export default function App() {
     const { data, isError, isPending } = useQuery<Entry[]>({
-        queryKey: entriesKeys.all,
+        queryKey: [entriesKeys.all],
         queryFn: getEntries
     })
 
