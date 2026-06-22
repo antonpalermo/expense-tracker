@@ -2,7 +2,8 @@ import { Hono } from "hono"
 import { db } from "../database/db"
 import { entriesInsertSchema, entriesTable } from "../database/schemas/entries"
 
-import type { Bindings, Field } from "../bindings"
+import type { Field } from "../bindings"
+import type { HonoBindings } from "../index"
 
 import z from "zod"
 import { eq } from "drizzle-orm"
@@ -10,7 +11,7 @@ import { HTTPException } from "hono/http-exception"
 
 type Entries = z.infer<typeof entriesInsertSchema>
 
-const routes = new Hono<Bindings>({ strict: false }).basePath("/entries")
+const routes = new Hono<HonoBindings>({ strict: false }).basePath("/entries")
 
 function parseFields(
     fields: Field[] | null | undefined

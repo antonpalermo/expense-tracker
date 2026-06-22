@@ -1,7 +1,3 @@
-export type Bindings = {
-    Bindings: CloudflareBindings
-}
-
 export type FieldType = {
     text: string
     number: number

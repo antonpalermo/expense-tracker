@@ -1,4 +1,6 @@
-import type { Bindings, Field, FormSchema } from "@/bindings"
+import type { Field, FormSchema } from "@/bindings"
+import type { HonoBindings } from "../index"
+
 import { db } from "@/database/db"
 import { formTable } from "@/database/schemas"
 import { get, set } from "@/lib/cache"
@@ -6,7 +8,7 @@ import nanoid from "@/lib/nanoid"
 import { sql } from "drizzle-orm"
 import { Hono } from "hono"
 
-const routes = new Hono<Bindings>({ strict: false }).basePath("/forms")
+const routes = new Hono<HonoBindings>({ strict: false }).basePath("/forms")
 
 export const FORM_CONFIG_KEY = "user:form_schema"
 
