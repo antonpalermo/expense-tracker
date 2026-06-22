@@ -26,21 +26,24 @@ const defaults: Entry = {
 
 export default function EntryForm() {
     const queryClient = useQueryClient()
+
     const createEntryMutation = useMutation({
         mutationFn: createEntry,
         onSuccess: async () => {
-            queryClient.invalidateQueries({ queryKey: [entriesKeys] })
-            entryDialogHandler.close()
+            await queryClient.invalidateQueries({ queryKey: [entriesKeys.all] })
         }
     })
 
     const form = useAppForm({
         defaultValues: defaults,
         onSubmit: async ({ value }) => {
-            toast.promise(await createEntryMutation.mutateAsync(value), {
+            toast.promise(createEntryMutation.mutateAsync(value), {
                 loading: "Creating...",
-                success: () => `Created`,
-                error: "Error encountered!"
+                success: (data: Entry) => {
+                    entryDialogHandler.close()
+                    return `${data.name} created!`
+                },
+                error: "Error creating " + value.name
             })
         }
     })
@@ -49,7 +52,6 @@ export default function EntryForm() {
         <form
             onSubmit={e => {
                 e.preventDefault()
-                e.stopPropagation()
                 form.handleSubmit()
             }}
         >
