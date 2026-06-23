@@ -1,6 +1,5 @@
 import { Hono } from "hono"
 
-import type { Field } from "../bindings"
 import type { HonoBindings } from "../index"
 
 import { validate } from "@/lib/validator"
