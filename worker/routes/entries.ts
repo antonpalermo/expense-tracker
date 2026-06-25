@@ -33,7 +33,8 @@ routes.on(["GET", "PATCH", "DELETE"], "/:id", async ctx => {
             return ctx.json({ msg: "hello from " + method + id })
         }
         case "DELETE": {
-            return ctx.json({ msg: "hello from " + method + id })
+            await EntriesService.remove(id)
+            return ctx.json({ msg: id + "successfully deleted" })
         }
     }
 })

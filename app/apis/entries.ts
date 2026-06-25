@@ -8,6 +8,18 @@ export async function getEntries() {
     return await request.json()
 }
 
+export async function removeEntry(id: string) {
+    const request = await fetch(`/api/entries/${id}`, {
+        method: "DELETE"
+    })
+
+    if (!request.ok) {
+        throw new Error("unable to fetch entries")
+    }
+
+    return await request.json()
+}
+
 export async function createEntry(value: EntryPayload) {
     const request = await fetch("/api/entries", {
         method: "POST",
