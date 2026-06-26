@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { columns } from "@/components/entries/columns"
 import { DataTable } from "@/components/data-table"
-import { entryDialogHandler } from "@/components/dialog-handlers"
+import { createEntryHandler } from "@/components/dialog-handlers"
 
 import { entriesKeys } from "@/query-keys"
 import { getEntries } from "@/apis/entries"
@@ -11,6 +11,7 @@ import type { Entry } from "@/types"
 
 import EntryForm from "@/components/entries/form"
 import EntryDialog from "@/components/entries/dialog"
+import DialogConfirmation from "./entries/dialog-confirmation"
 
 export default function App() {
     const { data, isError, isPending } = useQuery<Entry[]>({
@@ -34,7 +35,7 @@ export default function App() {
                         <span></span>
                         <div>
                             <Button
-                                onClick={() => entryDialogHandler.open(null)}
+                                onClick={() => createEntryHandler.open(null)}
                             >
                                 Create
                             </Button>
@@ -51,10 +52,11 @@ export default function App() {
                                 title: "Create new entry",
                                 description: "Creates a new entry"
                             }}
-                            handler={entryDialogHandler}
+                            handler={createEntryHandler}
                         >
                             <EntryForm />
                         </EntryDialog>
+                        <DialogConfirmation />
                         <DataTable data={data} columns={columns} />
                     </div>
                 </div>

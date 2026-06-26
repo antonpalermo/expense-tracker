@@ -1,6 +1,3 @@
-import { removeEntry } from "@/apis/entries"
-import { entriesKeys } from "@/query-keys"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,20 +11,13 @@ import { Button } from "../ui/button"
 import { EllipsisVertical } from "lucide-react"
 import type { CellContext } from "@tanstack/react-table"
 import type { Entry } from "@/types"
+import { deleteEntryHandler } from "../dialog-handlers"
 
 export default function TableActions({
     context
 }: {
     context: CellContext<Entry, unknown>
 }) {
-    const queryClient = useQueryClient()
-    const mutation = useMutation({
-        mutationFn: removeEntry,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [entriesKeys.all] })
-        }
-    })
-
     return (
         <DropdownMenu>
             <DropdownMenuTrigger
@@ -53,7 +43,11 @@ export default function TableActions({
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>Edit</DropdownMenuItem>
                     <DropdownMenuItem
-                        onClick={() => mutation.mutate(context.row.original.id)}
+                        onClick={() =>
+                            deleteEntryHandler.openWithPayload({
+                                id: context.row.original.id
+                            })
+                        }
                     >
                         Delete
                     </DropdownMenuItem>
