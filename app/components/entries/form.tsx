@@ -11,7 +11,7 @@ import {
     FieldGroup,
     FieldLabel
 } from "@/components/ui/field"
-import { entryDialogHandler } from "@/components/dialog-handlers"
+import { createEntryHandler } from "@/components/dialog-handlers"
 
 import type { EntryPayload as Entry } from "@/types"
 import { useAppForm } from "@/hooks/form"
@@ -40,7 +40,7 @@ export default function EntryForm() {
             toast.promise(createEntryMutation.mutateAsync(value), {
                 loading: "Creating...",
                 success: (data: Entry) => {
-                    entryDialogHandler.close()
+                    createEntryHandler.close()
                     return `${data.name} created!`
                 },
                 error: "Error creating " + value.name
