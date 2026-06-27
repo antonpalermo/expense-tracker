@@ -21,6 +21,7 @@ export default function DialogConfirmation() {
         mutationFn: removeEntry,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [entriesKeys.all] })
+            deleteEntryHandler.close()
         }
     })
 
@@ -34,14 +35,17 @@ export default function DialogConfirmation() {
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                             This action cannot be undone. This will permanently
-                            delete your account and remove your data from our
+                            delete your entry and remove your data from our
                             servers.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            onClick={() => mutation.mutate(payload.id)}
+                            onClick={() => {
+                                const entry = payload as { id: string }
+                                mutation.mutate(entry.id)
+                            }}
                         >
                             Continue
                         </AlertDialogAction>
