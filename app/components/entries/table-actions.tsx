@@ -12,6 +12,7 @@ import { EllipsisVertical } from "lucide-react"
 import type { CellContext } from "@tanstack/react-table"
 import type { Entry } from "@/types"
 import { deleteEntryHandler } from "../dialog-handlers"
+import { AlertDialogTrigger } from "../ui/alert-dialog"
 
 export default function TableActions({
     context
@@ -43,10 +44,12 @@ export default function TableActions({
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>Edit</DropdownMenuItem>
                     <DropdownMenuItem
-                        onClick={() =>
-                            deleteEntryHandler.openWithPayload({
-                                id: context.row.original.id
-                            })
+                        render={
+                            <AlertDialogTrigger
+                                className="w-full"
+                                handle={deleteEntryHandler}
+                                payload={{ id: context.row.original.id }}
+                            />
                         }
                     >
                         Delete
