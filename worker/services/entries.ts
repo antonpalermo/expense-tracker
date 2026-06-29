@@ -1,7 +1,11 @@
 import { HTTPException } from "hono/http-exception"
 
 import { db } from "@/database/db"
-import { insertEntriesSchema, entriesTable } from "@/database/schemas"
+import {
+    insertEntriesSchema,
+    type updateEntriesSchema,
+    entriesTable
+} from "@/database/schemas"
 
 import type { z } from "zod"
 
@@ -45,6 +49,25 @@ export async function remove(id: string) {
                 message: "entry with " + id + "does not exist"
             })
         }
+
+        return data
+    } catch (error) {
+        throw new HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, {
+            cause: HTTPPhrases.INTERNAL_SERVER_ERROR,
+            message: "Unable to insert new entry" + error
+        })
+    }
+}
+
+export async function update(
+    id: string,
+    entry: z.infer<typeof updateEntriesSchema>
+) {
+    try {
+        const data = await db
+            .update(entriesTable)
+            .set(entry)
+            .where(eq(entriesTable.id, id))
 
         return data
     } catch (error) {
