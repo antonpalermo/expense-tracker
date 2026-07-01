@@ -20,21 +20,21 @@ routes
         const newEntry = await EntriesService.create(data)
         return ctx.json(newEntry, HTTPStatus.CREATED)
     })
-    .patch("/:id", validate("json", updateEntriesSchema), ctx => {
-        const method = ctx.req.method
+    .patch("/:id", validate("json", updateEntriesSchema), async ctx => {
         const id = ctx.req.param("id")
-        return ctx.json({ msg: "hello from " + method + id })
+        const value = ctx.req.valid("json")
+
+        const result = await EntriesService.update(id, value)
+
+        return ctx.json(result)
     })
 
-routes.on(["GET", "PATCH", "DELETE"], "/:id", async ctx => {
+routes.on(["GET", "DELETE"], "/:id", async ctx => {
     const method = ctx.req.method
     const id = ctx.req.param("id")
 
     switch (method) {
         case "GET": {
-            return ctx.json({ msg: "hello from " + method + id })
-        }
-        case "PATCH": {
             return ctx.json({ msg: "hello from " + method + id })
         }
         case "DELETE": {
