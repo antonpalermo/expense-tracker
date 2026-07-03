@@ -5,29 +5,37 @@ import {
     DialogHeader,
     DialogTitle
 } from "@/components/ui/dialog"
-import type { ReactNode } from "react"
-import type { Dialog as BaseDialog } from "@base-ui/react"
+import EntryForm from "./form"
+import { entryHandler, type EntryHandlerPayload } from "../dialog-handlers"
 
-export type EntryDialogProps<T> = {
-    header: { title: string; description?: string }
-    children: ReactNode
-    handler: BaseDialog.Handle<T>
-}
-
-export default function EntryDialog<T>({
-    header,
-    children,
-    handler
-}: EntryDialogProps<T>) {
+export default function EntryFormDialog() {
     return (
-        <Dialog handle={handler}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{header.title}</DialogTitle>
-                    <DialogDescription>{header.description}</DialogDescription>
-                </DialogHeader>
-                {children}
-            </DialogContent>
+        <Dialog handle={entryHandler}>
+            {({ payload }) => {
+                const entry = payload as EntryHandlerPayload
+
+                if (!entry) {
+                    return null
+                }
+
+                return (
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>
+                                {entry.type === "create"
+                                    ? "Create new entry"
+                                    : `Update ${entry.data?.name}`}
+                            </DialogTitle>
+                            <DialogDescription>
+                                {entry.type === "create"
+                                    ? "Creates new transaction entry"
+                                    : "Updates currently selected entry"}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <EntryForm type={entry.type} resetData={entry.data} />
+                    </DialogContent>
+                )
+            }}
         </Dialog>
     )
 }
