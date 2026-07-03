@@ -11,8 +11,9 @@ import { Button } from "../ui/button"
 import { EllipsisVertical } from "lucide-react"
 import type { CellContext } from "@tanstack/react-table"
 import type { Entry } from "@/types"
-import { deleteEntryHandler } from "../dialog-handlers"
+import { deleteEntryHandler, entryHandler } from "../dialog-handlers"
 import { AlertDialogTrigger } from "../ui/alert-dialog"
+import { DialogTrigger } from "../ui/dialog"
 
 export default function TableActions({
     context
@@ -42,7 +43,21 @@ export default function TableActions({
                         Copy payment ID
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                    <DropdownMenuItem
+                        render={
+                            <DialogTrigger
+                                className="w-full"
+                                handle={entryHandler}
+                                payload={{
+                                    type: "edit",
+                                    id: context.row.original.id,
+                                    data: context.row.original
+                                }}
+                            />
+                        }
+                    >
+                        Edit
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                         render={
                             <AlertDialogTrigger

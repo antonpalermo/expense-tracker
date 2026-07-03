@@ -9,15 +9,15 @@ import {
     FieldGroup,
     FieldLabel
 } from "@/components/ui/field"
-import { createEntryHandler } from "@/components/dialog-handlers"
+import { entryHandler } from "@/components/dialog-handlers"
 import {
     entryFormFields,
     type EntryFormFieldConfig
 } from "@/components/entries/form-fields"
 
-import type { EntryPayload as Entry } from "@/types"
+import type { EntryPayload as Entry, EntryPayload } from "@/types"
 import { useAppForm } from "@/hooks/form"
-import { createEntry } from "@/apis/entries"
+import { createEntry, updateEntry } from "@/apis/entries"
 import { entriesKeys } from "@/query-keys"
 
 const defaults: Entry = {
@@ -42,7 +42,19 @@ type FieldRenderProps = {
     ) => void
 }
 
-export default function EntryForm() {
+export type EntryFormProps =
+    | {
+          type: "create"
+          id?: string
+          resetData?: EntryPayload
+      }
+    | {
+          type: "edit"
+          id: string
+          resetData: EntryPayload
+      }
+
+export default function EntryForm({ type, resetData }: EntryFormProps) {
     const queryClient = useQueryClient()
 
     const createEntryMutation = useMutation({
@@ -52,17 +64,44 @@ export default function EntryForm() {
         }
     })
 
+    const updateEntryMutation = useMutation({
+        mutationFn: updateEntry,
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: [entriesKeys.all] })
+        }
+    })
+
     const form = useAppForm({
-        defaultValues: defaults,
+        defaultValues: resetData ? (resetData as EntryPayload) : defaults,
         onSubmit: async ({ value }) => {
-            toast.promise(createEntryMutation.mutateAsync(value), {
-                loading: "Creating...",
-                success: (data: Entry) => {
-                    createEntryHandler.close()
-                    return `${data.name} created!`
-                },
-                error: "Error creating " + value.name
-            })
+            switch (type) {
+                case "create":
+                    toast.promise(createEntryMutation.mutateAsync(value), {
+                        loading: "Creating...",
+                        success: (data: Entry) => {
+                            entryHandler.close()
+                            return `${data.name} created!`
+                        },
+                        error: "Error creating " + value.name
+                    })
+                    break
+                case "edit":
+                    toast.promise(
+                        updateEntryMutation.mutateAsync({
+                            id: resetData.id,
+                            ...value
+                        }),
+                        {
+                            loading: "Updating...",
+                            success: (data: Entry) => {
+                                entryHandler.close()
+                                return `${data.name} updated!`
+                            },
+                            error: "Error updating " + value.name
+                        }
+                    )
+                    break
+            }
         }
     })
 
@@ -117,7 +156,9 @@ export default function EntryForm() {
                         <DialogClose
                             render={<Button variant="ghost">Cancel</Button>}
                         />
-                        <Button type="submit">Create</Button>
+                        <Button type="submit">
+                            {type === "create" ? "Create" : "Update"}
+                        </Button>
                     </DialogFooter>
                 </Field>
             </FieldGroup>

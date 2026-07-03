@@ -35,3 +35,19 @@ export async function createEntry(value: EntryPayload) {
 
     return await request.json()
 }
+
+export async function updateEntry(value: EntryPayload) {
+    const request = await fetch(`/api/entries/${value.id}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(value)
+    })
+
+    if (!request) {
+        throw new Error("unable to create tasks")
+    }
+
+    return await request.json()
+}

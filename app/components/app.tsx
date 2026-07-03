@@ -3,14 +3,13 @@ import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { columns } from "@/components/entries/columns"
 import { DataTable } from "@/components/data-table"
-import { createEntryHandler } from "@/components/dialog-handlers"
+import { entryHandler } from "@/components/dialog-handlers"
 
 import { entriesKeys } from "@/query-keys"
 import { getEntries } from "@/apis/entries"
 import type { Entry } from "@/types"
 
-import EntryForm from "@/components/entries/form"
-import EntryDialog from "@/components/entries/dialog"
+import EntryFormDialog from "@/components/entries/dialog"
 import DialogConfirmation from "./entries/dialog-confirmation"
 
 export default function App() {
@@ -29,13 +28,18 @@ export default function App() {
 
     return (
         <>
+            <EntryFormDialog />
             <nav className="border py-2">
                 <div className="container mx-auto px-5">
                     <div className="w-full flex flex-row items-center justify-between">
                         <span></span>
                         <div>
                             <Button
-                                onClick={() => createEntryHandler.open(null)}
+                                onClick={() =>
+                                    entryHandler.openWithPayload({
+                                        type: "create"
+                                    })
+                                }
                             >
                                 Create
                             </Button>
@@ -47,15 +51,6 @@ export default function App() {
                 <div className="py-5">
                     <div className="space-y-5">
                         <h2 className="text-2xl font-bold">Expenses</h2>
-                        <EntryDialog
-                            header={{
-                                title: "Create new entry",
-                                description: "Creates a new entry"
-                            }}
-                            handler={createEntryHandler}
-                        >
-                            <EntryForm />
-                        </EntryDialog>
                         <DialogConfirmation />
                         <DataTable data={data} columns={columns} />
                     </div>
