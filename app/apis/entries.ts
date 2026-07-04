@@ -36,7 +36,7 @@ export async function createEntry(value: EntryPayload) {
     return await request.json()
 }
 
-export async function updateEntry(value: EntryPayload) {
+export async function updateEntry(value: Record<string, unknown>) {
     const request = await fetch(`/api/entries/${value.id}`, {
         method: "PATCH",
         headers: {

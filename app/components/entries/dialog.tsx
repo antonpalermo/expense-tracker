@@ -32,7 +32,15 @@ export default function EntryFormDialog() {
                                     : "Updates currently selected entry"}
                             </DialogDescription>
                         </DialogHeader>
-                        <EntryForm type={entry.type} resetData={entry.data} />
+                        {entry.type === "edit" ? (
+                            <EntryForm
+                                type="edit"
+                                id={entry.id!}
+                                resetData={entry.data ?? {}}
+                            />
+                        ) : (
+                            <EntryForm type="create" />
+                        )}
                     </DialogContent>
                 )
             }}

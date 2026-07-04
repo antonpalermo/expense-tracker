@@ -51,7 +51,7 @@ export type EntryFormProps =
     | {
           type: "edit"
           id: string
-          resetData: EntryPayload
+          resetData: Record<string, unknown>
       }
 
 export default function EntryForm({ type, resetData }: EntryFormProps) {
