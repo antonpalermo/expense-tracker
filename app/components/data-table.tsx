@@ -1,29 +1,29 @@
-import type { ColumnDef } from "@tanstack/react-table"
+import type { ColumnDef } from '@tanstack/react-table'
 import {
     flexRender,
     getCoreRowModel,
     useReactTable
-} from "@tanstack/react-table"
+} from '@tanstack/react-table'
 import {
     Table,
-    TableRow,
     TableBody,
     TableCell,
     TableHead,
-    TableHeader
-} from "@/components/ui/table"
+    TableHeader,
+    TableRow
+} from '@/components/ui/table'
 
 export type DataTableProps<T extends Record<string, unknown>> = {
     data: T[]
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    columns: ColumnDef<T, any>[]
+    columns: ColumnDef<T, unknown>[]
 }
 
 export function DataTable<T extends Record<string, unknown>>({
     data,
     columns
 }: DataTableProps<T>) {
-    "use no memo"
+    'use no memo'
 
     // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
@@ -33,7 +33,7 @@ export function DataTable<T extends Record<string, unknown>>({
     })
 
     const contents = table.getRowModel().rows.map(row => (
-        <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+        <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
             {row.getVisibleCells().map(cell => (
                 <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

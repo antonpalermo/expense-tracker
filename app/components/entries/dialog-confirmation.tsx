@@ -1,19 +1,17 @@
-import { useQueryClient, useMutation } from "@tanstack/react-query"
-
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { removeEntry } from '@/apis/entries'
+import { deleteEntryHandler } from '@/components/dialog-handlers'
 import {
     AlertDialog,
-    AlertDialogTitle,
-    AlertDialogHeader,
-    AlertDialogFooter,
     AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
-    AlertDialogDescription
-} from "@/components/ui/alert-dialog"
-import { deleteEntryHandler } from "@/components/dialog-handlers"
-
-import { entriesKeys } from "@/query-keys"
-import { removeEntry } from "@/apis/entries"
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+import { entriesKeys } from '@/query-keys'
 
 export default function DialogConfirmation() {
     const queryClient = useQueryClient()

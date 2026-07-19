@@ -1,16 +1,13 @@
-import { useQuery } from "@tanstack/react-query"
-
-import { Button } from "@/components/ui/button"
-import { columns } from "@/components/entries/columns"
-import { DataTable } from "@/components/data-table"
-import { entryHandler } from "@/components/dialog-handlers"
-
-import { entriesKeys } from "@/query-keys"
-import { getEntries } from "@/apis/entries"
-import type { Entry } from "@/types"
-
-import EntryFormDialog from "@/components/entries/dialog"
-import DialogConfirmation from "./entries/dialog-confirmation"
+import { useQuery } from '@tanstack/react-query'
+import { getEntries } from '@/apis/entries'
+import { DataTable } from '@/components/data-table'
+import { entryHandler } from '@/components/dialog-handlers'
+import { columns } from '@/components/entries/columns'
+import EntryFormDialog from '@/components/entries/dialog'
+import { Button } from '@/components/ui/button'
+import { entriesKeys } from '@/query-keys'
+import type { Entry } from '@/types'
+import DialogConfirmation from './entries/dialog-confirmation'
 
 export default function App() {
     const { data, isError, isPending } = useQuery<Entry[]>({
@@ -37,7 +34,7 @@ export default function App() {
                             <Button
                                 onClick={() =>
                                     entryHandler.openWithPayload({
-                                        type: "create"
+                                        type: 'create'
                                     })
                                 }
                             >

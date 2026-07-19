@@ -1,3 +1,10 @@
+import type { CellContext } from '@tanstack/react-table'
+import { EllipsisVertical } from 'lucide-react'
+import type { Entry } from '@/types'
+import { deleteEntryHandler, entryHandler } from '../dialog-handlers'
+import { AlertDialogTrigger } from '../ui/alert-dialog'
+import { Button } from '../ui/button'
+import { DialogTrigger } from '../ui/dialog'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -6,14 +13,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger
-} from "../ui/dropdown-menu"
-import { Button } from "../ui/button"
-import { EllipsisVertical } from "lucide-react"
-import type { CellContext } from "@tanstack/react-table"
-import type { Entry } from "@/types"
-import { deleteEntryHandler, entryHandler } from "../dialog-handlers"
-import { AlertDialogTrigger } from "../ui/alert-dialog"
-import { DialogTrigger } from "../ui/dialog"
+} from '../ui/dropdown-menu'
 
 export default function TableActions({
     context
@@ -49,7 +49,7 @@ export default function TableActions({
                                 className="w-full"
                                 handle={entryHandler}
                                 payload={{
-                                    type: "edit",
+                                    type: 'edit',
                                     id: context.row.original.id,
                                     data: context.row.original
                                 }}

@@ -1,23 +1,23 @@
-import { set } from "@/lib/cache"
+import { set } from '@/lib/cache'
 
 type Field = {
     uid: string
-    type: "text" | "number"
+    type: 'text' | 'number'
     name: string
 }
 
-export const FIELD_KEY = "user:form_schema"
+export const FIELD_KEY = 'user:form_schema'
 
 export const DEFAULT_FEILDS: Field[] = [
     {
         uid: crypto.randomUUID(),
-        name: "Description",
-        type: "text"
+        name: 'Description',
+        type: 'text'
     },
     {
         uid: crypto.randomUUID(),
-        name: "Amount",
-        type: "number"
+        name: 'Amount',
+        type: 'number'
     }
 ]
 
