@@ -1,5 +1,5 @@
-import { customAlphabet } from "nanoid"
+import { customAlphabet } from 'nanoid'
 
-const SAMPLES = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+const SAMPLES = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 
 export default customAlphabet(SAMPLES, 20)

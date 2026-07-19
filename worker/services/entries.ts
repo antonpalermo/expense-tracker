@@ -1,17 +1,13 @@
-import { HTTPException } from "hono/http-exception"
-
-import { db } from "@/database/db"
+import { eq } from 'drizzle-orm'
+import { HTTPException } from 'hono/http-exception'
+import type { z } from 'zod'
+import { db } from '@/database/db'
 import {
+    entriesTable,
     insertEntriesSchema,
-    type updateEntriesSchema,
-    entriesTable
-} from "@/database/schemas"
-
-import type { z } from "zod"
-
-import * as HTTPStatus from "@/status-codes"
-import * as HTTPPhrases from "@/status-phrases"
-import { eq } from "drizzle-orm"
+    type updateEntriesSchema
+} from '@/database/schemas'
+import * as HTTPStatus from '@/status-codes'
 
 export async function create(entry: z.infer<typeof insertEntriesSchema>) {
     try {
@@ -19,8 +15,8 @@ export async function create(entry: z.infer<typeof insertEntriesSchema>) {
         return data
     } catch (error) {
         throw new HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, {
-            cause: HTTPPhrases.INTERNAL_SERVER_ERROR,
-            message: "Unable to insert new entry" + error
+            cause: error,
+            message: 'Unable to insert new entry'
         })
     }
 }
@@ -31,8 +27,8 @@ export async function getEntries() {
         return data
     } catch (error) {
         throw new HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, {
-            cause: HTTPPhrases.INTERNAL_SERVER_ERROR,
-            message: "Unable to insert new entry" + error
+            cause: error,
+            message: 'Unable to insert new entry'
         })
     }
 }
@@ -45,16 +41,15 @@ export async function remove(id: string) {
 
         if (!data) {
             return new HTTPException(HTTPStatus.NOT_FOUND, {
-                cause: HTTPPhrases.NOT_FOUND,
-                message: "entry with " + id + "does not exist"
+                message: 'entry with ' + id + 'does not exist'
             })
         }
 
         return data
     } catch (error) {
         throw new HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, {
-            cause: HTTPPhrases.INTERNAL_SERVER_ERROR,
-            message: "Unable to insert new entry" + error
+            cause: error,
+            message: 'Unable to insert new entry'
         })
     }
 }
@@ -72,8 +67,8 @@ export async function update(
         return data
     } catch (error) {
         throw new HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, {
-            cause: HTTPPhrases.INTERNAL_SERVER_ERROR,
-            message: "Unable to insert new entry" + error
+            cause: error,
+            message: 'Unable to insert new entry'
         })
     }
 }

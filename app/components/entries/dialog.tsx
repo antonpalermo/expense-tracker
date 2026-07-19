@@ -4,9 +4,9 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle
-} from "@/components/ui/dialog"
-import EntryForm from "./form"
-import { entryHandler, type EntryHandlerPayload } from "../dialog-handlers"
+} from '@/components/ui/dialog'
+import { type EntryHandlerPayload, entryHandler } from '../dialog-handlers'
+import EntryForm from './form'
 
 export default function EntryFormDialog() {
     return (
@@ -22,17 +22,17 @@ export default function EntryFormDialog() {
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>
-                                {entry.type === "create"
-                                    ? "Create new entry"
+                                {entry.type === 'create'
+                                    ? 'Create new entry'
                                     : `Update ${entry.data?.name}`}
                             </DialogTitle>
                             <DialogDescription>
-                                {entry.type === "create"
-                                    ? "Creates new transaction entry"
-                                    : "Updates currently selected entry"}
+                                {entry.type === 'create'
+                                    ? 'Creates new transaction entry'
+                                    : 'Updates currently selected entry'}
                             </DialogDescription>
                         </DialogHeader>
-                        {entry.type === "edit" ? (
+                        {entry.type === 'edit' ? (
                             <EntryForm
                                 type="edit"
                                 id={entry.id!}

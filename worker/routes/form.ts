@@ -1,16 +1,15 @@
-import type { Field, FormSchema } from "@/bindings"
-import type { HonoBindings } from "../index"
+import { sql } from 'drizzle-orm'
+import { Hono } from 'hono'
+import type { Field, FormSchema } from '@/bindings'
+import { db } from '@/database/db'
+import { formTable } from '@/database/schemas'
+import { get, set } from '@/lib/cache'
+import nanoid from '@/lib/nanoid'
+import type { HonoBindings } from '../index'
 
-import { db } from "@/database/db"
-import { formTable } from "@/database/schemas"
-import { get, set } from "@/lib/cache"
-import nanoid from "@/lib/nanoid"
-import { sql } from "drizzle-orm"
-import { Hono } from "hono"
+const routes = new Hono<HonoBindings>({ strict: false }).basePath('/forms')
 
-const routes = new Hono<HonoBindings>({ strict: false }).basePath("/forms")
-
-export const FORM_CONFIG_KEY = "user:form_schema"
+export const FORM_CONFIG_KEY = 'user:form_schema'
 
 function buildSchema(fields: Field[]): FormSchema {
     const fieldDetails = fields.map(field => [field.uid, field.default])
@@ -28,20 +27,20 @@ async function createBlankSchema() {
     const blankSchema: Field[] = [
         {
             uid: nanoid(),
-            name: "Name",
-            type: "text",
-            default: ""
+            name: 'Name',
+            type: 'text',
+            default: ''
         },
         {
             uid: nanoid(),
-            name: "Description",
-            type: "text",
-            default: ""
+            name: 'Description',
+            type: 'text',
+            default: ''
         },
         {
             uid: nanoid(),
-            name: "Amount",
-            type: "number",
+            name: 'Amount',
+            type: 'number',
             default: 0
         }
     ]
@@ -60,7 +59,7 @@ async function createBlankSchema() {
 
         return parsedResponse
     } catch (error) {
-        throw new Error("app: unable to insert new form schema", {
+        throw new Error('app: unable to insert new form schema', {
             cause: error
         })
     }
@@ -92,7 +91,7 @@ async function getFormDetails(): Promise<FormSchema | null> {
     return cachedSchema
 }
 
-async function createField(field: Omit<Field, "uid">) {
+async function createField(field: Omit<Field, 'uid'>) {
     const data = {
         uid: nanoid(),
         ...field
@@ -117,21 +116,21 @@ async function createField(field: Omit<Field, "uid">) {
 
         return parsedResponse
     } catch (error) {
-        throw new Error("app: insert new field in formSchema configuration", {
+        throw new Error('app: insert new field in formSchema configuration', {
             cause: error
         })
     }
 }
 
-routes.on(["POST", "GET", "PATCH"], "/schema", async ctx => {
+routes.on(['POST', 'GET', 'PATCH'], '/schema', async ctx => {
     const method = ctx.req.method
 
     switch (method) {
-        case "POST": {
+        case 'POST': {
             const result = await createBlankSchema()
             return ctx.json(result)
         }
-        case "GET": {
+        case 'GET': {
             const result = await getFormDetails()
 
             if (!result) {
@@ -140,7 +139,7 @@ routes.on(["POST", "GET", "PATCH"], "/schema", async ctx => {
 
             return ctx.json(result)
         }
-        case "PATCH": {
+        case 'PATCH': {
             const body = await ctx.req.json()
 
             const result = await createField(body)
@@ -149,8 +148,8 @@ routes.on(["POST", "GET", "PATCH"], "/schema", async ctx => {
     }
 })
 
-routes.patch("/schema/:id", async ctx => {
-    return ctx.json({ msg: "ok" })
+routes.patch('/schema/:id', async ctx => {
+    return ctx.json({ msg: 'ok' })
 })
 
 export default routes
