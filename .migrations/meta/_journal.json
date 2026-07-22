@@ -43,6 +43,13 @@
             "when": 1781278918166,
             "tag": "0005_glossy_nehzno",
             "breakpoints": true
+        },
+        {
+            "idx": 6,
+            "version": "6",
+            "when": 1784195485606,
+            "tag": "0006_low_captain_cross",
+            "breakpoints": true
         }
     ]
 }
