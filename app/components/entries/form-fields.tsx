@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
+import type { ReactNode } from 'react'
 
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 
 export type EntryFormFieldControlProps = {
     name: string
@@ -14,15 +14,15 @@ export type EntryFormFieldControlProps = {
 }
 
 export type EntryFormFieldConfig = {
-    name: "name" | "description" | "amount"
+    name: 'name' | 'description' | 'amount'
     label: string
     renderControl: (props: EntryFormFieldControlProps) => ReactNode
 }
 
 export const entryFormFields: EntryFormFieldConfig[] = [
     {
-        name: "name",
-        label: "Name",
+        name: 'name',
+        label: 'Name',
         renderControl: ({
             name,
             value,
@@ -44,8 +44,8 @@ export const entryFormFields: EntryFormFieldConfig[] = [
         )
     },
     {
-        name: "description",
-        label: "Description",
+        name: 'description',
+        label: 'Description',
         renderControl: ({
             name,
             value,
@@ -66,8 +66,8 @@ export const entryFormFields: EntryFormFieldConfig[] = [
         )
     },
     {
-        name: "amount",
-        label: "Amount",
+        name: 'amount',
+        label: 'Amount',
         renderControl: ({
             name,
             value,

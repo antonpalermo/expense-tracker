@@ -1,45 +1,44 @@
-import { Hono } from "hono"
+import { Hono } from 'hono'
+import { insertEntriesSchema, updateEntriesSchema } from '@/database/schemas'
 
-import type { HonoBindings } from "../index"
-
-import { validate } from "@/lib/validator"
-import { insertEntriesSchema, updateEntriesSchema } from "@/database/schemas"
-
-import * as HTTPStatus from "@/status-codes"
+import { validate } from '@/lib/validator'
 // import * as HTTPPhrases from "@/status-phrases"
-import * as EntriesService from "@/services/entries"
+import * as EntriesService from '@/services/entries'
 
-const routes = new Hono<HonoBindings>({ strict: false }).basePath("/entries")
+import * as HTTPStatus from '@/status-codes'
+import type { HonoBindings } from '../index'
+
+const routes = new Hono<HonoBindings>({ strict: false }).basePath('/entries')
 
 routes
-    .get("/", async ctx => {
+    .get('/', async ctx => {
         return ctx.json(await EntriesService.getEntries())
     })
-    .post("/", validate("json", insertEntriesSchema), async ctx => {
-        const data = ctx.req.valid("json")
+    .post('/', validate('json', insertEntriesSchema), async ctx => {
+        const data = ctx.req.valid('json')
         const newEntry = await EntriesService.create(data)
         return ctx.json(newEntry, HTTPStatus.CREATED)
     })
-    .patch("/:id", validate("json", updateEntriesSchema), async ctx => {
-        const id = ctx.req.param("id")
-        const value = ctx.req.valid("json")
+    .patch('/:id', validate('json', updateEntriesSchema), async ctx => {
+        const id = ctx.req.param('id')
+        const value = ctx.req.valid('json')
 
         const result = await EntriesService.update(id, value)
 
         return ctx.json(result)
     })
 
-routes.on(["GET", "DELETE"], "/:id", async ctx => {
+routes.on(['GET', 'DELETE'], '/:id', async ctx => {
     const method = ctx.req.method
-    const id = ctx.req.param("id")
+    const id = ctx.req.param('id')
 
     switch (method) {
-        case "GET": {
-            return ctx.json({ msg: "hello from " + method + id })
+        case 'GET': {
+            return ctx.json({ msg: 'hello from ' + method + id })
         }
-        case "DELETE": {
+        case 'DELETE': {
             await EntriesService.remove(id)
-            return ctx.json({ msg: id + "successfully deleted" })
+            return ctx.json({ msg: id + 'successfully deleted' })
         }
     }
 })

@@ -1,7 +1,7 @@
 export const entriesKeys = {
-    all: ["ENTRIES"]
+    all: ['ENTRIES']
 }
 
 export const formSchemaKeys = {
-    all: ["FORM_SCHEMA"]
+    all: ['FORM_SCHEMA']
 }

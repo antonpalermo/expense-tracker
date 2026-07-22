@@ -1,28 +1,26 @@
-import { toast } from "sonner"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-
-import { Button } from "@/components/ui/button"
-import { DialogClose, DialogFooter } from "@/components/ui/dialog"
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { createEntry, updateEntry } from '@/apis/entries'
+import { entryHandler } from '@/components/dialog-handlers'
+import {
+    type EntryFormFieldConfig,
+    entryFormFields
+} from '@/components/entries/form-fields'
+import { Button } from '@/components/ui/button'
+import { DialogClose, DialogFooter } from '@/components/ui/dialog'
 import {
     Field,
     FieldError,
     FieldGroup,
     FieldLabel
-} from "@/components/ui/field"
-import { entryHandler } from "@/components/dialog-handlers"
-import {
-    entryFormFields,
-    type EntryFormFieldConfig
-} from "@/components/entries/form-fields"
-
-import type { EntryPayload as Entry, EntryPayload } from "@/types"
-import { useAppForm } from "@/hooks/form"
-import { createEntry, updateEntry } from "@/apis/entries"
-import { entriesKeys } from "@/query-keys"
+} from '@/components/ui/field'
+import { useAppForm } from '@/hooks/form'
+import { entriesKeys } from '@/query-keys'
+import type { EntryPayload as Entry, EntryPayload } from '@/types'
 
 const defaults: Entry = {
-    name: "",
-    description: "",
+    name: '',
+    description: '',
     amount: 0
 }
 
@@ -44,12 +42,12 @@ type FieldRenderProps = {
 
 export type EntryFormProps =
     | {
-          type: "create"
+          type: 'create'
           id?: string
           resetData?: EntryPayload
       }
     | {
-          type: "edit"
+          type: 'edit'
           id: string
           resetData: Record<string, unknown>
       }
@@ -75,29 +73,29 @@ export default function EntryForm({ type, resetData }: EntryFormProps) {
         defaultValues: resetData ? (resetData as EntryPayload) : defaults,
         onSubmit: async ({ value }) => {
             switch (type) {
-                case "create":
+                case 'create':
                     toast.promise(createEntryMutation.mutateAsync(value), {
-                        loading: "Creating...",
+                        loading: 'Creating...',
                         success: (data: Entry) => {
                             entryHandler.close()
                             return `${data.name} created!`
                         },
-                        error: "Error creating " + value.name
+                        error: 'Error creating ' + value.name
                     })
                     break
-                case "edit":
+                case 'edit':
                     toast.promise(
                         updateEntryMutation.mutateAsync({
                             id: resetData.id,
                             ...value
                         }),
                         {
-                            loading: "Updating...",
+                            loading: 'Updating...',
                             success: (data: Entry) => {
                                 entryHandler.close()
                                 return `${data.name} updated!`
                             },
-                            error: "Error updating " + value.name
+                            error: 'Error updating ' + value.name
                         }
                     )
                     break
@@ -151,13 +149,13 @@ export default function EntryForm({ type, resetData }: EntryFormProps) {
                 {fields.map(field => (
                     <FormField key={field.name} {...field} />
                 ))}
-                <Field orientation={"horizontal"}>
+                <Field orientation={'horizontal'}>
                     <DialogFooter className="w-full">
                         <DialogClose
                             render={<Button variant="ghost">Cancel</Button>}
                         />
                         <Button type="submit">
-                            {type === "create" ? "Create" : "Update"}
+                            {type === 'create' ? 'Create' : 'Update'}
                         </Button>
                     </DialogFooter>
                 </Field>

@@ -1,36 +1,36 @@
-import type { EntryPayload } from "@/types"
+import type { EntryPayload } from '@/types'
 
 export async function getEntries() {
-    const request = await fetch("/api/entries")
+    const request = await fetch('/api/entries')
     if (!request.ok) {
-        throw new Error("unable to fetch entries")
+        throw new Error('unable to fetch entries')
     }
     return await request.json()
 }
 
 export async function removeEntry(id: string) {
     const request = await fetch(`/api/entries/${id}`, {
-        method: "DELETE"
+        method: 'DELETE'
     })
 
     if (!request.ok) {
-        throw new Error("unable to fetch entries")
+        throw new Error('unable to fetch entries')
     }
 
     return await request.json()
 }
 
 export async function createEntry(value: EntryPayload) {
-    const request = await fetch("/api/entries", {
-        method: "POST",
+    const request = await fetch('/api/entries', {
+        method: 'POST',
         headers: {
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(value)
     })
 
     if (!request) {
-        throw new Error("unable to create tasks")
+        throw new Error('unable to create tasks')
     }
 
     return await request.json()
@@ -38,15 +38,15 @@ export async function createEntry(value: EntryPayload) {
 
 export async function updateEntry(value: Record<string, unknown>) {
     const request = await fetch(`/api/entries/${value.id}`, {
-        method: "PATCH",
+        method: 'PATCH',
         headers: {
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(value)
     })
 
     if (!request) {
-        throw new Error("unable to create tasks")
+        throw new Error('unable to create tasks')
     }
 
     return await request.json()

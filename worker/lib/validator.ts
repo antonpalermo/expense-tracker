@@ -1,10 +1,9 @@
-import type { z } from "zod"
-import type { ValidationTargets } from "hono"
+import type { ValidationTargets } from 'hono'
+import { validator } from 'hono/validator'
+import type { z } from 'zod'
 
-import { validator } from "hono/validator"
-
-import * as HTTPStatus from "@/status-codes"
-import * as HTTPPhrases from "@/status-phrases"
+import * as HTTPStatus from '@/status-codes'
+import * as HTTPPhrases from '@/status-phrases'
 
 export function validate<
     T extends keyof ValidationTargets,

@@ -1,4 +1,4 @@
-import { defineConfig } from "drizzle-kit"
+import { defineConfig } from 'drizzle-kit'
 
 /**
  * no need to provide db details since
@@ -7,8 +7,8 @@ import { defineConfig } from "drizzle-kit"
  * wrangler.
  */
 export default defineConfig({
-    out: "./.migrations",
-    schema: "./worker/database/schemas/*",
-    dialect: "sqlite",
-    driver: "d1-http"
+    out: './.migrations',
+    schema: './worker/database/schemas/*',
+    dialect: 'sqlite',
+    driver: 'd1-http'
 })

@@ -11337,6 +11337,7 @@ declare module "cloudflare:email" {
         prototype: EmailMessage;
         new (from: string, to: string, raw: ReadableStream | string): EmailMessage;
     };
+
     export { _EmailMessage as EmailMessage };
 }
 /**
@@ -12202,6 +12203,7 @@ interface SecretsStoreSecret {
 }
 declare module "cloudflare:sockets" {
     function _connect(address: string | SocketAddress, options?: SocketOptions): Socket;
+
     export { _connect as connect };
 }
 /**
