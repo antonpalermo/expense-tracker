@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
-export const Route = createFileRoute('/_auth/sign-in')({
+export const Route = createFileRoute('/_auth/sign-up')({
     component: RouteComponent
 })
 
@@ -19,9 +19,9 @@ function RouteComponent() {
             <form>
                 <FieldGroup>
                     <div className="flex flex-col items-center gap-1 text-center">
-                        <h1 className="text-2xl font-bold">Sign In</h1>
+                        <h1 className="text-2xl font-bold">Sign Up</h1>
                         <p className="text-sm text-balance text-muted-foreground">
-                            Enter your email below to sign in to your account
+                            Enter your email below to create your account
                         </p>
                     </div>
                     <Field>
@@ -36,12 +36,6 @@ function RouteComponent() {
                     <Field>
                         <div className="flex items-center">
                             <FieldLabel htmlFor="password">Password</FieldLabel>
-                            <a
-                                href="#"
-                                className="ml-auto text-sm underline-offset-4 hover:underline"
-                            >
-                                Forgot your password?
-                            </a>
                         </div>
                         <Input
                             id="password"
@@ -51,7 +45,7 @@ function RouteComponent() {
                         />
                     </Field>
                     <Field>
-                        <Button type="submit">Sign in</Button>
+                        <Button type="submit">Sign up</Button>
                     </Field>
                     <FieldSeparator>Or continue with</FieldSeparator>
                     <Field>
@@ -65,15 +59,15 @@ function RouteComponent() {
                                     fill="currentColor"
                                 />
                             </svg>
-                            Sign in with GitHub
+                            Sign up with GitHub
                         </Button>
                         <FieldDescription className="text-center">
-                            Don&apos;t have an account?{' '}
+                            Already have an account?{' '}
                             <Link
-                                to="/sign-up"
+                                to="/sign-in"
                                 className="underline underline-offset-4"
                             >
-                                Sign up
+                                Sign In
                             </Link>
                         </FieldDescription>
                     </Field>

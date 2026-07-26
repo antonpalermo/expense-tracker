@@ -1,7 +1,21 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { createAuthClient } from 'better-auth/client'
+
+const auth = createAuthClient()
 
 export const Route = createFileRoute('/_dashboard')({
-    component: RouteComponent
+    component: RouteComponent,
+    beforeLoad: async ({ location }) => {
+        const session = await auth.getSession()
+        if (!session) {
+            throw redirect({
+                to: '/sign-in',
+                search: {
+                    redirect: location.href
+                }
+            })
+        }
+    }
 })
 
 function RouteComponent() {
