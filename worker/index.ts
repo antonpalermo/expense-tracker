@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import authRoutes from '@/routes/auth'
 import taskRoutes from '@/routes/entries'
 import formRoutes from '@/routes/form'
 
@@ -7,7 +8,7 @@ export type HonoBindings = {
 }
 
 const app = new Hono<HonoBindings>({ strict: false }).basePath('/api')
-const routes = [formRoutes, taskRoutes]
+const routes = [authRoutes, formRoutes, taskRoutes]
 
 routes.forEach(route => app.route('/', route))
 
