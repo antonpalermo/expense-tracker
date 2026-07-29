@@ -8,6 +8,7 @@ import {
     FieldSeparator
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { signIn } from '@/lib/auth'
 
 export const Route = createFileRoute('/_auth/sign-in')({
     component: RouteComponent
@@ -55,7 +56,13 @@ function RouteComponent() {
                     </Field>
                     <FieldSeparator>Or continue with</FieldSeparator>
                     <Field>
-                        <Button variant="outline" type="button">
+                        <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() =>
+                                signIn.social({ provider: 'google' })
+                            }
+                        >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
