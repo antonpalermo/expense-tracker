@@ -5,6 +5,7 @@ import { entryHandler } from '@/components/dialog-handlers'
 import { columns } from '@/components/entries/columns'
 import EntryFormDialog from '@/components/entries/dialog'
 import { Button } from '@/components/ui/button'
+import { signOut } from '@/lib/auth'
 import { entriesKeys } from '@/query-keys'
 import type { Entry } from '@/types'
 import DialogConfirmation from './entries/dialog-confirmation'
@@ -39,6 +40,9 @@ export default function App() {
                                 }
                             >
                                 Create
+                            </Button>
+                            <Button onClick={async () => await signOut()}>
+                                Sign Out
                             </Button>
                         </div>
                     </div>

@@ -10,10 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
+import { Route as DashboardRouteRouteImport } from './routes/_dashboard/route'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
-import { Route as DashboardRouteRouteImport } from './routes/_dashboard/route'
 
 const AuthRouteRoute = AuthRouteRouteImport.update({
   id: '/_auth',

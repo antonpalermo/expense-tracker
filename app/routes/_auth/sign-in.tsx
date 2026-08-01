@@ -59,8 +59,8 @@ function RouteComponent() {
                         <Button
                             variant="outline"
                             type="button"
-                            onClick={() =>
-                                signIn.social({ provider: 'google' })
+                            onClick={async () =>
+                                await signIn.social({ provider: 'google' })
                             }
                         >
                             <svg

@@ -5,7 +5,7 @@ import type { HonoBindings } from '..'
 const routes = new Hono<HonoBindings>({ strict: false }).basePath('/auth')
 
 routes.on(['POST', 'GET'], '*', ctx => {
-    return auth.handler(ctx)
+    return auth.handler(ctx.req.raw)
 })
 
 export default routes
