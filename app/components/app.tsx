@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import { getEntries } from '@/apis/entries'
 import { DataTable } from '@/components/data-table'
 import { entryHandler } from '@/components/dialog-handlers'
@@ -11,6 +12,7 @@ import type { Entry } from '@/types'
 import DialogConfirmation from './entries/dialog-confirmation'
 
 export default function App() {
+    const navigate = useNavigate()
     const { data, isError, isPending } = useQuery<Entry[]>({
         queryKey: [entriesKeys.all],
         queryFn: getEntries
@@ -41,7 +43,20 @@ export default function App() {
                             >
                                 Create
                             </Button>
-                            <Button onClick={async () => await signOut()}>
+                            <Button
+                                onClick={async () =>
+                                    await signOut({
+                                        fetchOptions: {
+                                            onSuccess: () => {
+                                                navigate({
+                                                    from: '/',
+                                                    to: '/sign-in'
+                                                })
+                                            }
+                                        }
+                                    })
+                                }
+                            >
                                 Sign Out
                             </Button>
                         </div>
