@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
 import {
     index,
     integer,
@@ -13,6 +13,7 @@ import {
 } from 'drizzle-zod'
 import { z } from 'zod'
 import nanoid from '../../lib/nanoid'
+import { user } from './auth'
 
 export const entriesTable = sqliteTable(
     'entries',
@@ -24,6 +25,7 @@ export const entriesTable = sqliteTable(
         name: text('name').notNull(),
         description: text('description'),
         amount: real('amount').notNull(),
+        userId: text('user_id'),
         createdAt: integer('created_at', { mode: 'timestamp_ms' })
             .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
             .notNull(),
@@ -34,6 +36,13 @@ export const entriesTable = sqliteTable(
     },
     table => [index('entries_id_index').on(table.id)]
 )
+
+export const entriesRelation = relations(entriesTable, ({ one }) => ({
+    user: one(user, {
+        fields: [entriesTable.userId],
+        references: [user.id]
+    })
+}))
 
 export const insertEntriesSchema = createInsertSchema(entriesTable)
 export const updateEntriesSchema = createUpdateSchema(entriesTable, {
