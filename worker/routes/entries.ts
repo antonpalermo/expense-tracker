@@ -15,8 +15,12 @@ routes
         return ctx.json(await EntriesService.getEntries())
     })
     .post('/', validate('json', insertEntriesSchema), async ctx => {
+        const user = ctx.get('user')
         const data = ctx.req.valid('json')
-        const newEntry = await EntriesService.create(data)
+        const newEntry = await EntriesService.create({
+            ...data,
+            userId: user.id
+        })
         return ctx.json(newEntry, HTTPStatus.CREATED)
     })
     .patch('/:id', validate('json', updateEntriesSchema), async ctx => {
