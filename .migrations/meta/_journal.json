@@ -50,6 +50,13 @@
             "when": 1784195485606,
             "tag": "0006_low_captain_cross",
             "breakpoints": true
+        },
+        {
+            "idx": 7,
+            "version": "6",
+            "when": 1786525516055,
+            "tag": "0007_daily_tigra",
+            "breakpoints": true
         }
     ]
 }
