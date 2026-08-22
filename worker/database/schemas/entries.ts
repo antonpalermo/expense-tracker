@@ -1,4 +1,4 @@
-import { relations, sql } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
 import {
     index,
     integer,
@@ -6,14 +6,11 @@ import {
     sqliteTable,
     text
 } from 'drizzle-orm/sqlite-core'
-import {
-    createInsertSchema,
-    createSelectSchema,
-    createUpdateSchema
-} from 'drizzle-zod'
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import nanoid from '../../lib/nanoid'
 import { user } from './auth'
+import { ledgersTable } from './ledgers'
 
 export const entriesTable = sqliteTable(
     'entries',
@@ -25,7 +22,14 @@ export const entriesTable = sqliteTable(
         name: text('name').notNull(),
         description: text('description'),
         amount: real('amount').notNull(),
-        userId: text('user_id'),
+        // The author. Nullable on purpose: in a shared ledger, deleting a
+        // user must not delete the ledger's entries.
+        userId: text('user_id').references(() => user.id, {
+            onDelete: 'set null'
+        }),
+        ledgerId: text('ledger_id')
+            .notNull()
+            .references(() => ledgersTable.id, { onDelete: 'cascade' }),
         createdAt: integer('created_at', { mode: 'timestamp_ms' })
             .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
             .notNull(),
@@ -34,29 +38,28 @@ export const entriesTable = sqliteTable(
             .$onUpdate(() => /* @__PURE__ */ new Date())
             .notNull()
     },
-    table => [index('entries_id_index').on(table.id)]
+    table => [
+        index('entries_id_index').on(table.id),
+        index('entries_ledger_id_index').on(table.ledgerId)
+    ]
 )
 
-export const entriesRelation = relations(entriesTable, ({ one }) => ({
-    user: one(user, {
-        fields: [entriesTable.userId],
-        references: [user.id]
-    })
-}))
-
 export const insertEntriesSchema = createInsertSchema(entriesTable)
-export const updateEntriesSchema = createUpdateSchema(entriesTable, {
-    name: z.string(),
-    description: z.string(),
+
+// Hand-written request bodies. `userId` and `ledgerId` are stamped from the
+// Hono context, never accepted from the client — otherwise a PATCH could move
+// an entry into a ledger the caller does not belong to.
+export const createEntrySchema = z.object({
+    name: z.string().trim().min(1),
+    description: z.string().trim().nullish(),
     amount: z.coerce.number()
-}).omit({
-    id: true,
-    createdAt: true,
-    updatedAt: true
 })
+export const updateEntrySchema = createEntrySchema.partial()
 export const selectEntriesSchema = createSelectSchema(entriesTable, {
     id: z.string(),
     name: z.string(),
-    description: z.string(),
-    amount: z.coerce.number()
+    description: z.string().nullable(),
+    amount: z.coerce.number(),
+    userId: z.string().nullable(),
+    ledgerId: z.string()
 })
