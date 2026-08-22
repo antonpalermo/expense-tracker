@@ -18,5 +18,22 @@ export default defineConfig([
         languageOptions: {
             globals: globals.browser
         }
+    },
+    {
+        // TanStack Router file routes export a `Route` object and keep their
+        // component local — that is the framework's contract, so the
+        // fast-refresh heuristic does not apply to them.
+        files: ['app/routes/**/*.tsx'],
+        rules: {
+            'react-refresh/only-export-components': 'off'
+        }
+    },
+    {
+        // shadcn primitives are generated, and co-export their cva variant
+        // helpers alongside the component by convention.
+        files: ['app/components/ui/**/*.tsx'],
+        rules: {
+            'react-refresh/only-export-components': 'off'
+        }
     }
 ])
