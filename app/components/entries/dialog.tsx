@@ -24,7 +24,7 @@ export default function EntryFormDialog() {
                             <DialogTitle>
                                 {entry.type === 'create'
                                     ? 'Create new entry'
-                                    : `Update ${entry.data?.name}`}
+                                    : `Update ${entry.data.name}`}
                             </DialogTitle>
                             <DialogDescription>
                                 {entry.type === 'create'
@@ -35,11 +35,15 @@ export default function EntryFormDialog() {
                         {entry.type === 'edit' ? (
                             <EntryForm
                                 type="edit"
-                                id={entry.id!}
-                                resetData={entry.data ?? {}}
+                                ledgerId={entry.ledgerId}
+                                id={entry.id}
+                                resetData={entry.data}
                             />
                         ) : (
-                            <EntryForm type="create" />
+                            <EntryForm
+                                type="create"
+                                ledgerId={entry.ledgerId}
+                            />
                         )}
                     </DialogContent>
                 )

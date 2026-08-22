@@ -16,9 +16,9 @@ import {
 } from '@/components/ui/field'
 import { useAppForm } from '@/hooks/form'
 import { entriesKeys } from '@/query-keys'
-import type { EntryPayload as Entry, EntryPayload } from '@/types'
+import type { Entry, EntryPayload } from '@/types'
 
-const defaults: Entry = {
+const defaults: EntryPayload = {
     name: '',
     description: '',
     amount: 0
@@ -41,65 +41,56 @@ type FieldRenderProps = {
 }
 
 export type EntryFormProps =
-    | {
-          type: 'create'
-          id?: string
-          resetData?: EntryPayload
-      }
+    | { type: 'create'; ledgerId: string }
     | {
           type: 'edit'
+          ledgerId: string
           id: string
-          resetData: Record<string, unknown>
+          resetData: EntryPayload
       }
 
-export default function EntryForm({ type, resetData }: EntryFormProps) {
+export default function EntryForm(props: EntryFormProps) {
+    const { ledgerId } = props
     const queryClient = useQueryClient()
 
+    const invalidate = async () => {
+        await queryClient.invalidateQueries({
+            queryKey: entriesKeys.byLedger(ledgerId)
+        })
+    }
+
+    // useMutation takes a single-argument mutationFn, so the ledger id is
+    // curried in here rather than threaded through the form values.
     const createEntryMutation = useMutation({
-        mutationFn: createEntry,
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: [entriesKeys.all] })
-        }
+        mutationFn: (value: EntryPayload) => createEntry(ledgerId, value),
+        onSuccess: invalidate
     })
 
     const updateEntryMutation = useMutation({
-        mutationFn: updateEntry,
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: [entriesKeys.all] })
-        }
+        mutationFn: (value: Partial<EntryPayload>) =>
+            updateEntry(ledgerId, props.type === 'edit' ? props.id : '', value),
+        onSuccess: invalidate
     })
 
     const form = useAppForm({
-        defaultValues: resetData ? (resetData as EntryPayload) : defaults,
+        defaultValues: props.type === 'edit' ? props.resetData : defaults,
         onSubmit: async ({ value }) => {
-            switch (type) {
-                case 'create':
-                    toast.promise(createEntryMutation.mutateAsync(value), {
-                        loading: 'Creating...',
-                        success: (data: Entry) => {
-                            entryHandler.close()
-                            return `${data.name} created!`
-                        },
-                        error: 'Error creating ' + value.name
-                    })
-                    break
-                case 'edit':
-                    toast.promise(
-                        updateEntryMutation.mutateAsync({
-                            id: resetData.id,
-                            ...value
-                        }),
-                        {
-                            loading: 'Updating...',
-                            success: (data: Entry) => {
-                                entryHandler.close()
-                                return `${data.name} updated!`
-                            },
-                            error: 'Error updating ' + value.name
-                        }
-                    )
-                    break
-            }
+            const mutation =
+                props.type === 'create'
+                    ? createEntryMutation
+                    : updateEntryMutation
+
+            toast.promise(mutation.mutateAsync(value), {
+                loading:
+                    props.type === 'create' ? 'Creating...' : 'Updating...',
+                success: (data: Entry) => {
+                    entryHandler.close()
+                    return props.type === 'create'
+                        ? `${data.name} created!`
+                        : `${data.name} updated!`
+                },
+                error: error => (error as Error).message
+            })
         }
     })
 
@@ -136,8 +127,6 @@ export default function EntryForm({ type, resetData }: EntryFormProps) {
         />
     )
 
-    const fields = entryFormFields
-
     return (
         <form
             onSubmit={e => {
@@ -146,7 +135,7 @@ export default function EntryForm({ type, resetData }: EntryFormProps) {
             }}
         >
             <FieldGroup>
-                {fields.map(field => (
+                {entryFormFields.map(field => (
                     <FormField key={field.name} {...field} />
                 ))}
                 <Field orientation={'horizontal'}>
@@ -155,7 +144,7 @@ export default function EntryForm({ type, resetData }: EntryFormProps) {
                             render={<Button variant="ghost">Cancel</Button>}
                         />
                         <Button type="submit">
-                            {type === 'create' ? 'Create' : 'Update'}
+                            {props.type === 'create' ? 'Create' : 'Update'}
                         </Button>
                     </DialogFooter>
                 </Field>

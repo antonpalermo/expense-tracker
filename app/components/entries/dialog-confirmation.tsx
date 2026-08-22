@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { removeEntry } from '@/apis/entries'
 import { deleteEntryHandler } from '@/components/dialog-handlers'
 import {
@@ -15,41 +16,67 @@ import { entriesKeys } from '@/query-keys'
 
 export default function DialogConfirmation() {
     const queryClient = useQueryClient()
+
     const mutation = useMutation({
-        mutationFn: removeEntry,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [entriesKeys.all] })
+        mutationFn: ({ ledgerId, id }: { ledgerId: string; id: string }) =>
+            removeEntry(ledgerId, id),
+        onSuccess: async (_data, variables) => {
+            await queryClient.invalidateQueries({
+                queryKey: entriesKeys.byLedger(variables.ledgerId)
+            })
             deleteEntryHandler.close()
         }
     })
 
     return (
         <AlertDialog handle={deleteEntryHandler}>
-            {({ payload }) => (
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            Are you absolutely sure?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This action cannot be undone. This will permanently
-                            delete your entry and remove your data from our
-                            servers.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => {
-                                const entry = payload as { id: string }
-                                mutation.mutate(entry.id)
-                            }}
-                        >
-                            Continue
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            )}
+            {({ payload }) => {
+                const entry = payload as {
+                    ledgerId: string
+                    id: string
+                    name: string
+                }
+
+                if (!entry) {
+                    return null
+                }
+
+                return (
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>
+                                Delete {entry.name}?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This permanently deletes the entry for everyone
+                                this ledger is shared with. This cannot be
+                                undone.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={() =>
+                                    toast.promise(
+                                        mutation.mutateAsync({
+                                            ledgerId: entry.ledgerId,
+                                            id: entry.id
+                                        }),
+                                        {
+                                            loading: 'Deleting...',
+                                            success: `${entry.name} deleted`,
+                                            error: error =>
+                                                (error as Error).message
+                                        }
+                                    )
+                                }
+                            >
+                                Delete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                )
+            }}
         </AlertDialog>
     )
 }
