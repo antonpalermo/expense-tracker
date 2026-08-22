@@ -1,50 +1,60 @@
 import { Hono } from 'hono'
-import { insertEntriesSchema, updateEntriesSchema } from '@/database/schemas'
-
+import { createEntrySchema, updateEntrySchema } from '@/database/schemas'
+import { requireLedgerRole } from '@/lib/ledger-access'
 import { validate } from '@/lib/validator'
-// import * as HTTPPhrases from "@/status-phrases"
 import * as EntriesService from '@/services/entries'
-
 import * as HTTPStatus from '@/status-codes'
 import type { HonoBindings } from '../index'
 
-const routes = new Hono<HonoBindings>({ strict: false }).basePath('/entries')
+const routes = new Hono<HonoBindings>({ strict: false }).basePath(
+    '/ledgers/:ledgerId/entries'
+)
 
 routes
-    .get('/', async ctx => {
-        return ctx.json(await EntriesService.getEntries())
+    .get('/', requireLedgerRole('viewer'), async ctx => {
+        return ctx.json(await EntriesService.getEntries(ctx.get('ledgerId')))
     })
-    .post('/', validate('json', insertEntriesSchema), async ctx => {
-        const user = ctx.get('user')
-        const data = ctx.req.valid('json')
-        const newEntry = await EntriesService.create({
-            ...data,
-            userId: user.id
-        })
-        return ctx.json(newEntry, HTTPStatus.CREATED)
-    })
-    .patch('/:id', validate('json', updateEntriesSchema), async ctx => {
-        const id = ctx.req.param('id')
-        const value = ctx.req.valid('json')
+    .post(
+        '/',
+        requireLedgerRole('member'),
+        validate('json', createEntrySchema),
+        async ctx => {
+            const entry = await EntriesService.create(
+                ctx.get('ledgerId'),
+                ctx.get('user').id,
+                ctx.req.valid('json')
+            )
 
-        const result = await EntriesService.update(id, value)
-
-        return ctx.json(result)
-    })
-
-routes.on(['GET', 'DELETE'], '/:id', async ctx => {
-    const method = ctx.req.method
-    const id = ctx.req.param('id')
-
-    switch (method) {
-        case 'GET': {
-            return ctx.json({ msg: 'hello from ' + method + id })
+            return ctx.json(entry, HTTPStatus.CREATED)
         }
-        case 'DELETE': {
-            await EntriesService.remove(id)
-            return ctx.json({ msg: id + 'successfully deleted' })
+    )
+    .get('/:entryId', requireLedgerRole('viewer'), async ctx => {
+        return ctx.json(
+            await EntriesService.getEntry(
+                ctx.get('ledgerId'),
+                ctx.req.param('entryId')
+            )
+        )
+    })
+    .patch(
+        '/:entryId',
+        requireLedgerRole('member'),
+        validate('json', updateEntrySchema),
+        async ctx => {
+            return ctx.json(
+                await EntriesService.update(
+                    ctx.get('ledgerId'),
+                    ctx.req.param('entryId'),
+                    ctx.req.valid('json')
+                )
+            )
         }
-    }
-})
+    )
+    .delete('/:entryId', requireLedgerRole('member'), async ctx => {
+        const entryId = ctx.req.param('entryId')
+        await EntriesService.remove(ctx.get('ledgerId'), entryId)
+
+        return ctx.json({ msg: `entry ${entryId} successfully deleted` })
+    })
 
 export default routes
