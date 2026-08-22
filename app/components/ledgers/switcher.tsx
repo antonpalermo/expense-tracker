@@ -40,8 +40,8 @@ export default function LedgerSwitcher({
                 }
             />
             <DropdownMenuContent className="min-w-56">
-                <DropdownMenuLabel>Ledgers</DropdownMenuLabel>
                 <DropdownMenuGroup>
+                    <DropdownMenuLabel>Ledgers</DropdownMenuLabel>
                     {ledgers?.map(ledger => (
                         <DropdownMenuItem
                             key={ledger.id}

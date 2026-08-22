@@ -32,8 +32,8 @@ export default function LedgerActions({ ledger }: { ledger: LedgerWithRole }) {
                 }
             />
             <DropdownMenuContent className="min-w-44">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuGroup>
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem
                         render={
                             <Link
