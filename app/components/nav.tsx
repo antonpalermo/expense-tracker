@@ -27,6 +27,7 @@ export default function Nav() {
                     <div className="flex items-center gap-2">
                         <Button
                             variant="ghost"
+                            nativeButton={false}
                             render={<Link to="/invitations" />}
                         >
                             Invitations
