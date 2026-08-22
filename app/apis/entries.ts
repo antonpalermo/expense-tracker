@@ -1,53 +1,31 @@
-import type { EntryPayload } from '@/types'
+import { json, request } from '@/apis/http'
+import type { Entry, EntryPayload } from '@/types'
 
-export async function getEntries() {
-    const request = await fetch('/api/entries')
-    if (!request.ok) {
-        throw new Error('unable to fetch entries')
-    }
-    return await request.json()
+export async function getEntries(ledgerId: string) {
+    return await request<Entry[]>(`/api/ledgers/${ledgerId}/entries`)
 }
 
-export async function removeEntry(id: string) {
-    const request = await fetch(`/api/entries/${id}`, {
-        method: 'DELETE'
-    })
-
-    if (!request.ok) {
-        throw new Error('unable to fetch entries')
-    }
-
-    return await request.json()
+export async function createEntry(ledgerId: string, value: EntryPayload) {
+    return await request<Entry>(
+        `/api/ledgers/${ledgerId}/entries`,
+        json('POST', value)
+    )
 }
 
-export async function createEntry(value: EntryPayload) {
-    const request = await fetch('/api/entries', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(value)
-    })
-
-    if (!request) {
-        throw new Error('unable to create tasks')
-    }
-
-    return await request.json()
+export async function updateEntry(
+    ledgerId: string,
+    id: string,
+    value: Partial<EntryPayload>
+) {
+    return await request<Entry>(
+        `/api/ledgers/${ledgerId}/entries/${id}`,
+        json('PATCH', value)
+    )
 }
 
-export async function updateEntry(value: Record<string, unknown>) {
-    const request = await fetch(`/api/entries/${value.id}`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(value)
-    })
-
-    if (!request) {
-        throw new Error('unable to create tasks')
-    }
-
-    return await request.json()
+export async function removeEntry(ledgerId: string, id: string) {
+    return await request<{ msg: string }>(
+        `/api/ledgers/${ledgerId}/entries/${id}`,
+        json('DELETE')
+    )
 }

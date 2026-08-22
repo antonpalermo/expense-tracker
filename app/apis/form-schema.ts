@@ -1,9 +1,6 @@
-export async function getFormSchema() {
-    const request = await fetch('/api/forms/schema')
+import { request } from '@/apis/http'
+import type { FormSchema } from '../../worker/bindings'
 
-    if (!request) {
-        throw new Error('unable to fetch form schema')
-    }
-
-    return await request.json()
+export async function getFormSchema(ledgerId: string) {
+    return await request<FormSchema>(`/api/ledgers/${ledgerId}/forms/schema`)
 }
