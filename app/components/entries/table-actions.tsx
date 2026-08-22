@@ -16,10 +16,14 @@ import {
 } from '../ui/dropdown-menu'
 
 export default function TableActions({
-    context
+    context,
+    ledgerId
 }: {
     context: CellContext<Entry, unknown>
+    ledgerId: string
 }) {
+    const entry = context.row.original
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger
@@ -29,18 +33,14 @@ export default function TableActions({
                         <EllipsisVertical className="h-4 w-4" />
                     </Button>
                 }
-            ></DropdownMenuTrigger>
+            />
             <DropdownMenuContent className="min-w-40">
                 <DropdownMenuGroup>
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem
-                        onClick={() =>
-                            navigator.clipboard.writeText(
-                                context.row.original.id
-                            )
-                        }
+                        onClick={() => navigator.clipboard.writeText(entry.id)}
                     >
-                        Copy payment ID
+                        Copy entry ID
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -50,8 +50,13 @@ export default function TableActions({
                                 handle={entryHandler}
                                 payload={{
                                     type: 'edit',
-                                    id: context.row.original.id,
-                                    data: context.row.original
+                                    ledgerId,
+                                    id: entry.id,
+                                    data: {
+                                        name: entry.name,
+                                        description: entry.description,
+                                        amount: entry.amount
+                                    }
                                 }}
                             />
                         }
@@ -63,7 +68,11 @@ export default function TableActions({
                             <AlertDialogTrigger
                                 className="w-full"
                                 handle={deleteEntryHandler}
-                                payload={{ id: context.row.original.id }}
+                                payload={{
+                                    ledgerId,
+                                    id: entry.id,
+                                    name: entry.name
+                                }}
                             />
                         }
                     >
