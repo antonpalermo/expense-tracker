@@ -1,12 +1,12 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
-import { createAuthClient } from 'better-auth/client'
-
-const auth = createAuthClient()
+import LedgerFormDialog from '@/components/ledgers/dialog'
+import Nav from '@/components/nav'
+import { authClient } from '@/lib/auth'
 
 export const Route = createFileRoute('/_dashboard')({
     component: RouteComponent,
     beforeLoad: async ({ location }) => {
-        const session = await auth.getSession()
+        const session = await authClient.getSession()
 
         if (!session.data) {
             throw redirect({
@@ -16,9 +16,20 @@ export const Route = createFileRoute('/_dashboard')({
                 }
             })
         }
+
+        // The guard already fetched this, so putting it in route context is
+        // free and saves every child from refetching it.
+        return { user: session.data.user }
     }
 })
 
 function RouteComponent() {
-    return <Outlet />
+    return (
+        <>
+            <Nav />
+            {/* Mounted here so the create action works from any dashboard page. */}
+            <LedgerFormDialog />
+            <Outlet />
+        </>
+    )
 }

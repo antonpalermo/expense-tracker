@@ -14,6 +14,11 @@ import { Route as DashboardRouteRouteImport } from './routes/_dashboard/route'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
+import { Route as DashboardInvitationsRouteImport } from './routes/_dashboard/invitations'
+import { Route as DashboardLedgersIndexRouteImport } from './routes/_dashboard/ledgers/index'
+import { Route as DashboardLedgersLedgerIdRouteRouteImport } from './routes/_dashboard/ledgers/$ledgerId/route'
+import { Route as DashboardLedgersLedgerIdIndexRouteImport } from './routes/_dashboard/ledgers/$ledgerId/index'
+import { Route as DashboardLedgersLedgerIdMembersRouteImport } from './routes/_dashboard/ledgers/$ledgerId/members'
 
 const AuthRouteRoute = AuthRouteRouteImport.update({
   id: '/_auth',
@@ -38,16 +43,53 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardInvitationsRoute = DashboardInvitationsRouteImport.update({
+  id: '/invitations',
+  path: '/invitations',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardLedgersIndexRoute = DashboardLedgersIndexRouteImport.update({
+  id: '/ledgers/',
+  path: '/ledgers/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardLedgersLedgerIdRouteRoute =
+  DashboardLedgersLedgerIdRouteRouteImport.update({
+    id: '/ledgers/$ledgerId',
+    path: '/ledgers/$ledgerId',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardLedgersLedgerIdIndexRoute =
+  DashboardLedgersLedgerIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => DashboardLedgersLedgerIdRouteRoute,
+  } as any)
+const DashboardLedgersLedgerIdMembersRoute =
+  DashboardLedgersLedgerIdMembersRouteImport.update({
+    id: '/members',
+    path: '/members',
+    getParentRoute: () => DashboardLedgersLedgerIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof DashboardIndexRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
+  '/invitations': typeof DashboardInvitationsRoute
+  '/ledgers/$ledgerId': typeof DashboardLedgersLedgerIdRouteRouteWithChildren
+  '/ledgers/': typeof DashboardLedgersIndexRoute
+  '/ledgers/$ledgerId/members': typeof DashboardLedgersLedgerIdMembersRoute
+  '/ledgers/$ledgerId/': typeof DashboardLedgersLedgerIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof DashboardIndexRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
+  '/invitations': typeof DashboardInvitationsRoute
+  '/ledgers': typeof DashboardLedgersIndexRoute
+  '/ledgers/$ledgerId/members': typeof DashboardLedgersLedgerIdMembersRoute
+  '/ledgers/$ledgerId': typeof DashboardLedgersLedgerIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -55,20 +97,45 @@ export interface FileRoutesById {
   '/_dashboard': typeof DashboardRouteRouteWithChildren
   '/_auth/sign-in': typeof AuthSignInRoute
   '/_auth/sign-up': typeof AuthSignUpRoute
+  '/_dashboard/invitations': typeof DashboardInvitationsRoute
   '/_dashboard/': typeof DashboardIndexRoute
+  '/_dashboard/ledgers/$ledgerId': typeof DashboardLedgersLedgerIdRouteRouteWithChildren
+  '/_dashboard/ledgers/': typeof DashboardLedgersIndexRoute
+  '/_dashboard/ledgers/$ledgerId/members': typeof DashboardLedgersLedgerIdMembersRoute
+  '/_dashboard/ledgers/$ledgerId/': typeof DashboardLedgersLedgerIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sign-in' | '/sign-up'
+  fullPaths:
+    | '/'
+    | '/sign-in'
+    | '/sign-up'
+    | '/invitations'
+    | '/ledgers/$ledgerId'
+    | '/ledgers/'
+    | '/ledgers/$ledgerId/members'
+    | '/ledgers/$ledgerId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sign-in' | '/sign-up'
+  to:
+    | '/'
+    | '/sign-in'
+    | '/sign-up'
+    | '/invitations'
+    | '/ledgers'
+    | '/ledgers/$ledgerId/members'
+    | '/ledgers/$ledgerId'
   id:
     | '__root__'
     | '/_auth'
     | '/_dashboard'
     | '/_auth/sign-in'
     | '/_auth/sign-up'
+    | '/_dashboard/invitations'
     | '/_dashboard/'
+    | '/_dashboard/ledgers/$ledgerId'
+    | '/_dashboard/ledgers/'
+    | '/_dashboard/ledgers/$ledgerId/members'
+    | '/_dashboard/ledgers/$ledgerId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -113,6 +180,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/_dashboard/invitations': {
+      id: '/_dashboard/invitations'
+      path: '/invitations'
+      fullPath: '/invitations'
+      preLoaderRoute: typeof DashboardInvitationsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/_dashboard/ledgers/': {
+      id: '/_dashboard/ledgers/'
+      path: '/ledgers'
+      fullPath: '/ledgers/'
+      preLoaderRoute: typeof DashboardLedgersIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/_dashboard/ledgers/$ledgerId': {
+      id: '/_dashboard/ledgers/$ledgerId'
+      path: '/ledgers/$ledgerId'
+      fullPath: '/ledgers/$ledgerId'
+      preLoaderRoute: typeof DashboardLedgersLedgerIdRouteRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/_dashboard/ledgers/$ledgerId/': {
+      id: '/_dashboard/ledgers/$ledgerId/'
+      path: '/'
+      fullPath: '/ledgers/$ledgerId/'
+      preLoaderRoute: typeof DashboardLedgersLedgerIdIndexRouteImport
+      parentRoute: typeof DashboardLedgersLedgerIdRouteRoute
+    }
+    '/_dashboard/ledgers/$ledgerId/members': {
+      id: '/_dashboard/ledgers/$ledgerId/members'
+      path: '/members'
+      fullPath: '/ledgers/$ledgerId/members'
+      preLoaderRoute: typeof DashboardLedgersLedgerIdMembersRouteImport
+      parentRoute: typeof DashboardLedgersLedgerIdRouteRoute
+    }
   }
 }
 
@@ -130,12 +232,35 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
   AuthRouteRouteChildren,
 )
 
+interface DashboardLedgersLedgerIdRouteRouteChildren {
+  DashboardLedgersLedgerIdMembersRoute: typeof DashboardLedgersLedgerIdMembersRoute
+  DashboardLedgersLedgerIdIndexRoute: typeof DashboardLedgersLedgerIdIndexRoute
+}
+
+const DashboardLedgersLedgerIdRouteRouteChildren: DashboardLedgersLedgerIdRouteRouteChildren =
+  {
+    DashboardLedgersLedgerIdMembersRoute: DashboardLedgersLedgerIdMembersRoute,
+    DashboardLedgersLedgerIdIndexRoute: DashboardLedgersLedgerIdIndexRoute,
+  }
+
+const DashboardLedgersLedgerIdRouteRouteWithChildren =
+  DashboardLedgersLedgerIdRouteRoute._addFileChildren(
+    DashboardLedgersLedgerIdRouteRouteChildren,
+  )
+
 interface DashboardRouteRouteChildren {
+  DashboardInvitationsRoute: typeof DashboardInvitationsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardLedgersLedgerIdRouteRoute: typeof DashboardLedgersLedgerIdRouteRouteWithChildren
+  DashboardLedgersIndexRoute: typeof DashboardLedgersIndexRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardInvitationsRoute: DashboardInvitationsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardLedgersLedgerIdRouteRoute:
+    DashboardLedgersLedgerIdRouteRouteWithChildren,
+  DashboardLedgersIndexRoute: DashboardLedgersIndexRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
