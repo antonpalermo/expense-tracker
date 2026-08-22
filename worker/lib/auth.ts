@@ -17,5 +17,16 @@ export const auth = betterAuth({
             clientId: env.GOOGLE_CLIENT_ID,
             clientSecret: env.GOOGLE_CLIENT_SECRET
         }
+    },
+    // Ledger invites for an unregistered address pre-create a shell `user` row.
+    // These settings are what make that row get claimed on first Google sign-in
+    // instead of failing with `account_not_linked`, and what replaces the
+    // placeholder name with the real Google profile.
+    account: {
+        accountLinking: {
+            enabled: true,
+            trustedProviders: ['google'],
+            updateUserInfoOnLink: true
+        }
     }
 })

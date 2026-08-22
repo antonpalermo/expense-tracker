@@ -6,7 +6,7 @@ import { auth } from './auth'
 export const session = createMiddleware<HonoBindings>(async (ctx, next) => {
     const session = await auth.api.getSession({ headers: ctx.req.raw.headers })
 
-    if (ctx.req.path.includes('/auth')) {
+    if (ctx.req.path.startsWith('/api/auth')) {
         return await next()
     }
 
