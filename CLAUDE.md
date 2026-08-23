@@ -69,7 +69,9 @@ When editing a file, check which tree you're in before trusting where `@/...` re
 
 "Pending" is **derived**, not stored: a member with no `account` row has never completed a sign-in. `emailVerified` cannot stand in for it — better-auth never flips that column when linking.
 
-### Testing (`worker/**/*.test.ts`)
+### Testing (`worker/test/**/*.test.ts`)
+
+All tests live under `worker/test/`, mirroring the source layout they cover (`worker/test/lib/`, `worker/test/routes/`, `worker/test/services/`) rather than sitting next to the file under test — `worker/test/setup.ts`, `mocks.ts`, `factories.ts` and `env.d.ts` are the harness itself, not tests, and stay at that top level.
 
 Tests run via **`@cloudflare/vitest-pool-workers`**, not plain Vitest: `worker/database/db.ts` and `worker/lib/cache.ts` do `import { env } from 'cloudflare:workers'` at module level, which only resolves inside workerd. The pool runs the real Hono app against real D1 and KV bindings (miniflare-simulated locally; the production database is never touched), configured in `vitest.config.ts` via the `cloudflareTest()` Vite plugin (not the older `defineWorkersConfig`, which this package version dropped) plus dummy secrets in `miniflare.bindings` — no `.env` values are ever needed to run tests. Storage is isolated per test: every test starts from the migrated-but-empty DB and its writes roll back afterward, so there is no manual cleanup to write. Migrations are applied once in `worker/test/setup.ts`'s `beforeAll` via `applyD1Migrations`, which sits below that isolated-storage stack.
 

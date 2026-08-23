@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { describe, expect, test } from 'vitest'
 import { z } from 'zod'
 import { createInvitationSchema } from '@/database/schemas'
-import { validate } from './validator'
+import { validate } from '@/lib/validator'
 
 const someSchema = z.object({ name: z.string().min(1) })
 
