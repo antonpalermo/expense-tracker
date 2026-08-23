@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import type { LedgerRole } from '@/database/schemas'
+import { hasRole, outranks, ROLE_RANK } from '@/lib/ledger-access'
 import { createLedger, createUser, req } from '@/test/factories'
 import { signInAs } from '@/test/mocks'
-import { hasRole, outranks, ROLE_RANK } from './ledger-access'
 
 const ROLES: LedgerRole[] = ['viewer', 'member', 'admin', 'owner']
 

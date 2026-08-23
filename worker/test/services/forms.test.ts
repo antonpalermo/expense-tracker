@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { createBlankFields, formConfigKey } from './forms'
+import { createBlankFields, formConfigKey } from '@/services/forms'
 
 describe('createBlankFields', () => {
     test('returns Name, Description and Amount', () => {

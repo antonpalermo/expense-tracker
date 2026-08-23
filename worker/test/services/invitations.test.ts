@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { normalizeEmail } from './invitations'
+import { normalizeEmail } from '@/services/invitations'
 
 describe('normalizeEmail', () => {
     test('trims whitespace', () => {
