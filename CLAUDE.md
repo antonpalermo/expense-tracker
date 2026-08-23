@@ -19,8 +19,10 @@ Package manager is **bun**.
 - `bun run db:gen` — generate a new Drizzle migration from schema changes into `.migrations/` (uses `drizzle.config.ts`; drizzle-kit is only used to generate SQL, not to run it).
 - `bun run db:migrate` — apply migrations to the remote D1 database via `wrangler d1 migrations apply xpens`.
 - `bun wrangler d1 migrations apply xpens --local` — apply migrations to the local D1 database (needed once after cloning, before `bun dev` works).
+- `bun run test` — run the worker test suite once (`vitest run`).
+- `bun run test:watch` — `vitest` in watch mode; re-runs on save.
 
-There is no test suite configured in this repo. Verification is `bun run build` (which typechecks first), `bun run lint`, and manual flows.
+Verification is `bun run test`, `bun run build` (which typechecks first), `bun run lint`, and manual flows for anything in `app/`.
 
 ### Gotchas that will cost you an hour
 
@@ -67,7 +69,18 @@ When editing a file, check which tree you're in before trusting where `@/...` re
 
 "Pending" is **derived**, not stored: a member with no `account` row has never completed a sign-in. `emailVerified` cannot stand in for it — better-auth never flips that column when linking.
 
-### Frontend (`app/`)
+### Testing (`worker/**/*.test.ts`)
+
+Tests run via **`@cloudflare/vitest-pool-workers`**, not plain Vitest: `worker/database/db.ts` and `worker/lib/cache.ts` do `import { env } from 'cloudflare:workers'` at module level, which only resolves inside workerd. The pool runs the real Hono app against real D1 and KV bindings (miniflare-simulated locally; the production database is never touched), configured in `vitest.config.ts` via the `cloudflareTest()` Vite plugin (not the older `defineWorkersConfig`, which this package version dropped) plus dummy secrets in `miniflare.bindings` — no `.env` values are ever needed to run tests. Storage is isolated per test: every test starts from the migrated-but-empty DB and its writes roll back afterward, so there is no manual cleanup to write. Migrations are applied once in `worker/test/setup.ts`'s `beforeAll` via `applyD1Migrations`, which sits below that isolated-storage stack.
+
+**`vi.mock()` cannot reach anything the worker under test imports.** `worker/index.ts` and everything it pulls in (`worker/lib/auth.ts`, `worker/lib/email.ts`, ...) load in a module cache separate from the one test files and `vi.mock()` run in — confirmed empirically, not a guess: mocking `@/lib/auth` from a test file never stops the real `betterAuth()` low-entropy-secret warning from firing, regardless of specifier or of going through `app.request()` vs. `SELF.fetch()`. Miniflare's `fetchMock`/`MockAgent` outbound-request interception doesn't reach it either. Two consequences:
+
+- **Auth isn't mocked — `worker/test/mocks.ts` builds a real session instead.** A second, test-only `better-auth` instance (same D1, same `BETTER_AUTH_SECRET`) uses better-auth's own `testUtils` plugin (`better-auth/plugins`). `signInAs(user)` calls `ctx.test.login({ userId })`, which writes a genuine `session` row and returns a correctly signed cookie; `worker/test/factories.ts`'s `req()` attaches it to every request. The production `auth.api.getSession()` — running for real — validates it exactly as it would a browser session. `signInAs(null)` signs out.
+- **Email isn't mocked either.** `PLUNK_SECRET_KEY` is a placeholder in the test bindings, so `sendLedgerInvite`'s call to the real Plunk API legitimately 401s. That's enough to exercise the "a send failure must never fail the request" contract (see `worker/lib/email.ts`), but there is no way to intercept the call to assert its `kind`/`url`/subject content — tests that touch an invite/resend route will make a real (rejected, harmless) network call to `api.useplunk.com`.
+
+`worker/test/factories.ts` seeds fixtures by writing to `db` directly (never through the API under test), and exposes `req()`, a thin wrapper over `app.request()`.
+
+**TDD loop:** run `bun run test:watch` in a side terminal. Write the failing test first, at the route level (`req('/api/ledgers/x/...')` with `signInAs(someUser)`, asserting status + `{ msg }`) — a single test then covers authz, validation, service and SQL without locking in internal shapes. Watch it fail for the right reason (a 404 because the route doesn't exist yet, not a typo in the path), then implement until green; isolated storage means no cleanup to write. Run `bun run build` before committing — `tsc -b` typechecks test files too. Drop to a pure unit test only for genuinely pure logic (rank helpers, `normalizeEmail`, `buildSchema`); anything touching `db` or KV should go through a route.
 
 - Routing is file-based via TanStack Router (`app/routes/`), code-generated into `app/routeTree.gen.ts` — **do not hand-edit that file**, it's rebuilt by the `tanstackRouter` Vite plugin (configured in `vite.config.ts`) on every dev/build run.
 - Two route groups: `_auth` (sign-in/sign-up, unauthenticated layout) and `_dashboard` (the main app). `_dashboard/route.tsx` guards itself client-side in `beforeLoad` by checking `better-auth`'s `getSession()` and redirecting to `/sign-in` if absent — this is in addition to, not instead of, the worker's server-side session check. It returns the session so `user` is available via `Route.useRouteContext()`.
