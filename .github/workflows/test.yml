@@ -1,0 +1,30 @@
+name: application tests
+run-name: pull request ${{github.event.number}} is being tested by ${{github.actor}}
+
+on:
+    pull_request:
+        branches:
+            - main
+        types:
+            - opened
+            - synchronize
+
+jobs:
+    test:
+        name: "test, build and lint"
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: oven-sh/setup-bun@v2
+
+            - name: installing dependencies
+              run: bun ci
+
+            - name: running tests
+              run: bun run test
+
+            - name: building application
+              run: bun run build
+
+            - name: linting
+              run: bun run lint
