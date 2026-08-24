@@ -41,14 +41,18 @@ function RouteComponent() {
                 password: value.password,
                 fetchOptions: {
                     onSuccess: async () => {
-                        if (redirect) {
+                        if (
+                            redirect &&
+                            redirect.startsWith('/') &&
+                            !redirect.startsWith('//')
+                        ) {
                             await navigate({ href: redirect })
                         } else {
                             await navigate({ to: '/' })
                         }
                     },
                     onError: ctx => {
-                        if (ctx.error.status === 403) {
+                        if (ctx.error.code === 'EMAIL_NOT_VERIFIED') {
                             setUnverifiedEmail(value.email)
                             return
                         }
