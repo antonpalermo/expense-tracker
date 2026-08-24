@@ -10,6 +10,7 @@ import { useEffect } from 'react'
 import { z } from 'zod'
 import { getEntries } from '@/apis/entries'
 import { getLedger } from '@/apis/ledgers'
+import { getMembers } from '@/apis/members'
 import { DataTable } from '@/components/data-table'
 import { entryHandler } from '@/components/dialog-handlers'
 import {
@@ -19,6 +20,7 @@ import {
 } from '@/components/entries/columns'
 import EntryFormDialog from '@/components/entries/dialog'
 import DialogConfirmation from '@/components/entries/dialog-confirmation'
+import EntriesFilterBar from '@/components/entries/filter-bar'
 import RoleGate from '@/components/role-gate'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -47,6 +49,11 @@ function EntriesPage() {
     const { data: ledger } = useQuery({
         queryKey: ledgersKeys.detail(ledgerId),
         queryFn: () => getLedger(ledgerId)
+    })
+
+    const { data: members } = useQuery({
+        queryKey: ledgersKeys.members(ledgerId),
+        queryFn: () => getMembers(ledgerId)
     })
 
     const query: EntriesQuery = {
@@ -124,6 +131,30 @@ function EntriesPage() {
                     </Button>
                 </RoleGate>
             </div>
+
+            <EntriesFilterBar
+                search={search.q}
+                onSearchChange={value =>
+                    navigate({
+                        search: prev => ({
+                            ...prev,
+                            q: value || undefined,
+                            page: 1
+                        })
+                    })
+                }
+                members={members ?? []}
+                authorIds={search.authorIds ?? []}
+                onAuthorIdsChange={authorIds =>
+                    navigate({
+                        search: prev => ({
+                            ...prev,
+                            authorIds: authorIds.length ? authorIds : undefined,
+                            page: 1
+                        })
+                    })
+                }
+            />
 
             {entries.isPending || !role ? (
                 <Skeleton className="h-64" />
