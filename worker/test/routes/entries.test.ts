@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm'
 import { describe, expect, test } from 'vitest'
 import { db } from '@/database/db'
 import { user } from '@/database/schemas'
+import * as HTTPStatus from '@/status-codes'
 import { createLedger, createUser, req } from '@/test/factories'
 import { signInAs } from '@/test/mocks'
 
@@ -476,6 +477,17 @@ describe('GET /api/ledgers/:ledgerId/entries — search, sort, filter, paginatio
             'Mango',
             'Zebra'
         ])
+    })
+
+    test('an invalid sort value is rejected', async () => {
+        const owner = await createUser()
+        const ledgerId = await createLedger({ owner: owner.id })
+
+        await signInAs(owner)
+        const res = await req(
+            `/api/ledgers/${ledgerId}/entries?sort=notAColumn`
+        )
+        expect(res.status).toBe(HTTPStatus.BAD_REQUEST)
     })
 
     test('pagination returns the requested page and correct metadata', async () => {

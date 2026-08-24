@@ -87,6 +87,19 @@ function EntriesPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [entries.data, ledgerId, queryClient, search.page])
 
+    useEffect(() => {
+        const totalPages = entries.data?.totalPages
+
+        if (!totalPages || search.page <= totalPages) {
+            return
+        }
+
+        navigate({
+            search: prev => ({ ...prev, page: totalPages }),
+            replace: true
+        })
+    }, [entries.data, search.page, navigate])
+
     const role = ledger?.role
 
     const sorting: SortingState = [
