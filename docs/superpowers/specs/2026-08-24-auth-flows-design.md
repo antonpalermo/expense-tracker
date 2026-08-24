@@ -25,8 +25,15 @@ when already authenticated).
 `worker/lib/email.ts` already sends transactional email via Plunk for ledger
 invites, with the constraint that a send failure must never fail the
 request it's attached to (the row is already committed either way). That
-constraint does not apply to verification/reset email — those sends *are*
-the point of the request, so a failure there should surface as an error.
+same constraint applies to verification/reset email: `PLUNK_SECRET_KEY` is
+a placeholder in the test environment (`worker/CLAUDE.md`), so every send
+in tests genuinely 401s. Since `requireEmailVerification: true` triggers a
+verification send on every sign-up, a throwing send would fail sign-up
+itself in tests (and in production, any time the email provider hiccups) —
+even though the account was already created successfully. Both new send
+functions log-and-swallow like `sendLedgerInvite`, and the frontend gets a
+"resend verification email" affordance for the case where the email never
+arrived.
 
 ## Goals
 
@@ -84,9 +91,8 @@ emailVerification: {
 
 `sendPasswordResetEmail` and `sendVerificationEmail` are new functions in
 `worker/lib/email.ts`, following the existing Plunk-via-raw-`fetch` shape of
-`sendLedgerInvite` — **except** they let a send failure throw (propagating
-as a 500) rather than swallowing it, since unlike an invite there is no
-usable fallback path if the email never arrives.
+`sendLedgerInvite` exactly, including swallowing send failures (log only,
+request still succeeds) — see Context above for why.
 
 ### Shell-user linking
 
