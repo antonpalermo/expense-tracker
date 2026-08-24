@@ -1,4 +1,4 @@
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, OnChangeFn, SortingState } from '@tanstack/react-table'
 import {
     flexRender,
     getCoreRowModel,
@@ -16,11 +16,15 @@ import {
 export type DataTableProps<T extends Record<string, unknown>> = {
     data: T[]
     columns: ColumnDef<T, unknown>[]
+    sorting?: SortingState
+    onSortingChange?: OnChangeFn<SortingState>
 }
 
 export function DataTable<T extends Record<string, unknown>>({
     data,
-    columns
+    columns,
+    sorting,
+    onSortingChange
 }: DataTableProps<T>) {
     'use no memo'
 
@@ -28,7 +32,12 @@ export function DataTable<T extends Record<string, unknown>>({
     const table = useReactTable({
         data,
         columns,
-        getCoreRowModel: getCoreRowModel()
+        getCoreRowModel: getCoreRowModel(),
+        manualSorting: sorting !== undefined,
+        state: {
+            ...(sorting !== undefined && { sorting })
+        },
+        onSortingChange
     })
 
     const contents = table.getRowModel().rows.map(row => (

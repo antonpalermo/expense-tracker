@@ -1,13 +1,30 @@
-import { type ColumnDef, createColumnHelper } from '@tanstack/react-table'
+import type { ColumnDef } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import type { LedgerRole } from '@/lib/roles'
 import { hasRole } from '@/lib/roles'
-import type { Entry } from '@/types'
+import type { EntriesSort, Entry } from '@/types'
 
 import AuthorAvatar from './author-avatar'
+import SortableHeader from './sortable-header'
 import TableActions from './table-actions'
 import EntryTypeBadge from './type-badge'
 
 const columnHelper = createColumnHelper<Entry>()
+
+// The table only understands react-table column ids; these two maps keep
+// that id in sync with the `sort` search param the worker's query schema
+// accepts (see worker/database/schemas/entries.ts's ENTRIES_SORT_FIELDS).
+export const SORT_COLUMN_IDS: Record<EntriesSort, string> = {
+    date: 'createdAt',
+    amount: 'amount',
+    name: 'name'
+}
+
+export const SORT_FIELDS_BY_COLUMN_ID: Record<string, EntriesSort> = {
+    createdAt: 'date',
+    amount: 'amount',
+    name: 'name'
+}
 
 // The sign of `amount` now carries meaning (it is what `type` derives from),
 // so a raw `-250` beside a red badge reads as a rendering bug.
@@ -28,13 +45,19 @@ const parseDate = (input: Date) => {
 // rebuilding per render matches what the table already does.
 export function createColumns(ledgerId: string, role: LedgerRole) {
     const columns = [
-        columnHelper.accessor('name', { header: 'Name' }),
+        columnHelper.accessor('name', {
+            header: ({ column }) => (
+                <SortableHeader column={column} label="Name" />
+            )
+        }),
         columnHelper.accessor('description', {
             header: 'Description',
             cell: ({ row }) => <span>{row.original.description ?? '—'}</span>
         }),
         columnHelper.accessor('amount', {
-            header: 'Amount',
+            header: ({ column }) => (
+                <SortableHeader column={column} label="Amount" />
+            ),
             cell: ({ row }) => (
                 <span>{currency.format(row.original.amount)}</span>
             )
@@ -44,7 +67,9 @@ export function createColumns(ledgerId: string, role: LedgerRole) {
             cell: ({ row }) => <EntryTypeBadge type={row.original.type} />
         }),
         columnHelper.accessor('createdAt', {
-            header: 'Date Created',
+            header: ({ column }) => (
+                <SortableHeader column={column} label="Date Created" />
+            ),
             cell: ({ row }) => <span>{parseDate(row.original.createdAt)}</span>
         }),
         columnHelper.accessor('authorName', {
