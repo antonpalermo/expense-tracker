@@ -1,0 +1,1 @@
+CREATE INDEX `entries_ledger_id_created_at_index` ON `entries` (`ledger_id`,`created_at`);
