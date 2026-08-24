@@ -3,9 +3,18 @@ import type { LedgerRole } from '@/lib/roles'
 import { hasRole } from '@/lib/roles'
 import type { Entry } from '@/types'
 
+import AuthorAvatar from './author-avatar'
 import TableActions from './table-actions'
+import EntryTypeBadge from './type-badge'
 
 const columnHelper = createColumnHelper<Entry>()
+
+// The sign of `amount` now carries meaning (it is what `type` derives from),
+// so a raw `-250` beside a red badge reads as a rendering bug.
+const currency = new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP'
+})
 
 const parseDate = (input: Date) => {
     const date = new Date(input)
@@ -24,10 +33,28 @@ export function createColumns(ledgerId: string, role: LedgerRole) {
             header: 'Description',
             cell: ({ row }) => <span>{row.original.description ?? '—'}</span>
         }),
-        columnHelper.accessor('amount', { header: 'Amount' }),
+        columnHelper.accessor('amount', {
+            header: 'Amount',
+            cell: ({ row }) => (
+                <span>{currency.format(row.original.amount)}</span>
+            )
+        }),
+        columnHelper.accessor('type', {
+            header: 'Type',
+            cell: ({ row }) => <EntryTypeBadge type={row.original.type} />
+        }),
         columnHelper.accessor('createdAt', {
             header: 'Date Created',
             cell: ({ row }) => <span>{parseDate(row.original.createdAt)}</span>
+        }),
+        columnHelper.accessor('authorName', {
+            header: 'Added By',
+            cell: ({ row }) => (
+                <AuthorAvatar
+                    name={row.original.authorName}
+                    image={row.original.authorImage}
+                />
+            )
         })
     ]
 
