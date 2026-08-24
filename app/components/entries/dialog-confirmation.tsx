@@ -22,7 +22,7 @@ export default function DialogConfirmation() {
             removeEntry(ledgerId, id),
         onSuccess: async (_data, variables) => {
             await queryClient.invalidateQueries({
-                queryKey: entriesKeys.byLedger(variables.ledgerId)
+                queryKey: entriesKeys.byLedger(variables.ledgerId, {})
             })
             deleteEntryHandler.close()
         }

@@ -55,7 +55,7 @@ export default function EntryForm(props: EntryFormProps) {
 
     const invalidate = async () => {
         await queryClient.invalidateQueries({
-            queryKey: entriesKeys.byLedger(ledgerId)
+            queryKey: entriesKeys.byLedger(ledgerId, {})
         })
     }
 

@@ -1,3 +1,5 @@
+import type { EntriesQuery } from '@/types'
+
 export const ledgersKeys = {
     all: ['LEDGERS'] as const,
     detail: (ledgerId: string) => ['LEDGERS', ledgerId] as const,
@@ -8,7 +10,8 @@ export const ledgersKeys = {
 
 export const entriesKeys = {
     all: ['ENTRIES'] as const,
-    byLedger: (ledgerId: string) => ['ENTRIES', ledgerId] as const
+    byLedger: (ledgerId: string, query: EntriesQuery) =>
+        ['ENTRIES', ledgerId, query] as const
 }
 
 export const myInvitationsKeys = {
