@@ -64,6 +64,13 @@
             "when": 1787418996432,
             "tag": "0008_sharp_marten_broadcloak",
             "breakpoints": true
+        },
+        {
+            "idx": 9,
+            "version": "6",
+            "when": 1787563912745,
+            "tag": "0009_lazy_psynapse",
+            "breakpoints": true
         }
     ]
 }

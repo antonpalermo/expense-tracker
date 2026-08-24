@@ -12,6 +12,17 @@ import nanoid from '../../lib/nanoid'
 import { user } from './auth'
 import { ledgersTable } from './ledgers'
 
+export const ENTRY_TYPES = ['debit', 'credit'] as const
+export type EntryType = (typeof ENTRY_TYPES)[number]
+
+/**
+ * The sign of `amount` is the source of truth; the `type` column is only its
+ * materialized, queryable form. Deriving it server-side on every write is what
+ * makes the two impossible to contradict.
+ */
+export const entryTypeFor = (amount: number): EntryType =>
+    amount < 0 ? 'debit' : 'credit'
+
 export const entriesTable = sqliteTable(
     'entries',
     {
@@ -22,6 +33,10 @@ export const entriesTable = sqliteTable(
         name: text('name').notNull(),
         description: text('description'),
         amount: real('amount').notNull(),
+        // Derived from the sign of `amount` by `entryTypeFor`, never accepted
+        // from the client. The default exists only so the column could be
+        // added to the existing table; no insert path relies on it.
+        type: text('type', { enum: ENTRY_TYPES }).notNull().default('credit'),
         // The author. Nullable on purpose: in a shared ledger, deleting a
         // user must not delete the ledger's entries.
         userId: text('user_id').references(() => user.id, {
@@ -60,6 +75,7 @@ export const selectEntriesSchema = createSelectSchema(entriesTable, {
     name: z.string(),
     description: z.string().nullable(),
     amount: z.coerce.number(),
+    type: z.enum(ENTRY_TYPES),
     userId: z.string().nullable(),
     ledgerId: z.string()
 })
