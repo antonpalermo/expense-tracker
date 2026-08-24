@@ -10,10 +10,24 @@ import type { AssignableRole, LedgerRole } from './lib/roles'
 // Every import from ../worker must stay `import type`, or drizzle-orm,
 // drizzle-zod and nanoid end up in the client bundle.
 
-export type Entry = z.infer<typeof selectEntriesSchema>
+// Only the list endpoint joins the author, so the bare row and the joined
+// row are separate types — otherwise a create/update response would appear to
+// carry an `authorName` it never has.
+export type EntryRow = z.infer<typeof selectEntriesSchema>
+export type Entry = EntryRow & {
+    authorName: string | null
+    authorImage: string | null
+}
 export type EntryPayload = Omit<
     Entry,
-    'id' | 'userId' | 'ledgerId' | 'createdAt' | 'updatedAt'
+    | 'id'
+    | 'userId'
+    | 'ledgerId'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'type'
+    | 'authorName'
+    | 'authorImage'
 >
 
 export type Ledger = z.infer<typeof selectLedgersSchema>

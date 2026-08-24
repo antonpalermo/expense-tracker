@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/field'
 import { useAppForm } from '@/hooks/form'
 import { entriesKeys } from '@/query-keys'
-import type { Entry, EntryPayload } from '@/types'
+import type { EntryPayload, EntryRow } from '@/types'
 
 const defaults: EntryPayload = {
     name: '',
@@ -83,7 +83,7 @@ export default function EntryForm(props: EntryFormProps) {
             toast.promise(mutation.mutateAsync(value), {
                 loading:
                     props.type === 'create' ? 'Creating...' : 'Updating...',
-                success: (data: Entry) => {
+                success: (data: EntryRow) => {
                     entryHandler.close()
                     return props.type === 'create'
                         ? `${data.name} created!`
