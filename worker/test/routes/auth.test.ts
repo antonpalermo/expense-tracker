@@ -75,7 +75,7 @@ describe('POST /api/auth/sign-up/email', () => {
         expect(allowedSignIn.status).toBe(200)
     })
 
-    test('links to an existing shell user instead of returning a synthetic duplicate', async () => {
+    test('shell user sign-up stages the credential without touching the database yet', async () => {
         const shellUser = await createUser({
             email: 'invited@example.com',
             name: 'Invited Person',
@@ -90,7 +90,43 @@ describe('POST /api/auth/sign-up/email', () => {
 
         expect(res.status).toBe(200)
         const body = (await res.json()) as { user: { id: string } }
-        expect(body.user.id).toBe(shellUser.id)
+        // Synthetic id, not the real shell user's — nothing about the real
+        // row is disclosed or touched by this call alone.
+        expect(body.user.id).not.toBe(shellUser.id)
+
+        const accountsBeforeVerify = await db
+            .select()
+            .from(account)
+            .where(eq(account.userId, shellUser.id))
+        expect(accountsBeforeVerify).toHaveLength(0)
+
+        const [userBeforeVerify] = await db
+            .select()
+            .from(user)
+            .where(eq(user.id, shellUser.id))
+        expect(userBeforeVerify.name).toBe('Invited Person')
+    })
+
+    test('verifying the shell-linking email completes the link: credential appears and the placeholder name is replaced', async () => {
+        const shellUser = await createUser({
+            email: 'invited-verify@example.com',
+            name: 'Invited Person',
+            emailVerified: false
+        })
+
+        await signUp({
+            name: 'Real Name',
+            email: shellUser.email,
+            password: 'a-strong-password'
+        })
+
+        const token = await createEmailVerificationToken(
+            env.BETTER_AUTH_SECRET,
+            shellUser.email
+        )
+        await req(
+            `/api/auth/verify-email?token=${token}&callbackURL=${encodeURIComponent('/verify-email')}`
+        )
 
         const accounts = await db
             .select()
@@ -104,6 +140,83 @@ describe('POST /api/auth/sign-up/email', () => {
             .from(user)
             .where(eq(user.id, shellUser.id))
         expect(updatedUser.name).toBe('Real Name')
+        expect(updatedUser.emailVerified).toBe(true)
+
+        const signInRes = await signIn({
+            email: shellUser.email,
+            password: 'a-strong-password'
+        })
+        expect(signInRes.status).toBe(200)
+    })
+
+    test("an attacker cannot plant a credential on someone else's shell account without proving ownership", async () => {
+        const shellUser = await createUser({
+            email: 'victim@example.com',
+            name: 'Victim Name',
+            emailVerified: false
+        })
+
+        // Attacker signs up with the victim's email and their own password —
+        // no access to the victim's inbox.
+        await signUp({
+            name: 'Attacker Chosen Name',
+            email: shellUser.email,
+            password: 'attacker-password'
+        })
+
+        // Nothing was written to the database: no account, and the
+        // placeholder name is untouched.
+        const accounts = await db
+            .select()
+            .from(account)
+            .where(eq(account.userId, shellUser.id))
+        expect(accounts).toHaveLength(0)
+
+        const [untouchedUser] = await db
+            .select()
+            .from(user)
+            .where(eq(user.id, shellUser.id))
+        expect(untouchedUser.name).toBe('Victim Name')
+
+        // The attacker's password cannot be used to sign in, because it was
+        // never actually linked.
+        const attackerSignIn = await signIn({
+            email: shellUser.email,
+            password: 'attacker-password'
+        })
+        expect(attackerSignIn.status).not.toBe(200)
+
+        // The real victim can still complete their own sign-up afterward —
+        // the attacker's attempt didn't strand them in the duplicate branch,
+        // because the shell condition (accounts.length === 0) still holds.
+        const victimSignUp = await signUp({
+            name: 'Victim Real Name',
+            email: shellUser.email,
+            password: 'victim-password'
+        })
+        expect(victimSignUp.status).toBe(200)
+
+        const victimToken = await createEmailVerificationToken(
+            env.BETTER_AUTH_SECRET,
+            shellUser.email
+        )
+        await req(
+            `/api/auth/verify-email?token=${victimToken}&callbackURL=${encodeURIComponent('/verify-email')}`
+        )
+
+        const victimSignIn = await signIn({
+            email: shellUser.email,
+            password: 'victim-password'
+        })
+        expect(victimSignIn.status).toBe(200)
+
+        // And the attacker's stale password from their earlier attempt
+        // still does not work.
+        const attackerSignInAfter = await signIn({
+            email: shellUser.email,
+            password: 'attacker-password'
+        })
+        expect(attackerSignInAfter.status).not.toBe(200)
     })
 
     test('an email with an already-linked account gets the generic duplicate response', async () => {

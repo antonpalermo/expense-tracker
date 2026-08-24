@@ -11,3 +11,7 @@ export async function set<T>(
 ) {
     await env.APP_CACHE.put(key, JSON.stringify(value), options)
 }
+
+export async function del(key: string) {
+    await env.APP_CACHE.delete(key)
+}

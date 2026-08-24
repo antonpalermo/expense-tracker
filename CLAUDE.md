@@ -43,4 +43,4 @@ Worker-specific conventions (route/service/db layout, the invitation flow, testi
 
 ### Env vars
 
-Required in `.env` for local dev (see `worker/lib/auth.ts`): `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
+Required in `.env` for local dev (see `worker/lib/auth.ts`): `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `PLUNK_SECRET_KEY` (gates email verification and password reset mail — without it, `worker/lib/email.ts`'s sends fail, which is swallowed, so sign-up/reset still work locally but no email arrives).

@@ -41,9 +41,7 @@ function RouteComponent() {
                 token,
                 fetchOptions: {
                     onSuccess: async () => {
-                        toast.success(
-                            'Password reset. Sign in with your new password.'
-                        )
+                        toast.success('Password reset.')
                         await navigate({ to: '/sign-in' })
                     },
                     onError: ctx => {
