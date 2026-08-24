@@ -123,3 +123,86 @@ describe('GET /api/ledgers/:ledgerId/entries', () => {
         expect(entry.description).toBeNull()
     })
 })
+
+describe('entry type is derived from the amount sign', () => {
+    test('a negative amount is a debit, a positive amount is a credit', async () => {
+        const owner = await createUser()
+        const ledgerId = await createLedger({ owner: owner.id })
+
+        await signInAs(owner)
+        const debitRes = await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Coffee', amount: -5 })
+        })
+        expect(debitRes.status).toBe(201)
+        expect(((await debitRes.json()) as { type: string }).type).toBe('debit')
+
+        await signInAs(owner)
+        const creditRes = await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Refund', amount: 5 })
+        })
+        expect(creditRes.status).toBe(201)
+        expect(((await creditRes.json()) as { type: string }).type).toBe(
+            'credit'
+        )
+    })
+
+    test('patching the amount across zero flips the type', async () => {
+        const owner = await createUser()
+        const ledgerId = await createLedger({ owner: owner.id })
+
+        await signInAs(owner)
+        const createRes = await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Groceries', amount: -20 })
+        })
+        const entry = (await createRes.json()) as { id: string; type: string }
+        expect(entry.type).toBe('debit')
+
+        await signInAs(owner)
+        const patchRes = await req(
+            `/api/ledgers/${ledgerId}/entries/${entry.id}`,
+            {
+                method: 'PATCH',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ amount: 20 })
+            }
+        )
+        expect(((await patchRes.json()) as { type: string }).type).toBe(
+            'credit'
+        )
+    })
+
+    test('a patch that omits the amount leaves the type untouched', async () => {
+        const owner = await createUser()
+        const ledgerId = await createLedger({ owner: owner.id })
+
+        await signInAs(owner)
+        const createRes = await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Rent', amount: -1000 })
+        })
+        const entry = (await createRes.json()) as { id: string }
+
+        await signInAs(owner)
+        const patchRes = await req(
+            `/api/ledgers/${ledgerId}/entries/${entry.id}`,
+            {
+                method: 'PATCH',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ name: 'Monthly rent' })
+            }
+        )
+        const patched = (await patchRes.json()) as {
+            name: string
+            type: string
+        }
+        expect(patched.name).toBe('Monthly rent')
+        expect(patched.type).toBe('debit')
+    })
+})
