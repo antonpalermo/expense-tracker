@@ -23,6 +23,12 @@ export type EntryType = (typeof ENTRY_TYPES)[number]
 export const entryTypeFor = (amount: number): EntryType =>
     amount < 0 ? 'debit' : 'credit'
 
+export const ENTRIES_SORT_FIELDS = ['date', 'amount', 'name'] as const
+export type EntriesSort = (typeof ENTRIES_SORT_FIELDS)[number]
+
+export const ENTRIES_ORDER = ['asc', 'desc'] as const
+export type EntriesOrder = (typeof ENTRIES_ORDER)[number]
+
 export const entriesTable = sqliteTable(
     'entries',
     {
@@ -55,7 +61,11 @@ export const entriesTable = sqliteTable(
     },
     table => [
         index('entries_id_index').on(table.id),
-        index('entries_ledger_id_index').on(table.ledgerId)
+        index('entries_ledger_id_index').on(table.ledgerId),
+        index('entries_ledger_id_created_at_index').on(
+            table.ledgerId,
+            table.createdAt
+        )
     ]
 )
 
@@ -79,3 +89,30 @@ export const selectEntriesSchema = createSelectSchema(entriesTable, {
     userId: z.string().nullable(),
     ledgerId: z.string()
 })
+
+// TanStack Router's default search-param serialization JSON-encodes any
+// non-primitive value, so an array search param arrives here as a JSON
+// string (e.g. `authorIds=%5B%22a%22%2C%22b%22%5D`), not as a repeated
+// query key. This preprocessor undoes that before zod sees it.
+const authorIdsParam = z.preprocess(value => {
+    if (typeof value !== 'string' || value.length === 0) {
+        return undefined
+    }
+
+    try {
+        const parsed = JSON.parse(value)
+        return Array.isArray(parsed) ? parsed : undefined
+    } catch {
+        return undefined
+    }
+}, z.array(z.string()).optional())
+
+export const entriesQuerySchema = z.object({
+    q: z.string().trim().min(1).optional(),
+    sort: z.enum(ENTRIES_SORT_FIELDS).optional().default('date'),
+    order: z.enum(ENTRIES_ORDER).optional().default('desc'),
+    authorIds: authorIdsParam,
+    page: z.coerce.number().int().positive().optional().default(1),
+    pageSize: z.coerce.number().int().positive().max(100).optional().default(20)
+})
+export type EntriesQuery = z.infer<typeof entriesQuerySchema>
