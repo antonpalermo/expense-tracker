@@ -1,9 +1,16 @@
-import type { ColumnDef, OnChangeFn, SortingState } from '@tanstack/react-table'
+import type {
+    ColumnDef,
+    OnChangeFn,
+    PaginationState,
+    SortingState
+} from '@tanstack/react-table'
 import {
     flexRender,
     getCoreRowModel,
     useReactTable
 } from '@tanstack/react-table'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
     Table,
     TableBody,
@@ -18,13 +25,19 @@ export type DataTableProps<T extends Record<string, unknown>> = {
     columns: ColumnDef<T, unknown>[]
     sorting?: SortingState
     onSortingChange?: OnChangeFn<SortingState>
+    pagination?: PaginationState
+    pageCount?: number
+    onPageChange?: (pageIndex: number) => void
 }
 
 export function DataTable<T extends Record<string, unknown>>({
     data,
     columns,
     sorting,
-    onSortingChange
+    onSortingChange,
+    pagination,
+    pageCount,
+    onPageChange
 }: DataTableProps<T>) {
     'use no memo'
 
@@ -34,8 +47,11 @@ export function DataTable<T extends Record<string, unknown>>({
         columns,
         getCoreRowModel: getCoreRowModel(),
         manualSorting: sorting !== undefined,
+        manualPagination: pagination !== undefined,
+        pageCount: pagination !== undefined ? (pageCount ?? -1) : undefined,
         state: {
-            ...(sorting !== undefined && { sorting })
+            ...(sorting !== undefined && { sorting }),
+            ...(pagination !== undefined && { pagination })
         },
         onSortingChange
     })
@@ -74,15 +90,45 @@ export function DataTable<T extends Record<string, unknown>>({
     ))
 
     return (
-        <div className="overflow-hidden rounded-md border">
-            <Table>
-                <TableHeader>{header}</TableHeader>
-                <TableBody>
-                    {table.getRowModel().rows.length
-                        ? contents
-                        : contentNotFound}
-                </TableBody>
-            </Table>
+        <div className="space-y-3">
+            <div className="overflow-hidden rounded-md border">
+                <Table>
+                    <TableHeader>{header}</TableHeader>
+                    <TableBody>
+                        {table.getRowModel().rows.length
+                            ? contents
+                            : contentNotFound}
+                    </TableBody>
+                </Table>
+            </div>
+
+            {pagination && onPageChange && (
+                <div className="flex items-center justify-end gap-2">
+                    <span className="text-muted-foreground text-sm">
+                        Page {pagination.pageIndex + 1} of{' '}
+                        {Math.max(pageCount ?? 1, 1)}
+                    </span>
+                    <Button
+                        variant="outline"
+                        size="icon-sm"
+                        disabled={pagination.pageIndex === 0}
+                        onClick={() => onPageChange(pagination.pageIndex - 1)}
+                    >
+                        <ChevronLeft className="size-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="icon-sm"
+                        disabled={
+                            pageCount === undefined ||
+                            pagination.pageIndex >= pageCount - 1
+                        }
+                        onClick={() => onPageChange(pagination.pageIndex + 1)}
+                    >
+                        <ChevronRight className="size-4" />
+                    </Button>
+                </div>
+            )}
         </div>
     )
 }

@@ -1,7 +1,12 @@
-import { useQuery } from '@tanstack/react-query'
+import {
+    keepPreviousData,
+    useQuery,
+    useQueryClient
+} from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import type { OnChangeFn, SortingState } from '@tanstack/react-table'
 import { Plus } from 'lucide-react'
+import { useEffect } from 'react'
 import { z } from 'zod'
 import { getEntries } from '@/apis/entries'
 import { getLedger } from '@/apis/ledgers'
@@ -20,6 +25,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { entriesKeys, ledgersKeys } from '@/query-keys'
 import type { EntriesQuery } from '@/types'
 
+const PAGE_SIZE = 20
+
 export const Route = createFileRoute('/_dashboard/ledgers/$ledgerId/')({
     validateSearch: z.object({
         q: z.string().optional(),
@@ -35,6 +42,7 @@ function EntriesPage() {
     const { ledgerId } = Route.useParams()
     const search = Route.useSearch()
     const navigate = useNavigate({ from: Route.fullPath })
+    const queryClient = useQueryClient()
 
     const { data: ledger } = useQuery({
         queryKey: ledgersKeys.detail(ledgerId),
@@ -51,8 +59,26 @@ function EntriesPage() {
 
     const entries = useQuery({
         queryKey: entriesKeys.byLedger(ledgerId, query),
-        queryFn: () => getEntries(ledgerId, query)
+        queryFn: () => getEntries(ledgerId, query),
+        placeholderData: keepPreviousData
     })
+
+    useEffect(() => {
+        if (!entries.data || search.page >= entries.data.totalPages) {
+            return
+        }
+
+        const nextPageQuery: EntriesQuery = { ...query, page: search.page + 1 }
+        queryClient.prefetchQuery({
+            queryKey: entriesKeys.byLedger(ledgerId, nextPageQuery),
+            queryFn: () => getEntries(ledgerId, nextPageQuery)
+        })
+        // `query` is derived fresh from `search` every render, so it is
+        // intentionally excluded — `search.page` (used to build it) is
+        // already a dependency, and including the derived object would
+        // re-run this effect every render instead of only on real changes.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [entries.data, ledgerId, queryClient, search.page])
 
     const role = ledger?.role
 
@@ -111,6 +137,16 @@ function EntriesPage() {
                     columns={createColumns(ledgerId, role)}
                     sorting={sorting}
                     onSortingChange={handleSortingChange}
+                    pagination={{
+                        pageIndex: search.page - 1,
+                        pageSize: PAGE_SIZE
+                    }}
+                    pageCount={entries.data.totalPages}
+                    onPageChange={pageIndex =>
+                        navigate({
+                            search: prev => ({ ...prev, page: pageIndex + 1 })
+                        })
+                    }
                 />
             )}
         </div>
