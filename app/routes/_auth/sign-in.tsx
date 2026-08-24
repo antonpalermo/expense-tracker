@@ -42,7 +42,7 @@ function RouteComponent() {
                 fetchOptions: {
                     onSuccess: async () => {
                         if (redirect) {
-                            window.location.href = redirect
+                            await navigate({ href: redirect })
                         } else {
                             await navigate({ to: '/' })
                         }
