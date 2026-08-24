@@ -1,8 +1,25 @@
 import { json, request } from '@/apis/http'
-import type { Entry, EntryPayload, EntryRow } from '@/types'
+import type { EntriesPage, EntriesQuery, EntryPayload, EntryRow } from '@/types'
 
-export async function getEntries(ledgerId: string) {
-    return await request<Entry[]>(`/api/ledgers/${ledgerId}/entries`)
+function buildEntriesQueryString(query: EntriesQuery) {
+    const params = new URLSearchParams()
+
+    if (query.q) params.set('q', query.q)
+    if (query.sort) params.set('sort', query.sort)
+    if (query.order) params.set('order', query.order)
+    if (query.authorIds && query.authorIds.length > 0) {
+        params.set('authorIds', JSON.stringify(query.authorIds))
+    }
+    if (query.page) params.set('page', String(query.page))
+
+    const search = params.toString()
+    return search ? `?${search}` : ''
+}
+
+export async function getEntries(ledgerId: string, query: EntriesQuery) {
+    return await request<EntriesPage>(
+        `/api/ledgers/${ledgerId}/entries${buildEntriesQueryString(query)}`
+    )
 }
 
 export async function createEntry(ledgerId: string, value: EntryPayload) {

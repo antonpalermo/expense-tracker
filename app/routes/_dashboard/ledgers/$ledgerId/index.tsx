@@ -26,8 +26,8 @@ function EntriesPage() {
     })
 
     const entries = useQuery({
-        queryKey: entriesKeys.byLedger(ledgerId),
-        queryFn: () => getEntries(ledgerId)
+        queryKey: entriesKeys.byLedger(ledgerId, {}),
+        queryFn: () => getEntries(ledgerId, {})
     })
 
     const role = ledger?.role
@@ -62,7 +62,7 @@ function EntriesPage() {
                 </p>
             ) : (
                 <DataTable
-                    data={entries.data}
+                    data={entries.data.data}
                     columns={createColumns(ledgerId, role)}
                 />
             )}

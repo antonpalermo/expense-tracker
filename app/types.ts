@@ -1,5 +1,9 @@
 import type { z } from 'zod'
-import type { selectEntriesSchema } from '../worker/database/schemas/entries'
+import type {
+    EntriesOrder,
+    EntriesSort,
+    selectEntriesSchema
+} from '../worker/database/schemas/entries'
 import type {
     selectLedgerInvitationsSchema,
     selectLedgerMembersSchema,
@@ -29,6 +33,24 @@ export type EntryPayload = Omit<
     | 'authorName'
     | 'authorImage'
 >
+
+export type { EntriesOrder, EntriesSort }
+
+export type EntriesQuery = {
+    q?: string
+    sort?: EntriesSort
+    order?: EntriesOrder
+    authorIds?: string[]
+    page?: number
+}
+
+export type EntriesPage = {
+    data: Entry[]
+    page: number
+    pageSize: number
+    total: number
+    totalPages: number
+}
 
 export type Ledger = z.infer<typeof selectLedgersSchema>
 export type LedgerWithRole = Ledger & { role: LedgerRole }
