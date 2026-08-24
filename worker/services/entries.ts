@@ -6,16 +6,33 @@ import {
     type createEntrySchema,
     entriesTable,
     entryTypeFor,
-    type updateEntrySchema
+    type updateEntrySchema,
+    user
 } from '@/database/schemas'
 import * as HTTPStatus from '@/status-codes'
 
 export async function getEntries(ledgerId: string) {
     try {
-        // Membership was already proven by requireLedgerRole, so no join here.
+        // Membership was already proven by requireLedgerRole, so the join
+        // below is purely for display — it is not an authorization check.
+        // It must stay a `leftJoin`: `userId` is nullable on purpose, and an
+        // inner join would silently drop entries whose author was deleted.
         return await db
-            .select()
+            .select({
+                id: entriesTable.id,
+                name: entriesTable.name,
+                description: entriesTable.description,
+                amount: entriesTable.amount,
+                type: entriesTable.type,
+                userId: entriesTable.userId,
+                ledgerId: entriesTable.ledgerId,
+                createdAt: entriesTable.createdAt,
+                updatedAt: entriesTable.updatedAt,
+                authorName: user.name,
+                authorImage: user.image
+            })
             .from(entriesTable)
+            .leftJoin(user, eq(entriesTable.userId, user.id))
             .where(eq(entriesTable.ledgerId, ledgerId))
             .orderBy(desc(entriesTable.createdAt))
     } catch (error) {

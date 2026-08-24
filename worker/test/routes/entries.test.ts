@@ -1,4 +1,7 @@
+import { eq } from 'drizzle-orm'
 import { describe, expect, test } from 'vitest'
+import { db } from '@/database/db'
+import { user } from '@/database/schemas'
 import { createLedger, createUser, req } from '@/test/factories'
 import { signInAs } from '@/test/mocks'
 
@@ -204,5 +207,69 @@ describe('entry type is derived from the amount sign', () => {
         }
         expect(patched.name).toBe('Monthly rent')
         expect(patched.type).toBe('debit')
+    })
+})
+
+describe('entry author is joined into the list response', () => {
+    test('the list carries the author name and image', async () => {
+        const owner = await createUser({
+            name: 'Ada Lovelace',
+            image: 'https://example.com/ada.png'
+        })
+        const ledgerId = await createLedger({ owner: owner.id })
+
+        await signInAs(owner)
+        await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Books', amount: -30 })
+        })
+
+        await signInAs(owner)
+        const res = await req(`/api/ledgers/${ledgerId}/entries`)
+        const entries = (await res.json()) as {
+            userId: string | null
+            authorName: string | null
+            authorImage: string | null
+        }[]
+
+        expect(entries).toHaveLength(1)
+        expect(entries[0]?.userId).toBe(owner.id)
+        expect(entries[0]?.authorName).toBe('Ada Lovelace')
+        expect(entries[0]?.authorImage).toBe('https://example.com/ada.png')
+    })
+
+    test('an entry whose author was deleted is still listed, with a null author', async () => {
+        const owner = await createUser()
+        const author = await createUser({ name: 'Departing Member' })
+        const ledgerId = await createLedger({
+            owner: owner.id,
+            members: [{ userId: author.id, role: 'member' }]
+        })
+
+        await signInAs(author)
+        await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Orphaned', amount: -7 })
+        })
+
+        // `entries.user_id` is `on delete set null` on purpose — deleting a
+        // user must not delete the ledger's history. A join that drops the
+        // row would silently lose it.
+        await db.delete(user).where(eq(user.id, author.id))
+
+        await signInAs(owner)
+        const res = await req(`/api/ledgers/${ledgerId}/entries`)
+        const entries = (await res.json()) as {
+            name: string
+            userId: string | null
+            authorName: string | null
+        }[]
+
+        expect(entries).toHaveLength(1)
+        expect(entries[0]?.name).toBe('Orphaned')
+        expect(entries[0]?.userId).toBeNull()
+        expect(entries[0]?.authorName).toBeNull()
     })
 })
