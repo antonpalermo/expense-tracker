@@ -32,3 +32,6 @@ dist-ssr
 
 # Tanstack
 .tanstack
+
+# Claude Plans
+.claude/plans

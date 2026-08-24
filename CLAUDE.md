@@ -8,13 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-Package manager is **bun**.
+Package manager is **bun**. Standard scripts (`dev`, `build`, `lint`, `preview`, `deploy`) are in `package.json`.
 
-- `bun dev` — start the Vite dev server (serves both the SPA and the worker via the Cloudflare Vite plugin).
-- `bun run build` — typecheck (`tsc -b`) then `vite build`.
-- `bun run lint` — ESLint over the whole repo.
-- `bun run preview` — build then `vite preview`.
-- `bun run deploy` — build then `wrangler deploy`.
 - `bun run cf-typegen` — regenerate `worker-configuration.d.ts` from `wrangler.jsonc` bindings.
 - `bun run db:gen` — generate a new Drizzle migration from schema changes into `.migrations/` (uses `drizzle.config.ts`; drizzle-kit is only used to generate SQL, not to run it).
 - `bun run db:migrate` — apply migrations to the remote D1 database via `wrangler d1 migrations apply xpens`.
@@ -44,54 +39,7 @@ When editing a file, check which tree you're in before trusting where `@/...` re
 
 `wrangler.jsonc` treats this as one deployable: static assets are built to `dist/client` and served by the Worker, but any request matching `/api/*` is routed to the worker code first (`run_worker_first`), landing in `worker/index.ts`.
 
-### Worker (`worker/`)
-
-- `worker/index.ts` — Hono app mounted at `/api`, defines the shared `HonoBindings` type (Cloudflare bindings + `user`/`session` context variables) that every route file imports. Route modules (`worker/routes/*.ts`) are plain Hono sub-apps mounted with `app.route('/', route)`.
-- `worker/lib/session.ts` — global middleware applied to every `/api/*` request. It calls `better-auth`'s `getSession`, and rejects with 401 unless the path starts with `/api/auth`. Every other route requires a session automatically.
-- `worker/lib/ledger-access.ts` — **the authorization layer.** `requireLedgerRole(role)` resolves the caller's membership for the `:ledgerId` route param and rejects below the required rank; it sets `ledgerId` / `ledgerRole` on the Hono context for the handler to reuse. Attach it *per route* (not `.use('*')`) so the param resolves, and *before* `validate` so unauthorized callers never have their body parsed. A non-member gets **404** (so ledger ids are not enumerable); an under-privileged member gets **403**. Member management adds one rule on top of rank: you may only act on someone you strictly `outranks`, and only assign a role below your own.
-- `worker/lib/auth.ts` — `better-auth` instance (Drizzle adapter over `worker/database/schemas/auth.ts`, Google social login). `worker/routes/auth.ts` just forwards all requests to `auth.handler`.
-- `worker/database/db.ts` — Drizzle D1 client, built from the `DATABASE` binding (via `cloudflare:workers` `env`, not `ctx.env` — bindings are accessed as module-level imports throughout the worker, not threaded through Hono context).
-- `worker/database/schemas/` — Drizzle table definitions. `entries.ts` and `form.ts` are app tables; `auth.ts` is the better-auth-owned schema (user/session/account/verification). Insert/update/select Zod schemas are generated from tables via `drizzle-zod` (`createInsertSchema`/`createUpdateSchema`/`createSelectSchema`) rather than hand-written.
-- `worker/services/` — DB access functions per resource (e.g. `services/entries.ts`), called from routes. Errors are wrapped as `HTTPException` using the codes in `worker/status-codes.ts`.
-- `worker/lib/validator.ts` — a `validate(target, zodSchema)` wrapper around `hono/validator` used as route middleware to validate request bodies against the drizzle-zod schemas.
-- `worker/lib/cache.ts` — thin get/set wrapper over the `APP_CACHE` KV binding. The dynamic form schema is cached per ledger under `ledger:<id>:form_schema` for 24h, write-through on every mutation.
-- `worker/lib/email.ts` — delivery seam for ledger invitations. **No provider is configured**: it logs instead of sending. Swapping in a real one is a change to this file only. Callers must never let a send failure fail the request — the row is already committed and the invite works without the email.
-- `worker/status-codes.ts` / `worker/status-phrases.ts` — **generated files, do not hand-edit** (see header comment).
-- The "form" feature (`worker/routes/form.ts`, `worker/database/schemas/form.ts`, `worker/bindings.ts`'s `Field`/`FormSchema` types) is a dynamic/configurable field schema for expense entries, stored as JSON in D1 and cached in KV — not a static form. It is **per ledger** (one `forms` row per ledger, created in the same batch as the ledger), and editing it requires the `admin` role. Nothing in the frontend consumes it yet.
-- `worker/database/schemas/relations.ts` — every `relations()` declaration lives here, apart from the table definitions. Keeping them beside their tables created import cycles that silently degraded drizzle-zod's inference. Do not move them back.
-
-### Invitations: two paths
-
-`POST /api/ledgers/:ledgerId/invitations` branches on whether the email already has an account:
-
-- **No account** — a shell `user` row is created (placeholder name, `emailVerified: false`) *plus* the membership, in one batch. They are a member immediately and show as **Pending** in the member list. On their first Google sign-in, better-auth links the new account to that row. This depends on `account.accountLinking` in `worker/lib/auth.ts` (`trustedProviders: ['google']`, `updateUserInfoOnLink: true`) — do not remove it, and never enable `disableImplicitLinking`, or these invites break at sign-in with `account_not_linked`.
-- **Account exists** — a pending `ledger_invitations` row they must accept or decline at `/invitations`, so existing users are not pulled into a ledger without consent.
-
-"Pending" is **derived**, not stored: a member with no `account` row has never completed a sign-in. `emailVerified` cannot stand in for it — better-auth never flips that column when linking.
-
-### Testing (`worker/test/**/*.test.ts`)
-
-All tests live under `worker/test/`, mirroring the source layout they cover (`worker/test/lib/`, `worker/test/routes/`, `worker/test/services/`) rather than sitting next to the file under test — `worker/test/setup.ts`, `mocks.ts`, `factories.ts` and `env.d.ts` are the harness itself, not tests, and stay at that top level.
-
-Tests run via **`@cloudflare/vitest-pool-workers`**, not plain Vitest: `worker/database/db.ts` and `worker/lib/cache.ts` do `import { env } from 'cloudflare:workers'` at module level, which only resolves inside workerd. The pool runs the real Hono app against real D1 and KV bindings (miniflare-simulated locally; the production database is never touched), configured in `vitest.config.ts` via the `cloudflareTest()` Vite plugin (not the older `defineWorkersConfig`, which this package version dropped) plus dummy secrets in `miniflare.bindings` — no `.env` values are ever needed to run tests. Storage is isolated per test: every test starts from the migrated-but-empty DB and its writes roll back afterward, so there is no manual cleanup to write. Migrations are applied once in `worker/test/setup.ts`'s `beforeAll` via `applyD1Migrations`, which sits below that isolated-storage stack.
-
-**`vi.mock()` cannot reach anything the worker under test imports.** `worker/index.ts` and everything it pulls in (`worker/lib/auth.ts`, `worker/lib/email.ts`, ...) load in a module cache separate from the one test files and `vi.mock()` run in — confirmed empirically, not a guess: mocking `@/lib/auth` from a test file never stops the real `betterAuth()` low-entropy-secret warning from firing, regardless of specifier or of going through `app.request()` vs. `SELF.fetch()`. Miniflare's `fetchMock`/`MockAgent` outbound-request interception doesn't reach it either. Two consequences:
-
-- **Auth isn't mocked — `worker/test/mocks.ts` builds a real session instead.** A second, test-only `better-auth` instance (same D1, same `BETTER_AUTH_SECRET`) uses better-auth's own `testUtils` plugin (`better-auth/plugins`). `signInAs(user)` calls `ctx.test.login({ userId })`, which writes a genuine `session` row and returns a correctly signed cookie; `worker/test/factories.ts`'s `req()` attaches it to every request. The production `auth.api.getSession()` — running for real — validates it exactly as it would a browser session. `signInAs(null)` signs out.
-- **Email isn't mocked either.** `PLUNK_SECRET_KEY` is a placeholder in the test bindings, so `sendLedgerInvite`'s call to the real Plunk API legitimately 401s. That's enough to exercise the "a send failure must never fail the request" contract (see `worker/lib/email.ts`), but there is no way to intercept the call to assert its `kind`/`url`/subject content — tests that touch an invite/resend route will make a real (rejected, harmless) network call to `api.useplunk.com`.
-
-`worker/test/factories.ts` seeds fixtures by writing to `db` directly (never through the API under test), and exposes `req()`, a thin wrapper over `app.request()`.
-
-**TDD loop:** run `bun run test:watch` in a side terminal. Write the failing test first, at the route level (`req('/api/ledgers/x/...')` with `signInAs(someUser)`, asserting status + `{ msg }`) — a single test then covers authz, validation, service and SQL without locking in internal shapes. Watch it fail for the right reason (a 404 because the route doesn't exist yet, not a typo in the path), then implement until green; isolated storage means no cleanup to write. Run `bun run build` before committing — `tsc -b` typechecks test files too. Drop to a pure unit test only for genuinely pure logic (rank helpers, `normalizeEmail`, `buildSchema`); anything touching `db` or KV should go through a route.
-
-- Routing is file-based via TanStack Router (`app/routes/`), code-generated into `app/routeTree.gen.ts` — **do not hand-edit that file**, it's rebuilt by the `tanstackRouter` Vite plugin (configured in `vite.config.ts`) on every dev/build run.
-- Two route groups: `_auth` (sign-in/sign-up, unauthenticated layout) and `_dashboard` (the main app). `_dashboard/route.tsx` guards itself client-side in `beforeLoad` by checking `better-auth`'s `getSession()` and redirecting to `/sign-in` if absent — this is in addition to, not instead of, the worker's server-side session check. It returns the session so `user` is available via `Route.useRouteContext()`.
-- **The active ledger is the `$ledgerId` route param**, not a store or a persisted preference. `localStorage` holds only a `xpens:lastLedgerId` hint (`app/lib/last-ledger.ts`) that decides where `/` lands. Query keys derive from the param, so cache scoping cannot drift from the UI.
-- Role gating in the UI (`app/components/role-gate.tsx`, `app/lib/roles.ts`) is **presentation only** — the server re-checks every mutation. `app/lib/roles.ts` deliberately duplicates the worker's rank helpers: importing the worker's *values* would pull drizzle into the client bundle.
-- `app/apis/http.ts` is the single fetch wrapper. It surfaces the worker's `{ msg }` error body, which is what makes `toast.promise`'s error branch show real messages like "this action requires the admin role".
-- `app/apis/` — thin `fetch` wrappers per resource, called from components/hooks (no generated API client), all built on `app/apis/http.ts`. `app/query-keys.ts` centralizes TanStack Query cache keys; entry, member and invitation keys are **scoped by ledger id**.
-- `app/lib/auth.ts` exports the `better-auth` React client (`signIn`/`signOut`/`signUp`); route guards create their own separate `createAuthClient()` instance rather than importing it.
-- UI components in `app/components/ui/` are shadcn-style primitives (see `components.json`) built on `@base-ui/react`; forms use `@tanstack/react-form` (see `app/hooks/form.ts` for shared form hook setup).
+Worker-specific conventions (route/service/db layout, the invitation flow, testing) live in `worker/CLAUDE.md`; frontend-specific conventions (routing, ledger-as-route-param, role gating) live in `app/CLAUDE.md`. Both load automatically when you work under that directory.
 
 ### Env vars
 
