@@ -5,6 +5,7 @@ import { db } from '@/database/db'
 import {
     type createEntrySchema,
     entriesTable,
+    entryTypeFor,
     type updateEntrySchema
 } from '@/database/schemas'
 import * as HTTPStatus from '@/status-codes'
@@ -37,7 +38,8 @@ export async function create(
                 ...entry,
                 description: entry.description ?? null,
                 ledgerId,
-                userId
+                userId,
+                type: entryTypeFor(entry.amount)
             })
             .returning()
 
@@ -87,12 +89,19 @@ export async function update(
 ) {
     let data: typeof entriesTable.$inferSelect | undefined
 
+    // The patch is partial, so the type is only recomputed when the amount it
+    // derives from is actually being changed.
+    const patch =
+        entry.amount === undefined
+            ? entry
+            : { ...entry, type: entryTypeFor(entry.amount) }
+
     try {
         // Scoping by ledgerId means an entry id from another ledger simply
         // matches no rows and 404s — no second lookup needed.
         ;[data] = await db
             .update(entriesTable)
-            .set(entry)
+            .set(patch)
             .where(
                 and(
                     eq(entriesTable.id, entryId),
