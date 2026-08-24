@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as DashboardRouteRouteImport } from './routes/_dashboard/route'
+import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
+import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
@@ -27,6 +29,16 @@ const AuthRouteRoute = AuthRouteRouteImport.update({
 const DashboardRouteRoute = DashboardRouteRouteImport.update({
   id: '/_dashboard',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => AuthRouteRoute,
 } as any)
 const AuthSignInRoute = AuthSignInRouteImport.update({
   id: '/sign-in',
@@ -74,6 +86,8 @@ const DashboardLedgersLedgerIdMembersRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof DashboardIndexRoute
+  '/forgot-password': typeof AuthForgotPasswordRoute
+  '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
   '/invitations': typeof DashboardInvitationsRoute
@@ -84,6 +98,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof DashboardIndexRoute
+  '/forgot-password': typeof AuthForgotPasswordRoute
+  '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
   '/invitations': typeof DashboardInvitationsRoute
@@ -95,6 +111,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_dashboard': typeof DashboardRouteRouteWithChildren
+  '/_auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/sign-in': typeof AuthSignInRoute
   '/_auth/sign-up': typeof AuthSignUpRoute
   '/_dashboard/invitations': typeof DashboardInvitationsRoute
@@ -108,6 +126,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/forgot-password'
+    | '/reset-password'
     | '/sign-in'
     | '/sign-up'
     | '/invitations'
@@ -118,6 +138,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/forgot-password'
+    | '/reset-password'
     | '/sign-in'
     | '/sign-up'
     | '/invitations'
@@ -128,6 +150,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_auth'
     | '/_dashboard'
+    | '/_auth/forgot-password'
+    | '/_auth/reset-password'
     | '/_auth/sign-in'
     | '/_auth/sign-up'
     | '/_dashboard/invitations'
@@ -158,6 +182,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof DashboardRouteRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_auth/forgot-password': {
+      id: '/_auth/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/reset-password': {
+      id: '/_auth/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof AuthRouteRoute
     }
     '/_auth/sign-in': {
       id: '/_auth/sign-in'
@@ -219,11 +257,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthRouteRouteChildren {
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
 }

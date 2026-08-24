@@ -139,12 +139,12 @@ function RouteComponent() {
                                         <FieldLabel htmlFor={field.name}>
                                             Password
                                         </FieldLabel>
-                                        <a
-                                            href="/forgot-password"
+                                        <Link
+                                            to="/forgot-password"
                                             className="ml-auto text-sm underline-offset-4 hover:underline"
                                         >
                                             Forgot your password?
-                                        </a>
+                                        </Link>
                                     </div>
                                     <Input
                                         id={field.name}
