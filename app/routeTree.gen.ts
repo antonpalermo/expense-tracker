@@ -15,6 +15,7 @@ import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-pa
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
+import { Route as AuthVerifyEmailRouteImport } from './routes/_auth/verify-email'
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
 import { Route as DashboardInvitationsRouteImport } from './routes/_dashboard/invitations'
 import { Route as DashboardLedgersIndexRouteImport } from './routes/_dashboard/ledgers/index'
@@ -48,6 +49,11 @@ const AuthSignInRoute = AuthSignInRouteImport.update({
 const AuthSignUpRoute = AuthSignUpRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthVerifyEmailRoute = AuthVerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
   getParentRoute: () => AuthRouteRoute,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
+  '/verify-email': typeof AuthVerifyEmailRoute
   '/invitations': typeof DashboardInvitationsRoute
   '/ledgers/$ledgerId': typeof DashboardLedgersLedgerIdRouteRouteWithChildren
   '/ledgers/': typeof DashboardLedgersIndexRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
+  '/verify-email': typeof AuthVerifyEmailRoute
   '/invitations': typeof DashboardInvitationsRoute
   '/ledgers': typeof DashboardLedgersIndexRoute
   '/ledgers/$ledgerId/members': typeof DashboardLedgersLedgerIdMembersRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/sign-in': typeof AuthSignInRoute
   '/_auth/sign-up': typeof AuthSignUpRoute
+  '/_auth/verify-email': typeof AuthVerifyEmailRoute
   '/_dashboard/invitations': typeof DashboardInvitationsRoute
   '/_dashboard/': typeof DashboardIndexRoute
   '/_dashboard/ledgers/$ledgerId': typeof DashboardLedgersLedgerIdRouteRouteWithChildren
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sign-in'
     | '/sign-up'
+    | '/verify-email'
     | '/invitations'
     | '/ledgers/$ledgerId'
     | '/ledgers/'
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sign-in'
     | '/sign-up'
+    | '/verify-email'
     | '/invitations'
     | '/ledgers'
     | '/ledgers/$ledgerId/members'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/_auth/reset-password'
     | '/_auth/sign-in'
     | '/_auth/sign-up'
+    | '/_auth/verify-email'
     | '/_dashboard/invitations'
     | '/_dashboard/'
     | '/_dashboard/ledgers/$ledgerId'
@@ -211,6 +223,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignUpRouteImport
       parentRoute: typeof AuthRouteRoute
     }
+    '/_auth/verify-email': {
+      id: '/_auth/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof AuthVerifyEmailRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
     '/_dashboard/': {
       id: '/_dashboard/'
       path: '/'
@@ -261,6 +280,7 @@ interface AuthRouteRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
+  AuthVerifyEmailRoute: typeof AuthVerifyEmailRoute
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
@@ -268,6 +288,7 @@ const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
+  AuthVerifyEmailRoute: AuthVerifyEmailRoute,
 }
 
 const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
