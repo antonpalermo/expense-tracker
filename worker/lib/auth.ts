@@ -17,11 +17,21 @@ type PendingShellLink = {
     userId: string
     passwordHash: string
     name: string
+    email: string
 }
 
-function shellLinkCacheKey(email: string) {
-    return `shell-link:${email}`
+// Keyed by a random per-attempt id (see `hooks.before` below), not by
+// email — each sign-up attempt gets its own entry, so concurrent attempts
+// for the same address never race/overwrite each other.
+function shellLinkCacheKey(linkAttemptId: string) {
+    return `shell-link:${linkAttemptId}`
 }
+
+// Bound to the same `linkAttemptId` in `hooks.before`/`hooks.after` below.
+// httpOnly + short-lived (matches the verification token's expiry); it
+// doesn't need HMAC signing, since its own unguessability (like a session
+// token) is the security property being relied on, not its integrity.
+const SHELL_LINK_ATTEMPT_COOKIE = 'shell-link-attempt'
 
 export const auth = betterAuth({
     baseURL: env.BETTER_AUTH_URL,
@@ -80,12 +90,30 @@ export const auth = betterAuth({
     // Linking the credential immediately at sign-up time (an earlier version
     // of this hook did that) is a real vulnerability: `/sign-up/email` is
     // unauthenticated, so anyone can plant a password on someone else's shell
-    // row without proving they own that address. Instead, the password is
-    // staged in KV (`shell-link:<email>`) and only actually linked once the
-    // SAME verification token this request sends is redeemed at
-    // `/verify-email` — i.e. only once ownership of the address is proven.
-    // Until then, no account row exists and the row still reads as an
-    // unclaimed shell, so a genuine attempt from the real owner is unaffected.
+    // row without proving they own that address. So the password is staged
+    // in KV instead of linked immediately — but staging it keyed only by
+    // email (a second earlier version of this hook did that) is *also* a
+    // vulnerability: `/verify-email`'s token is single-purpose (it only
+    // proves the visitor controls the inbox), and a genuine, unmodified
+    // verification email is sent to that inbox as an unavoidable side effect
+    // of this very request. An attacker who stages a credential against a
+    // victim's shell row relies on nothing more than the victim clicking
+    // their own legitimate-looking "finish setting up your account" email —
+    // no spoofing required — to get the attacker's password linked to the
+    // victim's account.
+    //
+    // So the staged entry is also bound to the specific browser that made
+    // this request: a random `linkAttemptId` (`hooks.before` below) keys the
+    // KV entry AND is set as an httpOnly cookie on this response. Because
+    // cookies aren't included in the emailed link and don't travel with it,
+    // `/verify-email` (`hooks.after` below) only links the credential if
+    // that SAME cookie comes back on the request that redeems the token —
+    // i.e. only if the browser completing verification is the one that
+    // received this response. Trade-off: a legitimate user who signs up on
+    // one device and clicks the verification link on a different one ends
+    // up verified but NOT linked (no credential) — this is the fix, not a
+    // bug; a "claim an already-verified shell account" recovery flow is a
+    // separate, later feature.
     hooks: {
         before: createAuthMiddleware(async ctx => {
             if (ctx.path !== '/sign-up/email') {
@@ -144,15 +172,28 @@ export const auth = betterAuth({
                 ctx.context.options.emailVerification?.expiresIn ?? 3600
             const hash = await ctx.context.password.hash(body.password)
 
+            const linkAttemptId = nanoid()
+
             await cache.set<PendingShellLink>(
-                shellLinkCacheKey(normalizedEmail),
+                shellLinkCacheKey(linkAttemptId),
                 {
                     userId: existing.user.id,
                     passwordHash: hash,
-                    name: body.name
+                    name: body.name,
+                    email: normalizedEmail
                 },
                 { expirationTtl: expiresIn }
             )
+
+            // Only this response's recipient can complete the link — see the
+            // comment above the `hooks` block for why this cookie exists.
+            ctx.setCookie(SHELL_LINK_ATTEMPT_COOKIE, linkAttemptId, {
+                httpOnly: true,
+                sameSite: 'lax',
+                secure: ctx.context.baseURL.startsWith('https://'),
+                path: '/api/auth',
+                maxAge: expiresIn
+            })
 
             const token = await createEmailVerificationToken(
                 ctx.context.secret,
@@ -213,10 +254,36 @@ export const auth = betterAuth({
                 return
             }
 
+            // Only present if THIS browser is the one that staged a
+            // shell-link credential via `/sign-up/email` (see the cookie set
+            // there). A verification click from a different browser/device —
+            // including the real victim redeeming a token an attacker
+            // minted for them — has no cookie here, so nothing gets linked;
+            // the row still ends up `emailVerified` via better-auth's own
+            // handler, just without a credential attached.
+            const linkAttemptId = ctx.getCookie(SHELL_LINK_ATTEMPT_COOKIE)
+            if (!linkAttemptId) {
+                return
+            }
+
             const pending = await cache.get<PendingShellLink>(
-                shellLinkCacheKey(email)
+                shellLinkCacheKey(linkAttemptId)
             )
-            if (!pending) {
+
+            // One-shot: this cookie/KV pair must never be usable for a
+            // second verification request, whatever the outcome below.
+            ctx.setCookie(SHELL_LINK_ATTEMPT_COOKIE, '', {
+                path: '/api/auth',
+                maxAge: 0
+            })
+            if (pending) {
+                await cache.del(shellLinkCacheKey(linkAttemptId))
+            }
+
+            // The cookie must also actually belong to the address the token
+            // just proved — a stale cookie from a differently-addressed
+            // attempt in the same browser must not be usable here.
+            if (!pending || pending.email !== email) {
                 return
             }
 
@@ -244,8 +311,6 @@ export const auth = betterAuth({
                     name: pending.name
                 })
             }
-
-            await cache.del(shellLinkCacheKey(email))
         })
     }
 })

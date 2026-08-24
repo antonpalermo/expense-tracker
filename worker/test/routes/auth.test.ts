@@ -22,6 +22,26 @@ function signIn(body: { email: string; password: string }) {
     })
 }
 
+/**
+ * Pulls the `shell-link-attempt` cookie set on a shell-linking sign-up
+ * response, formatted as a `Cookie` request header value. `req()` (see
+ * `worker/test/factories.ts`) never forwards cookies from a prior response
+ * automatically — a test must explicitly capture and pass this along to
+ * simulate the same browser completing verification. Not calling this at
+ * all, or not forwarding what it returns, simulates a *different*
+ * browser/device — no `shell-link-attempt` cookie present.
+ */
+function shellLinkCookie(signUpRes: Response) {
+    const setCookie = signUpRes.headers.get('set-cookie')
+    const match = setCookie?.match(/shell-link-attempt=[^;]+/)
+    if (!match) {
+        throw new Error(
+            'expected a shell-link-attempt cookie on the sign-up response'
+        )
+    }
+    return match[0]
+}
+
 describe('POST /api/auth/sign-up/email', () => {
     test('creates an unverified user and a credential account; sign-in is blocked until verified', async () => {
         const email = 'new-signup@example.com'
@@ -114,18 +134,22 @@ describe('POST /api/auth/sign-up/email', () => {
             emailVerified: false
         })
 
-        await signUp({
+        const signUpRes = await signUp({
             name: 'Real Name',
             email: shellUser.email,
             password: 'a-strong-password'
         })
+        // Simulates the same browser: the cookie the sign-up response set
+        // is forwarded to the verify-email request below.
+        const cookie = shellLinkCookie(signUpRes)
 
         const token = await createEmailVerificationToken(
             env.BETTER_AUTH_SECRET,
             shellUser.email
         )
         await req(
-            `/api/auth/verify-email?token=${token}&callbackURL=${encodeURIComponent('/verify-email')}`
+            `/api/auth/verify-email?token=${token}&callbackURL=${encodeURIComponent('/verify-email')}`,
+            { headers: { cookie } }
         )
 
         const accounts = await db
@@ -195,13 +219,17 @@ describe('POST /api/auth/sign-up/email', () => {
             password: 'victim-password'
         })
         expect(victimSignUp.status).toBe(200)
+        // The victim's own sign-up, verified from their own browser: the
+        // cookie their sign-up response set is forwarded here.
+        const victimCookie = shellLinkCookie(victimSignUp)
 
         const victimToken = await createEmailVerificationToken(
             env.BETTER_AUTH_SECRET,
             shellUser.email
         )
         await req(
-            `/api/auth/verify-email?token=${victimToken}&callbackURL=${encodeURIComponent('/verify-email')}`
+            `/api/auth/verify-email?token=${victimToken}&callbackURL=${encodeURIComponent('/verify-email')}`,
+            { headers: { cookie: victimCookie } }
         )
 
         const victimSignIn = await signIn({
@@ -217,6 +245,66 @@ describe('POST /api/auth/sign-up/email', () => {
             password: 'attacker-password'
         })
         expect(attackerSignInAfter.status).not.toBe(200)
+    })
+
+    test('a genuine verification click from the victim does not link the attacker-staged credential (no linkAttemptId cookie forwarded)', async () => {
+        const shellUser = await createUser({
+            email: 'cookie-bound-victim@example.com',
+            name: 'Victim Name',
+            emailVerified: false
+        })
+
+        // Attacker stages a credential against the victim's shell row. This
+        // response carries a `shell-link-attempt` cookie bound to the
+        // attacker's own browser — deliberately never captured or
+        // forwarded below, which is exactly what happens when the victim
+        // opens the verification link on their own, different browser.
+        const attackerSignUp = await signUp({
+            name: 'Attacker Chosen Name',
+            email: shellUser.email,
+            password: 'attacker-password'
+        })
+        expect(attackerSignUp.status).toBe(200)
+
+        // The victim receives a completely genuine verification email —
+        // sent as an unavoidable side effect of the attacker's request
+        // above — and clicks it from their own browser, which never had
+        // the attacker's cookie. Minting the token directly (as the other
+        // tests in this file do) and calling verify-email with no `cookie`
+        // header accurately simulates that: `req()` never forwards cookies
+        // from a prior response on its own (see `worker/test/factories.ts`).
+        const token = await createEmailVerificationToken(
+            env.BETTER_AUTH_SECRET,
+            shellUser.email
+        )
+        const verifyRes = await req(
+            `/api/auth/verify-email?token=${token}&callbackURL=${encodeURIComponent('/verify-email')}`
+        )
+        expect(verifyRes.status).toBeGreaterThanOrEqual(300)
+        expect(verifyRes.status).toBeLessThan(400)
+
+        // better-auth's own built-in handler still flips `emailVerified` —
+        // that part is outside this hook's control and isn't what this fix
+        // changes.
+        const [verifiedUser] = await db
+            .select()
+            .from(user)
+            .where(eq(user.id, shellUser.id))
+        expect(verifiedUser.emailVerified).toBe(true)
+
+        // But the attacker's password was never linked: verified but
+        // unclaimed, not attacker-controlled.
+        const accounts = await db
+            .select()
+            .from(account)
+            .where(eq(account.userId, shellUser.id))
+        expect(accounts).toHaveLength(0)
+
+        const attackerSignIn = await signIn({
+            email: shellUser.email,
+            password: 'attacker-password'
+        })
+        expect(attackerSignIn.status).not.toBe(200)
     })
 
     test('an email with an already-linked account gets the generic duplicate response', async () => {

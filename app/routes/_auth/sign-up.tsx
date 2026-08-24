@@ -53,7 +53,9 @@ function RouteComponent() {
                 <h1 className="text-2xl font-bold">Check your email</h1>
                 <p className="text-sm text-balance text-muted-foreground">
                     We sent a verification link to {submittedEmail}. Click it to
-                    finish setting up your account.
+                    finish setting up your account. Open it on this same device
+                    and browser, or your password won't be attached to the
+                    account.
                 </p>
                 <Link
                     to="/sign-in"
