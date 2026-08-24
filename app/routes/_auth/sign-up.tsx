@@ -1,22 +1,78 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import {
     Field,
     FieldDescription,
+    FieldError,
     FieldGroup,
     FieldLabel,
     FieldSeparator
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { useAppForm } from '@/hooks/form'
+import { signIn, signUp } from '@/lib/auth'
+
+const schema = z.object({
+    name: z.string().trim().min(1, 'Name is required').max(80),
+    email: z.email('Enter a valid email'),
+    password: z.string().min(8, 'Password must be at least 8 characters')
+})
 
 export const Route = createFileRoute('/_auth/sign-up')({
     component: RouteComponent
 })
 
 function RouteComponent() {
+    const [submittedEmail, setSubmittedEmail] = useState<string | null>(null)
+
+    const form = useAppForm({
+        defaultValues: { name: '', email: '', password: '' },
+        validators: { onSubmit: schema },
+        onSubmit: async ({ value }) => {
+            await signUp.email({
+                name: value.name,
+                email: value.email,
+                password: value.password,
+                callbackURL: '/verify-email',
+                fetchOptions: {
+                    onSuccess: () => setSubmittedEmail(value.email),
+                    onError: ctx => {
+                        toast.error(ctx.error.message)
+                    }
+                }
+            })
+        }
+    })
+
+    if (submittedEmail) {
+        return (
+            <div className="flex flex-col items-center gap-2 text-center">
+                <h1 className="text-2xl font-bold">Check your email</h1>
+                <p className="text-sm text-balance text-muted-foreground">
+                    We sent a verification link to {submittedEmail}. Click it to
+                    finish setting up your account.
+                </p>
+                <Link
+                    to="/sign-in"
+                    className="text-sm underline underline-offset-4"
+                >
+                    Back to sign in
+                </Link>
+            </div>
+        )
+    }
+
     return (
         <div>
-            <form>
+            <form
+                onSubmit={e => {
+                    e.preventDefault()
+                    form.handleSubmit()
+                }}
+            >
                 <FieldGroup>
                     <div className="flex flex-col items-center gap-1 text-center">
                         <h1 className="text-2xl font-bold">Sign Up</h1>
@@ -24,32 +80,119 @@ function RouteComponent() {
                             Enter your email below to create your account
                         </p>
                     </div>
-                    <Field>
-                        <FieldLabel htmlFor="email">Email</FieldLabel>
-                        <Input
-                            id="email"
-                            type="email"
-                            placeholder="m@example.com"
-                            required
-                        />
-                    </Field>
-                    <Field>
-                        <div className="flex items-center">
-                            <FieldLabel htmlFor="password">Password</FieldLabel>
-                        </div>
-                        <Input
-                            id="password"
-                            type="password"
-                            placeholder="Password"
-                            required
-                        />
-                    </Field>
+                    <form.Field name="name">
+                        {field => {
+                            const isInvalid =
+                                field.state.meta.isTouched &&
+                                !field.state.meta.isValid
+
+                            return (
+                                <Field data-invalid={isInvalid}>
+                                    <FieldLabel htmlFor={field.name}>
+                                        Name
+                                    </FieldLabel>
+                                    <Input
+                                        id={field.name}
+                                        name={field.name}
+                                        value={field.state.value}
+                                        onBlur={field.handleBlur}
+                                        onChange={e =>
+                                            field.handleChange(
+                                                e.currentTarget.value
+                                            )
+                                        }
+                                        aria-invalid={isInvalid}
+                                        placeholder="Jane Doe"
+                                    />
+                                    {isInvalid && (
+                                        <FieldError
+                                            errors={field.state.meta.errors}
+                                        />
+                                    )}
+                                </Field>
+                            )
+                        }}
+                    </form.Field>
+                    <form.Field name="email">
+                        {field => {
+                            const isInvalid =
+                                field.state.meta.isTouched &&
+                                !field.state.meta.isValid
+
+                            return (
+                                <Field data-invalid={isInvalid}>
+                                    <FieldLabel htmlFor={field.name}>
+                                        Email
+                                    </FieldLabel>
+                                    <Input
+                                        id={field.name}
+                                        name={field.name}
+                                        type="email"
+                                        value={field.state.value}
+                                        onBlur={field.handleBlur}
+                                        onChange={e =>
+                                            field.handleChange(
+                                                e.currentTarget.value
+                                            )
+                                        }
+                                        aria-invalid={isInvalid}
+                                        placeholder="m@example.com"
+                                    />
+                                    {isInvalid && (
+                                        <FieldError
+                                            errors={field.state.meta.errors}
+                                        />
+                                    )}
+                                </Field>
+                            )
+                        }}
+                    </form.Field>
+                    <form.Field name="password">
+                        {field => {
+                            const isInvalid =
+                                field.state.meta.isTouched &&
+                                !field.state.meta.isValid
+
+                            return (
+                                <Field data-invalid={isInvalid}>
+                                    <FieldLabel htmlFor={field.name}>
+                                        Password
+                                    </FieldLabel>
+                                    <Input
+                                        id={field.name}
+                                        name={field.name}
+                                        type="password"
+                                        value={field.state.value}
+                                        onBlur={field.handleBlur}
+                                        onChange={e =>
+                                            field.handleChange(
+                                                e.currentTarget.value
+                                            )
+                                        }
+                                        aria-invalid={isInvalid}
+                                        placeholder="Password"
+                                    />
+                                    {isInvalid && (
+                                        <FieldError
+                                            errors={field.state.meta.errors}
+                                        />
+                                    )}
+                                </Field>
+                            )
+                        }}
+                    </form.Field>
                     <Field>
                         <Button type="submit">Sign up</Button>
                     </Field>
                     <FieldSeparator>Or continue with</FieldSeparator>
                     <Field>
-                        <Button variant="outline" type="button">
+                        <Button
+                            variant="outline"
+                            type="button"
+                            onClick={async () =>
+                                await signIn.social({ provider: 'google' })
+                            }
+                        >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -59,7 +202,7 @@ function RouteComponent() {
                                     fill="currentColor"
                                 />
                             </svg>
-                            Sign up with GitHub
+                            Sign up with Google
                         </Button>
                         <FieldDescription className="text-center">
                             Already have an account?{' '}
