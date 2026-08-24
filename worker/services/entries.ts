@@ -1,9 +1,20 @@
-import { and, desc, eq } from 'drizzle-orm'
+import {
+    and,
+    asc,
+    count,
+    desc,
+    eq,
+    inArray,
+    like,
+    or,
+    type SQL
+} from 'drizzle-orm'
 import { HTTPException } from 'hono/http-exception'
 import type { z } from 'zod'
 import { db } from '@/database/db'
 import {
     type createEntrySchema,
+    type EntriesQuery,
     entriesTable,
     entryTypeFor,
     type updateEntrySchema,
@@ -11,13 +22,43 @@ import {
 } from '@/database/schemas'
 import * as HTTPStatus from '@/status-codes'
 
-export async function getEntries(ledgerId: string) {
+const SORT_COLUMNS = {
+    date: entriesTable.createdAt,
+    amount: entriesTable.amount,
+    name: entriesTable.name
+} as const
+
+export async function getEntries(ledgerId: string, query: EntriesQuery) {
     try {
         // Membership was already proven by requireLedgerRole, so the join
-        // below is purely for display — it is not an authorization check.
-        // It must stay a `leftJoin`: `userId` is nullable on purpose, and an
-        // inner join would silently drop entries whose author was deleted.
-        return await db
+        // below is purely for display and search — it is not an
+        // authorization check. It must stay a `leftJoin`: `userId` is
+        // nullable on purpose, and an inner join would silently drop
+        // entries whose author was deleted.
+        const conditions: (SQL | undefined)[] = [
+            eq(entriesTable.ledgerId, ledgerId)
+        ]
+
+        if (query.q) {
+            const pattern = `%${query.q}%`
+            conditions.push(
+                or(
+                    like(entriesTable.name, pattern),
+                    like(entriesTable.description, pattern),
+                    like(user.name, pattern)
+                )
+            )
+        }
+
+        if (query.authorIds && query.authorIds.length > 0) {
+            conditions.push(inArray(entriesTable.userId, query.authorIds))
+        }
+
+        const whereClause = and(...conditions)
+        const orderFn = query.order === 'asc' ? asc : desc
+        const orderBy = orderFn(SORT_COLUMNS[query.sort])
+
+        const rowsQuery = db
             .select({
                 id: entriesTable.id,
                 name: entriesTable.name,
@@ -33,8 +74,27 @@ export async function getEntries(ledgerId: string) {
             })
             .from(entriesTable)
             .leftJoin(user, eq(entriesTable.userId, user.id))
-            .where(eq(entriesTable.ledgerId, ledgerId))
-            .orderBy(desc(entriesTable.createdAt))
+            .where(whereClause)
+            .orderBy(orderBy)
+            .limit(query.pageSize)
+            .offset((query.page - 1) * query.pageSize)
+
+        const countQuery = db
+            .select({ value: count() })
+            .from(entriesTable)
+            .leftJoin(user, eq(entriesTable.userId, user.id))
+            .where(whereClause)
+
+        const [data, countResult] = await Promise.all([rowsQuery, countQuery])
+        const total = countResult[0]?.value ?? 0
+
+        return {
+            data,
+            page: query.page,
+            pageSize: query.pageSize,
+            total,
+            totalPages: total === 0 ? 0 : Math.ceil(total / query.pageSize)
+        }
     } catch (error) {
         throw new HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, {
             cause: error,

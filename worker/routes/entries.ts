@@ -1,5 +1,9 @@
 import { Hono } from 'hono'
-import { createEntrySchema, updateEntrySchema } from '@/database/schemas'
+import {
+    createEntrySchema,
+    entriesQuerySchema,
+    updateEntrySchema
+} from '@/database/schemas'
 import { requireLedgerRole } from '@/lib/ledger-access'
 import { validate } from '@/lib/validator'
 import * as EntriesService from '@/services/entries'
@@ -11,9 +15,19 @@ const routes = new Hono<HonoBindings>({ strict: false }).basePath(
 )
 
 routes
-    .get('/', requireLedgerRole('viewer'), async ctx => {
-        return ctx.json(await EntriesService.getEntries(ctx.get('ledgerId')))
-    })
+    .get(
+        '/',
+        requireLedgerRole('viewer'),
+        validate('query', entriesQuerySchema),
+        async ctx => {
+            return ctx.json(
+                await EntriesService.getEntries(
+                    ctx.get('ledgerId'),
+                    ctx.req.valid('query')
+                )
+            )
+        }
+    )
     .post(
         '/',
         requireLedgerRole('member'),

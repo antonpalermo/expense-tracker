@@ -104,10 +104,10 @@ describe('GET /api/ledgers/:ledgerId/entries', () => {
 
         await signInAs(owner)
         const res = await req(`/api/ledgers/${ledgerId}/entries`)
-        const entries = (await res.json()) as { name: string }[]
+        const body = (await res.json()) as { data: { name: string }[] }
 
-        expect(entries[0]?.name).toBe('Second')
-        expect(entries[1]?.name).toBe('First')
+        expect(body.data[0]?.name).toBe('Second')
+        expect(body.data[1]?.name).toBe('First')
     })
 
     test('create with description omitted stores null', async () => {
@@ -227,16 +227,18 @@ describe('entry author is joined into the list response', () => {
 
         await signInAs(owner)
         const res = await req(`/api/ledgers/${ledgerId}/entries`)
-        const entries = (await res.json()) as {
-            userId: string | null
-            authorName: string | null
-            authorImage: string | null
-        }[]
+        const body = (await res.json()) as {
+            data: {
+                userId: string | null
+                authorName: string | null
+                authorImage: string | null
+            }[]
+        }
 
-        expect(entries).toHaveLength(1)
-        expect(entries[0]?.userId).toBe(owner.id)
-        expect(entries[0]?.authorName).toBe('Ada Lovelace')
-        expect(entries[0]?.authorImage).toBe('https://example.com/ada.png')
+        expect(body.data).toHaveLength(1)
+        expect(body.data[0]?.userId).toBe(owner.id)
+        expect(body.data[0]?.authorName).toBe('Ada Lovelace')
+        expect(body.data[0]?.authorImage).toBe('https://example.com/ada.png')
     })
 
     test('an entry whose author was deleted is still listed, with a null author', async () => {
@@ -261,15 +263,306 @@ describe('entry author is joined into the list response', () => {
 
         await signInAs(owner)
         const res = await req(`/api/ledgers/${ledgerId}/entries`)
-        const entries = (await res.json()) as {
-            name: string
-            userId: string | null
-            authorName: string | null
-        }[]
+        const body = (await res.json()) as {
+            data: {
+                name: string
+                userId: string | null
+                authorName: string | null
+            }[]
+        }
 
-        expect(entries).toHaveLength(1)
-        expect(entries[0]?.name).toBe('Orphaned')
-        expect(entries[0]?.userId).toBeNull()
-        expect(entries[0]?.authorName).toBeNull()
+        expect(body.data).toHaveLength(1)
+        expect(body.data[0]?.name).toBe('Orphaned')
+        expect(body.data[0]?.userId).toBeNull()
+        expect(body.data[0]?.authorName).toBeNull()
+    })
+})
+
+describe('GET /api/ledgers/:ledgerId/entries — search, sort, filter, pagination', () => {
+    test('q matches the entry name', async () => {
+        const owner = await createUser()
+        const ledgerId = await createLedger({ owner: owner.id })
+
+        await signInAs(owner)
+        await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Coffee run', amount: -5 })
+        })
+        await signInAs(owner)
+        await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Groceries', amount: -40 })
+        })
+
+        await signInAs(owner)
+        const res = await req(`/api/ledgers/${ledgerId}/entries?q=coffee`)
+        const body = (await res.json()) as {
+            data: { name: string }[]
+            total: number
+        }
+
+        expect(body.total).toBe(1)
+        expect(body.data[0]?.name).toBe('Coffee run')
+    })
+
+    test('q matches the entry description', async () => {
+        const owner = await createUser()
+        const ledgerId = await createLedger({ owner: owner.id })
+
+        await signInAs(owner)
+        await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+                name: 'Utility',
+                description: 'March electricity bill',
+                amount: -60
+            })
+        })
+        await signInAs(owner)
+        await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Other', amount: -10 })
+        })
+
+        await signInAs(owner)
+        const res = await req(`/api/ledgers/${ledgerId}/entries?q=electricity`)
+        const body = (await res.json()) as {
+            data: { name: string }[]
+            total: number
+        }
+
+        expect(body.total).toBe(1)
+        expect(body.data[0]?.name).toBe('Utility')
+    })
+
+    test('q matches the author name', async () => {
+        const owner = await createUser({ name: 'Ada Lovelace' })
+        const other = await createUser({ name: 'Grace Hopper' })
+        const ledgerId = await createLedger({
+            owner: owner.id,
+            members: [{ userId: other.id, role: 'member' }]
+        })
+
+        await signInAs(owner)
+        await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Owner entry', amount: -1 })
+        })
+        await signInAs(other)
+        await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Member entry', amount: -2 })
+        })
+
+        await signInAs(owner)
+        const res = await req(`/api/ledgers/${ledgerId}/entries?q=Hopper`)
+        const body = (await res.json()) as {
+            data: { name: string }[]
+            total: number
+        }
+
+        expect(body.total).toBe(1)
+        expect(body.data[0]?.name).toBe('Member entry')
+    })
+
+    test('authorIds filters to the selected members, and an id with no entries returns empty', async () => {
+        const owner = await createUser()
+        const author = await createUser()
+        const bystander = await createUser()
+        const ledgerId = await createLedger({
+            owner: owner.id,
+            members: [
+                { userId: author.id, role: 'member' },
+                { userId: bystander.id, role: 'member' }
+            ]
+        })
+
+        await signInAs(author)
+        await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Author entry', amount: -3 })
+        })
+        await signInAs(owner)
+        await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Owner entry', amount: -4 })
+        })
+
+        await signInAs(owner)
+        const filtered = await req(
+            `/api/ledgers/${ledgerId}/entries?authorIds=${encodeURIComponent(
+                JSON.stringify([author.id])
+            )}`
+        )
+        const filteredBody = (await filtered.json()) as {
+            data: { name: string }[]
+            total: number
+        }
+        expect(filteredBody.total).toBe(1)
+        expect(filteredBody.data[0]?.name).toBe('Author entry')
+
+        await signInAs(owner)
+        const empty = await req(
+            `/api/ledgers/${ledgerId}/entries?authorIds=${encodeURIComponent(
+                JSON.stringify([bystander.id])
+            )}`
+        )
+        const emptyBody = (await empty.json()) as {
+            data: unknown[]
+            total: number
+        }
+        expect(emptyBody.total).toBe(0)
+        expect(emptyBody.data).toHaveLength(0)
+    })
+
+    test('sort=amount orders ascending and descending', async () => {
+        const owner = await createUser()
+        const ledgerId = await createLedger({ owner: owner.id })
+
+        for (const amount of [-30, -10, -20]) {
+            await signInAs(owner)
+            await req(`/api/ledgers/${ledgerId}/entries`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ name: `Entry ${amount}`, amount })
+            })
+        }
+
+        await signInAs(owner)
+        const asc = await req(
+            `/api/ledgers/${ledgerId}/entries?sort=amount&order=asc`
+        )
+        const ascBody = (await asc.json()) as { data: { amount: number }[] }
+        expect(ascBody.data.map(entry => entry.amount)).toEqual([-30, -20, -10])
+
+        await signInAs(owner)
+        const desc = await req(
+            `/api/ledgers/${ledgerId}/entries?sort=amount&order=desc`
+        )
+        const descBody = (await desc.json()) as { data: { amount: number }[] }
+        expect(descBody.data.map(entry => entry.amount)).toEqual([
+            -10, -20, -30
+        ])
+    })
+
+    test('sort=name orders alphabetically', async () => {
+        const owner = await createUser()
+        const ledgerId = await createLedger({ owner: owner.id })
+
+        for (const name of ['Zebra', 'Apple', 'Mango']) {
+            await signInAs(owner)
+            await req(`/api/ledgers/${ledgerId}/entries`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ name, amount: -1 })
+            })
+        }
+
+        await signInAs(owner)
+        const res = await req(
+            `/api/ledgers/${ledgerId}/entries?sort=name&order=asc`
+        )
+        const body = (await res.json()) as { data: { name: string }[] }
+        expect(body.data.map(entry => entry.name)).toEqual([
+            'Apple',
+            'Mango',
+            'Zebra'
+        ])
+    })
+
+    test('pagination returns the requested page and correct metadata', async () => {
+        const owner = await createUser()
+        const ledgerId = await createLedger({ owner: owner.id })
+
+        for (let i = 0; i < 25; i++) {
+            await signInAs(owner)
+            await req(`/api/ledgers/${ledgerId}/entries`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ name: `Entry ${i}`, amount: -1 })
+            })
+        }
+
+        await signInAs(owner)
+        const page1 = await req(`/api/ledgers/${ledgerId}/entries`)
+        const page1Body = (await page1.json()) as {
+            data: unknown[]
+            page: number
+            pageSize: number
+            total: number
+            totalPages: number
+        }
+        expect(page1Body.data).toHaveLength(20)
+        expect(page1Body.page).toBe(1)
+        expect(page1Body.pageSize).toBe(20)
+        expect(page1Body.total).toBe(25)
+        expect(page1Body.totalPages).toBe(2)
+
+        await signInAs(owner)
+        const page2 = await req(`/api/ledgers/${ledgerId}/entries?page=2`)
+        const page2Body = (await page2.json()) as { data: unknown[] }
+        expect(page2Body.data).toHaveLength(5)
+
+        await signInAs(owner)
+        const page3 = await req(`/api/ledgers/${ledgerId}/entries?page=3`)
+        const page3Body = (await page3.json()) as {
+            data: unknown[]
+            total: number
+        }
+        expect(page3Body.data).toHaveLength(0)
+        expect(page3Body.total).toBe(25)
+    })
+
+    test('combining q, authorIds, sort and page narrows correctly', async () => {
+        const owner = await createUser()
+        const author = await createUser()
+        const ledgerId = await createLedger({
+            owner: owner.id,
+            members: [{ userId: author.id, role: 'member' }]
+        })
+
+        await signInAs(author)
+        await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Team lunch', amount: -20 })
+        })
+        await signInAs(author)
+        await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Team dinner', amount: -40 })
+        })
+        await signInAs(owner)
+        await req(`/api/ledgers/${ledgerId}/entries`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'Team snacks', amount: -5 })
+        })
+
+        await signInAs(owner)
+        const res = await req(
+            `/api/ledgers/${ledgerId}/entries?q=team&authorIds=${encodeURIComponent(
+                JSON.stringify([author.id])
+            )}&sort=amount&order=desc&page=1`
+        )
+        const body = (await res.json()) as {
+            data: { name: string }[]
+            total: number
+        }
+
+        expect(body.total).toBe(2)
+        expect(body.data.map(entry => entry.name)).toEqual([
+            'Team lunch',
+            'Team dinner'
+        ])
     })
 })
