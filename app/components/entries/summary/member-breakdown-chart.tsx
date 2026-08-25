@@ -18,6 +18,7 @@ export default function MemberBreakdownChart({
     data: EntriesSummary['byMember']
 }) {
     const chartData = data.map(member => ({
+        userId: member.userId,
         name: member.name ?? 'Deleted user',
         total: member.total,
         fill: member.total >= 0 ? 'var(--success)' : 'var(--destructive)'
@@ -69,7 +70,10 @@ export default function MemberBreakdownChart({
                 />
                 <Bar dataKey="total" radius={4}>
                     {chartData.map(entry => (
-                        <Cell key={entry.name} fill={entry.fill} />
+                        <Cell
+                            key={entry.userId ?? entry.name}
+                            fill={entry.fill}
+                        />
                     ))}
                 </Bar>
             </BarChart>

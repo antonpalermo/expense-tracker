@@ -6,7 +6,7 @@ import {
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import type { OnChangeFn, SortingState } from '@tanstack/react-table'
 import { Plus } from 'lucide-react'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { z } from 'zod'
 import { getEntries } from '@/apis/entries'
 import { getLedger } from '@/apis/ledgers'
@@ -21,12 +21,16 @@ import {
 import EntryFormDialog from '@/components/entries/dialog'
 import DialogConfirmation from '@/components/entries/dialog-confirmation'
 import EntriesFilterBar from '@/components/entries/filter-bar'
-import SummarySection from '@/components/entries/summary/summary-section'
+import SummarySkeleton from '@/components/entries/summary/summary-skeleton'
 import RoleGate from '@/components/role-gate'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { entriesKeys, ledgersKeys } from '@/query-keys'
 import type { EntriesQuery } from '@/types'
+
+const SummarySection = lazy(
+    () => import('@/components/entries/summary/summary-section')
+)
 
 const PAGE_SIZE = 20
 
@@ -146,7 +150,9 @@ function EntriesPage() {
                 </RoleGate>
             </div>
 
-            <SummarySection ledgerId={ledgerId} />
+            <Suspense fallback={<SummarySkeleton />}>
+                <SummarySection ledgerId={ledgerId} />
+            </Suspense>
 
             <EntriesFilterBar
                 search={search.q}
