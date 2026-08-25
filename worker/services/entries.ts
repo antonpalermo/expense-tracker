@@ -7,7 +7,8 @@ import {
     inArray,
     like,
     or,
-    type SQL
+    type SQL,
+    sql
 } from 'drizzle-orm'
 import { HTTPException } from 'hono/http-exception'
 import type { z } from 'zod'
@@ -99,6 +100,81 @@ export async function getEntries(ledgerId: string, query: EntriesQuery) {
         throw new HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, {
             cause: error,
             message: 'Unable to fetch entries'
+        })
+    }
+}
+
+export async function getSummary(ledgerId: string) {
+    try {
+        const monthExpr = sql<string>`strftime('%Y-%m', ${entriesTable.createdAt} / 1000, 'unixepoch')`
+
+        const [monthlyRows, [totalsRow], byMember, topExpenses] =
+            await Promise.all([
+                db
+                    .select({
+                        month: monthExpr,
+                        net: sql<number>`sum(${entriesTable.amount})`
+                    })
+                    .from(entriesTable)
+                    .where(eq(entriesTable.ledgerId, ledgerId))
+                    .groupBy(monthExpr)
+                    .orderBy(monthExpr),
+                db
+                    .select({
+                        income: sql<number>`coalesce(sum(case when ${entriesTable.type} = 'credit' then ${entriesTable.amount} else 0 end), 0)`,
+                        expense: sql<number>`coalesce(sum(case when ${entriesTable.type} = 'debit' then -${entriesTable.amount} else 0 end), 0)`
+                    })
+                    .from(entriesTable)
+                    .where(eq(entriesTable.ledgerId, ledgerId)),
+                db
+                    .select({
+                        userId: entriesTable.userId,
+                        name: user.name,
+                        image: user.image,
+                        total: sql<number>`sum(${entriesTable.amount})`
+                    })
+                    .from(entriesTable)
+                    .leftJoin(user, eq(entriesTable.userId, user.id))
+                    .where(eq(entriesTable.ledgerId, ledgerId))
+                    .groupBy(entriesTable.userId, user.name, user.image)
+                    .orderBy(sql`abs(sum(${entriesTable.amount})) desc`),
+                db
+                    .select({
+                        id: entriesTable.id,
+                        name: entriesTable.name,
+                        amount: entriesTable.amount,
+                        createdAt: entriesTable.createdAt
+                    })
+                    .from(entriesTable)
+                    .where(
+                        and(
+                            eq(entriesTable.ledgerId, ledgerId),
+                            eq(entriesTable.type, 'debit')
+                        )
+                    )
+                    .orderBy(asc(entriesTable.amount))
+                    .limit(5)
+            ])
+
+        let running = 0
+        const balanceTrend = monthlyRows.map(row => {
+            running += row.net
+            return { month: row.month, balance: running }
+        })
+
+        return {
+            balanceTrend,
+            totals: {
+                income: totalsRow?.income ?? 0,
+                expense: totalsRow?.expense ?? 0
+            },
+            byMember,
+            topExpenses
+        }
+    } catch (error) {
+        throw new HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, {
+            cause: error,
+            message: 'Unable to fetch ledger summary'
         })
     }
 }

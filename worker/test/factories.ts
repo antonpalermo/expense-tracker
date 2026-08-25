@@ -2,6 +2,8 @@ import { db } from '@/database/db'
 import type { LedgerRole } from '@/database/schemas'
 import {
     account,
+    entriesTable,
+    entryTypeFor,
     formTable,
     ledgerInvitationsTable,
     ledgerMembersTable,
@@ -72,6 +74,28 @@ export async function createLedger(options: {
     }
 
     return ledgerId
+}
+
+export async function createEntry(options: {
+    ledgerId: string
+    userId?: string | null
+    name?: string
+    amount: number
+    createdAt?: Date
+}) {
+    const [created] = await db
+        .insert(entriesTable)
+        .values({
+            ledgerId: options.ledgerId,
+            userId: options.userId ?? null,
+            name: options.name ?? 'Test entry',
+            amount: options.amount,
+            type: entryTypeFor(options.amount),
+            ...(options.createdAt ? { createdAt: options.createdAt } : {})
+        })
+        .returning()
+
+    return created
 }
 
 export async function createInvitation(options: {
