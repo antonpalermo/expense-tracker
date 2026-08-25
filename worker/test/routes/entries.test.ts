@@ -670,6 +670,7 @@ describe('GET /api/ledgers/:ledgerId/entries/summary', () => {
             { month: '2026-02', balance: 1800 }
         ])
 
+        expect(body.byMember).toHaveLength(2)
         expect(body.byMember).toEqual(
             expect.arrayContaining([
                 {
@@ -690,6 +691,27 @@ describe('GET /api/ledgers/:ledgerId/entries/summary', () => {
         expect(body.topExpenses.map(entry => entry.name)).toEqual([
             'January rent',
             'February groceries'
+        ])
+    })
+
+    test('topExpenses is capped at 5, excluding the smallest expenses', async () => {
+        const owner = await createUser()
+        const ledgerId = await createLedger({ owner: owner.id })
+
+        const amounts = [-10, -20, -30, -40, -50, -60, -70]
+        for (const amount of amounts) {
+            await createEntry({ ledgerId, userId: owner.id, amount })
+        }
+
+        await signInAs(owner)
+        const res = await req(`/api/ledgers/${ledgerId}/entries/summary`)
+        const body = (await res.json()) as {
+            topExpenses: { amount: number }[]
+        }
+
+        expect(body.topExpenses).toHaveLength(5)
+        expect(body.topExpenses.map(entry => entry.amount)).toEqual([
+            -70, -60, -50, -40, -30
         ])
     })
 

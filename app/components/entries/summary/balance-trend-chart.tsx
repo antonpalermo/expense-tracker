@@ -52,6 +52,7 @@ export default function BalanceTrendChart({
                 <Area
                     dataKey="balance"
                     type="monotone"
+                    dot={data.length === 1}
                     fill="var(--color-balance)"
                     stroke="var(--color-balance)"
                     fillOpacity={0.2}

@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { getEntriesSummary } from '@/apis/entries'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
 import { entriesKeys } from '@/query-keys'
 import BalanceTrendChart from './balance-trend-chart'
 import IncomeExpenseChart from './income-expense-chart'
 import MemberBreakdownChart from './member-breakdown-chart'
+import SummarySkeleton from './summary-skeleton'
 import TopExpensesList from './top-expenses-list'
 
 export default function SummarySection({ ledgerId }: { ledgerId: string }) {
@@ -15,14 +15,7 @@ export default function SummarySection({ ledgerId }: { ledgerId: string }) {
     })
 
     if (isPending) {
-        return (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <Skeleton className="h-64" />
-                <Skeleton className="h-64" />
-                <Skeleton className="h-64" />
-                <Skeleton className="h-64" />
-            </div>
-        )
+        return <SummarySkeleton />
     }
 
     if (isError) {
