@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest'
 import { db } from '@/database/db'
 import { user } from '@/database/schemas'
 import * as HTTPStatus from '@/status-codes'
-import { createLedger, createUser, req } from '@/test/factories'
+import { createEntry, createLedger, createUser, req } from '@/test/factories'
 import { signInAs } from '@/test/mocks'
 
 describe('requireLedgerRole on entries', () => {
@@ -575,6 +575,154 @@ describe('GET /api/ledgers/:ledgerId/entries — search, sort, filter, paginatio
         expect(body.data.map(entry => entry.name)).toEqual([
             'Team lunch',
             'Team dinner'
+        ])
+    })
+})
+
+describe('GET /api/ledgers/:ledgerId/entries/summary', () => {
+    test('a non-member gets 404, a viewer gets 200', async () => {
+        const owner = await createUser()
+        const viewer = await createUser()
+        const outsider = await createUser()
+        const ledgerId = await createLedger({
+            owner: owner.id,
+            members: [{ userId: viewer.id, role: 'viewer' }]
+        })
+
+        await signInAs(outsider)
+        const outsiderRes = await req(
+            `/api/ledgers/${ledgerId}/entries/summary`
+        )
+        expect(outsiderRes.status).toBe(404)
+
+        await signInAs(viewer)
+        const viewerRes = await req(`/api/ledgers/${ledgerId}/entries/summary`)
+        expect(viewerRes.status).toBe(200)
+    })
+
+    test('an empty ledger returns zeroed totals and empty lists', async () => {
+        const owner = await createUser()
+        const ledgerId = await createLedger({ owner: owner.id })
+
+        await signInAs(owner)
+        const res = await req(`/api/ledgers/${ledgerId}/entries/summary`)
+        const body = (await res.json()) as {
+            balanceTrend: unknown[]
+            totals: { income: number; expense: number }
+            byMember: unknown[]
+            topExpenses: unknown[]
+        }
+
+        expect(body.balanceTrend).toEqual([])
+        expect(body.totals).toEqual({ income: 0, expense: 0 })
+        expect(body.byMember).toEqual([])
+        expect(body.topExpenses).toEqual([])
+    })
+
+    test('totals, cumulative balance trend, by-member totals and top expenses are computed across two authors and two months', async () => {
+        const owner = await createUser({ name: 'Ada Lovelace' })
+        const member = await createUser({ name: 'Grace Hopper' })
+        const ledgerId = await createLedger({
+            owner: owner.id,
+            members: [{ userId: member.id, role: 'member' }]
+        })
+
+        await createEntry({
+            ledgerId,
+            userId: owner.id,
+            name: 'January rent',
+            amount: -1000,
+            createdAt: new Date('2026-01-15T00:00:00.000Z')
+        })
+        await createEntry({
+            ledgerId,
+            userId: owner.id,
+            name: 'January salary',
+            amount: 3000,
+            createdAt: new Date('2026-01-20T00:00:00.000Z')
+        })
+        await createEntry({
+            ledgerId,
+            userId: member.id,
+            name: 'February groceries',
+            amount: -200,
+            createdAt: new Date('2026-02-05T00:00:00.000Z')
+        })
+
+        await signInAs(owner)
+        const res = await req(`/api/ledgers/${ledgerId}/entries/summary`)
+        const body = (await res.json()) as {
+            balanceTrend: { month: string; balance: number }[]
+            totals: { income: number; expense: number }
+            byMember: {
+                userId: string | null
+                name: string | null
+                image: string | null
+                total: number
+            }[]
+            topExpenses: { name: string; amount: number }[]
+        }
+
+        expect(body.totals).toEqual({ income: 3000, expense: 1200 })
+
+        expect(body.balanceTrend).toEqual([
+            { month: '2026-01', balance: 2000 },
+            { month: '2026-02', balance: 1800 }
+        ])
+
+        expect(body.byMember).toEqual(
+            expect.arrayContaining([
+                {
+                    userId: owner.id,
+                    name: 'Ada Lovelace',
+                    image: null,
+                    total: 2000
+                },
+                {
+                    userId: member.id,
+                    name: 'Grace Hopper',
+                    image: null,
+                    total: -200
+                }
+            ])
+        )
+
+        expect(body.topExpenses.map(entry => entry.name)).toEqual([
+            'January rent',
+            'February groceries'
+        ])
+    })
+
+    test('an entry whose author was deleted is still included in the by-member breakdown', async () => {
+        const owner = await createUser()
+        const author = await createUser({ name: 'Departing Member' })
+        const ledgerId = await createLedger({
+            owner: owner.id,
+            members: [{ userId: author.id, role: 'member' }]
+        })
+
+        await createEntry({
+            ledgerId,
+            userId: author.id,
+            name: 'Orphaned expense',
+            amount: -50
+        })
+
+        await db.delete(user).where(eq(user.id, author.id))
+
+        await signInAs(owner)
+        const res = await req(`/api/ledgers/${ledgerId}/entries/summary`)
+        const body = (await res.json()) as {
+            byMember: {
+                userId: string | null
+                name: string | null
+                image: string | null
+                total: number
+            }[]
+        }
+
+        expect(body.byMember).toEqual([
+            { userId: null, name: null, image: null, total: -50 }
         ])
     })
 })

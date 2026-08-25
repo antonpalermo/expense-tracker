@@ -28,6 +28,9 @@ routes
             )
         }
     )
+    .get('/summary', requireLedgerRole('viewer'), async ctx => {
+        return ctx.json(await EntriesService.getSummary(ctx.get('ledgerId')))
+    })
     .post(
         '/',
         requireLedgerRole('member'),
