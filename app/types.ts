@@ -52,6 +52,23 @@ export type EntriesPage = {
     totalPages: number
 }
 
+export type EntriesSummary = {
+    balanceTrend: { month: string; balance: number }[]
+    totals: { income: number; expense: number }
+    byMember: {
+        userId: string | null
+        name: string | null
+        image: string | null
+        total: number
+    }[]
+    topExpenses: {
+        id: string
+        name: string
+        amount: number
+        createdAt: Date
+    }[]
+}
+
 export type Ledger = z.infer<typeof selectLedgersSchema>
 export type LedgerWithRole = Ledger & { role: LedgerRole }
 export type LedgerPayload = { name: string; description?: string | null }

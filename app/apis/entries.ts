@@ -1,5 +1,11 @@
 import { json, request } from '@/apis/http'
-import type { EntriesPage, EntriesQuery, EntryPayload, EntryRow } from '@/types'
+import type {
+    EntriesPage,
+    EntriesQuery,
+    EntriesSummary,
+    EntryPayload,
+    EntryRow
+} from '@/types'
 
 function buildEntriesQueryString(query: EntriesQuery) {
     const params = new URLSearchParams()
@@ -44,5 +50,11 @@ export async function removeEntry(ledgerId: string, id: string) {
     return await request<{ msg: string }>(
         `/api/ledgers/${ledgerId}/entries/${id}`,
         json('DELETE')
+    )
+}
+
+export async function getEntriesSummary(ledgerId: string) {
+    return await request<EntriesSummary>(
+        `/api/ledgers/${ledgerId}/entries/summary`
     )
 }
