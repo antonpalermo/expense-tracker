@@ -10,8 +10,10 @@ export const ledgersKeys = {
 
 export const entriesKeys = {
     all: ['ENTRIES'] as const,
+    byLedgerAll: (ledgerId: string) => ['ENTRIES', ledgerId] as const,
     byLedger: (ledgerId: string, query: EntriesQuery) =>
-        ['ENTRIES', ledgerId, query] as const
+        ['ENTRIES', ledgerId, query] as const,
+    summary: (ledgerId: string) => ['ENTRIES', ledgerId, 'SUMMARY'] as const
 }
 
 export const myInvitationsKeys = {
