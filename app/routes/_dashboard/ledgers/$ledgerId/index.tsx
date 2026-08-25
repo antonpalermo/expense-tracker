@@ -21,6 +21,7 @@ import {
 import EntryFormDialog from '@/components/entries/dialog'
 import DialogConfirmation from '@/components/entries/dialog-confirmation'
 import EntriesFilterBar from '@/components/entries/filter-bar'
+import SummarySection from '@/components/entries/summary/summary-section'
 import RoleGate from '@/components/role-gate'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -144,6 +145,8 @@ function EntriesPage() {
                     </Button>
                 </RoleGate>
             </div>
+
+            <SummarySection ledgerId={ledgerId} />
 
             <EntriesFilterBar
                 search={search.q}
