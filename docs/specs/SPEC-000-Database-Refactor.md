@@ -4,7 +4,8 @@
 | ------------ | ----------------------------------------- |
 | **Author**   | Anton Palermo <anpbusinessmail@gmail.com> |
 | **Reviewer** | Not Applicable                            |
-| **Status**   | Draft                                     |
+| **Status**   | Approved                                  |
+| **Date**     | 2026-11-15                                |
 
 ## Context
 
