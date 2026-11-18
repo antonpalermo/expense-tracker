@@ -1,6 +1,5 @@
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
-import authRoutes from '@/routes/auth'
 import entryRoutes from '@/routes/entries'
 import formRoutes from '@/routes/form'
 import invitationRoutes from '@/routes/invitations'
@@ -9,28 +8,17 @@ import ledgerRoutes from '@/routes/ledgers'
 import memberRoutes from '@/routes/members'
 import * as HTTPStatus from '@/status-codes'
 import * as HTTPPhrases from '@/status-phrases'
-import type { LedgerRole } from './database/schemas'
-import type { auth } from './lib/auth'
-import { session } from './lib/session'
+
+import { createAuth } from './auth'
+import { createDatabase } from './database/create-db'
 
 export type HonoBindings = {
     Bindings: CloudflareBindings
-    Variables: {
-        user: typeof auth.$Infer.Session.user
-        session: typeof auth.$Infer.Session.session
-        // Set by requireLedgerRole. Only read these on routes it guards — the
-        // same discipline `user` already requires.
-        ledgerId: string
-        ledgerRole: LedgerRole
-    }
 }
 
 const app = new Hono<HonoBindings>({ strict: false }).basePath('/api')
 
-app.use('*', session)
-
 const routes = [
-    authRoutes,
     ledgerRoutes,
     memberRoutes,
     ledgerInvitationRoutes,
@@ -40,6 +28,13 @@ const routes = [
 ]
 
 routes.forEach(route => app.route('/', route))
+
+app.on(['GET', 'POST'], '/api/auth/*', async ctx => {
+    const db = createDatabase(ctx.env.DATABASE)
+    const auth = createAuth(db)
+
+    return auth.handler(ctx.req.raw)
+})
 
 // Without this every non-HTTPException throw returns a bodiless 500, which the
 // frontend's `await response.json()` then chokes on.
