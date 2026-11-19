@@ -8,7 +8,7 @@ import { requireLedgerRole } from '@/lib/ledger-access'
 import { validate } from '@/lib/validator'
 import * as LedgersService from '@/services/ledgers'
 import * as HTTPStatus from '@/status-codes'
-import type { HonoBindings } from '../index'
+import type { HonoBindings } from '../index.old'
 
 const routes = new Hono<HonoBindings>({ strict: false }).basePath('/ledgers')
 

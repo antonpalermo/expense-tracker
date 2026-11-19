@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { auth } from '@/lib/auth'
-import type { HonoBindings } from '..'
+import type { HonoBindings } from '../index.old'
 
 const routes = new Hono<HonoBindings>({ strict: false }).basePath('/auth')
 

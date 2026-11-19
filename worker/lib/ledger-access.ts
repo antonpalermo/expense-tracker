@@ -4,7 +4,7 @@ import { HTTPException } from 'hono/http-exception'
 import { db } from '@/database/db'
 import { type LedgerRole, ledgerMembersTable } from '@/database/schemas'
 import * as HTTPStatus from '@/status-codes'
-import type { HonoBindings } from '../index'
+import type { HonoBindings } from '../index.old'
 
 export const ROLE_RANK: Record<LedgerRole, number> = {
     viewer: 1,

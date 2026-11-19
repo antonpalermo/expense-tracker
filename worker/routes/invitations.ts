@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import * as InvitationsService from '@/services/invitations'
-import type { HonoBindings } from '../index'
+import type { HonoBindings } from '../index.old'
 
 // Not guarded by requireLedgerRole — the invitee is by definition not a member
 // yet. Authorization is "the invitation's email equals my session email".

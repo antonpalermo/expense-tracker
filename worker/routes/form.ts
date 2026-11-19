@@ -3,7 +3,7 @@ import { createFieldSchema } from '@/database/schemas'
 import { requireLedgerRole } from '@/lib/ledger-access'
 import { validate } from '@/lib/validator'
 import * as FormsService from '@/services/forms'
-import type { HonoBindings } from '../index'
+import type { HonoBindings } from '../index.old'
 
 const routes = new Hono<HonoBindings>({ strict: false }).basePath(
     '/ledgers/:ledgerId/forms'

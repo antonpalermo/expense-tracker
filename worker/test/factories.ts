@@ -10,7 +10,7 @@ import {
     ledgersTable,
     user
 } from '@/database/schemas'
-import app from '@/index'
+import app from '@/index.old'
 import nanoid from '@/lib/nanoid'
 import { createBlankFields } from '@/services/forms'
 import { authHeaders } from './mocks'
