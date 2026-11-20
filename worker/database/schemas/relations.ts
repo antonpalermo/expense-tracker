@@ -7,14 +7,14 @@
  * relations extracted, the table modules form a plain acyclic graph.
  */
 import { relations } from 'drizzle-orm'
-import { account, session, user } from './auth'
-import { entriesTable } from './entries'
-import { formTable } from './form'
 import {
     ledgerInvitationsTable,
     ledgerMembersTable,
     ledgersTable
-} from './ledgers'
+} from '../backup-schemas/ledgers'
+import { account, session, user } from './auth'
+import { entriesTable } from './entries'
+import { formTable } from './form'
 
 export const userRelations = relations(user, ({ many }) => ({
     sessions: many(session),

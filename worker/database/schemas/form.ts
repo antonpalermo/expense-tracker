@@ -9,7 +9,7 @@ import {
 import { z } from 'zod'
 import type { Field } from '../../bindings'
 import nanoid from '../../lib/nanoid'
-import { ledgersTable } from './ledgers'
+import { ledgersTable } from '../backup-schemas/ledgers'
 
 export const formTable = sqliteTable(
     'forms',

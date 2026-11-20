@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-
+import registerRoutes from '@/register-routes'
 import * as HTTPStatus from '@/status-codes'
 import * as HTTPPhrases from '@/status-phrases'
 
@@ -8,6 +8,8 @@ export type HonoBindings = {
 }
 
 const app = new Hono<HonoBindings>({ strict: false }).basePath('/api')
+
+registerRoutes(app)
 
 app.notFound(ctx => {
     return ctx.json(

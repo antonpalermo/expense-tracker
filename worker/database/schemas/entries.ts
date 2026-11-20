@@ -9,8 +9,8 @@ import {
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import nanoid from '../../lib/nanoid'
+import { ledgersTable } from '../backup-schemas/ledgers'
 import { user } from './auth'
-import { ledgersTable } from './ledgers'
 
 export const ENTRY_TYPES = ['debit', 'credit'] as const
 export type EntryType = (typeof ENTRY_TYPES)[number]
